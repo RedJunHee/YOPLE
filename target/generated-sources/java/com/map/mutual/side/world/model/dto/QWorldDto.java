@@ -3,7 +3,7 @@ package com.map.mutual.side.world.model.dto;
 import com.querydsl.core.types.dsl.*;
 
 import com.querydsl.core.types.ConstructorExpression;
-import javax.annotation.Generated;
+import javax.annotation.processing.Generated;
 
 /**
  * com.map.mutual.side.world.model.dto.QWorldDto is a Querydsl Projection type for WorldDto

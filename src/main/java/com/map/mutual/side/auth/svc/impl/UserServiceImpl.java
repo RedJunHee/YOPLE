@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
         try {
-            userEntity = userInfoRepo.findByUserId(id);
+            userEntity = userInfoRepo.findBySuid(id);
             userInfoDto = modelMapper.map(userEntity, UserInfoDto.class);
         } catch (YOPLEServiceException e) {
             log.error("사용자를 찾을 수 없습니다.");

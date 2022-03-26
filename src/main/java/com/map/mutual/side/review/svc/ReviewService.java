@@ -1,6 +1,9 @@
 package com.map.mutual.side.review.svc;
 
 import com.map.mutual.side.review.model.dto.ReviewDto;
+
+import java.util.List;
+
 /**
  * fileName       : ReviewService
  * author         : kimjaejung
@@ -13,5 +16,7 @@ import com.map.mutual.side.review.model.dto.ReviewDto;
  */
 public interface ReviewService {
     void createUpdateReview(ReviewDto reviewDto);
+    void deleteReview(Long reviewId);
     ReviewDto getReview(Long reviewDto);
+    List<ReviewDto> getReviews(Long worldId);
 }

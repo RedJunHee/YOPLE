@@ -36,7 +36,7 @@ public class FCMController {
     public ResponseEntity<ResponseJsonObject> getToken() {
 
         try {
-//            fcmService.getAccessToken();
+            fcmService.getAccessToken();
         } catch (Exception e) {
             log.error(e.getMessage());
 
@@ -45,10 +45,10 @@ public class FCMController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
     @PostMapping("/sendMsg")
-    public ResponseEntity<ResponseJsonObject> sendMsg() {
+    public ResponseEntity<ResponseJsonObject> sendMsg(@RequestParam String token) {
 
         try {
-//            fcmService.sendMessageTo("","test","test");
+            fcmService.sendMessageTo(token,"test","test");
         } catch (Exception e) {
             log.error(e.getMessage());
 
@@ -62,7 +62,7 @@ public class FCMController {
         Message message = Message.builder()
                 .putData("score", "850")
                 .putData("time", "2:45")
-                .setToken(fcmService.getAccessToken())
+                .setToken("d67kxtxsO0MQgfWwExXwCb:APA91bEyapODKjmLgGF8fHJYdB7RImmrvEJt_-vGyYocSJmkPiktGrXzzhBhiEskU1aF5C_xJqM0Zh1OetoyDjI30uWHoeE_nG2KDgwsD9nEzhEuniBmlWGflj2RSBElNqqEXb_GUGsw")
                 .build();
         String response = FirebaseMessaging.getInstance().send(message);
         System.out.println("Successfully sent message: " + response);

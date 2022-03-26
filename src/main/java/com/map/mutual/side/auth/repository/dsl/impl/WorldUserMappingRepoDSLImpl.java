@@ -90,7 +90,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         return jpaQueryFactory
                 .select(QUserEntity.userEntity)
                 .from(QUserEntity.userEntity)
-                .innerJoin(QUserEntity.userEntity)
+                .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
                 .where(QWorldUserMappingEntity.worldUserMappingEntity.worldId.eq(worldId))
                 .on(QUserEntity.userEntity.suid.eq(QWorldUserMappingEntity.worldUserMappingEntity.userSuid))
                 .fetch();

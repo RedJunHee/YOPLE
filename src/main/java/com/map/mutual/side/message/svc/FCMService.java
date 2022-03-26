@@ -26,7 +26,7 @@ import java.io.IOException;
 @Service
 @Log4j2
 public class FCMService {
-    private String API_URL = "https://fcm.googleapis.com/v1/projects/yople-f45f9/messages:send";
+    private String API_URL = "https://fcm.googleapis.com/v1/projects/yople-42384/messages:send";
     private final ObjectMapper objectMapper;
 
     public FCMService(ObjectMapper objectMapper) {
@@ -41,6 +41,7 @@ public class FCMService {
         Request request = new Request.Builder()
                 .url(API_URL)
                 .post(requestBody)
+//                .addHeader(HttpHeaders.AUTHORIZATION, "key=AAAADgolPbg:APA91bFIokeewLLgOpCd0MReDGEfiL6Z3ZU5SKobUreiAFb_TOhMfVM8Opt0vDuytp4rMrm1nWsfybXwR_KQtksRGhqmCN3nWWxwVT4PTRr6Apkq4nVVYKx-FVrByhQrkgoRX879-D4s")
                 .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
                 .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
                 .build();
@@ -75,6 +76,7 @@ public class FCMService {
                 .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
         googleCredentials.refreshIfExpired();
 
+        log.info("ACCESS TOKEN : {}", googleCredentials.getAccessToken().getTokenValue());
         return googleCredentials.getAccessToken().getTokenValue();
     }
 }

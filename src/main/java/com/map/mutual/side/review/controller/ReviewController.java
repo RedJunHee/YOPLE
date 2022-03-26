@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * fileName       : ReivewController
@@ -89,12 +90,42 @@ public class ReviewController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-    @GetMapping("/get")
+    @DeleteMapping({"/deleteReview"})
+    public ResponseEntity<ResponseJsonObject> deleteReview(@RequestBody Long reviewId) {
+        try {
+            reviewService.deleteReview(reviewId);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+    }
+
+    @GetMapping("/getReview")
     public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId) {
         ResponseJsonObject responseJsonObject = null;
 
         try {
             ReviewDto reviewDto = reviewService.getReview(reviewId);
+            responseJsonObject.setData(reviewDto);
+
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
+    @GetMapping("/getReviews")
+    public ResponseEntity<ResponseJsonObject> getReviews(@RequestParam Long worldId) {
+        ResponseJsonObject responseJsonObject = null;
+
+        try {
+            List<ReviewDto> reviewDto = reviewService.getReviews(worldId);
             responseJsonObject.setData(reviewDto);
 
         } catch (YOPLEServiceException e) {

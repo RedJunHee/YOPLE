@@ -57,7 +57,8 @@ public class ReviewController {
                     +File.separator
                     +file.getOriginalFilename());
 
-            InputStream is = file.getInputStream();
+            InputStream is  = file.getInputStream();
+
 
             int readCount = 0;
             byte[] buffer = new byte[1024];

@@ -1,0 +1,11 @@
+package com.map.mutual.side.world.repository;
+
+import com.map.mutual.side.world.model.entity.WorldEntity;
+import com.map.mutual.side.world.repository.dsl.WorldRepoDSL;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface WorldRepo extends JpaRepository<WorldEntity, Long>, WorldRepoDSL {
+    //1. 월드 생성하기
+    //WorldEntity Save(WorldEntity worldEntity);
+    WorldEntity findByWorldId(Long worldId);
+}

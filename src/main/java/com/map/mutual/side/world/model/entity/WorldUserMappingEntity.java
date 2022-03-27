@@ -16,21 +16,21 @@ import javax.persistence.*;
 @Builder
 @IdClass(WorldUserMappingEntityKeys.class)
 public class WorldUserMappingEntity {
-//    @Id
-//    @Column(name="USER_SUID", nullable = false, insertable = false, updatable = false, columnDefinition = "VARCHAR(18)")
-//    private String userSuid;
-//
-//    @Id
-//    @Column(name = "WORLD_ID", nullable = false, insertable = false, updatable = false, columnDefinition = "BIGINT")
-//    private Long worldId;
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_SUID", referencedColumnName = "SUID")
-    private UserEntity userEntity;
+    @Column(name="USER_SUID", nullable = false, columnDefinition = "VARCHAR(18)")
+    private String userSuid;
 
     @Id
+    @Column(name = "WORLD_ID", nullable = false,  columnDefinition = "BIGINT")
+    private Long worldId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "WORLD_ID", referencedColumnName = "WORLD_ID")
+    @JoinColumn(name = "USER_SUID", referencedColumnName = "SUID", insertable = false, updatable = false)
+    private UserEntity userEntity;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "WORLD_ID", referencedColumnName = "WORLD_ID", insertable = false, updatable = false)
     private WorldEntity worldEntity;
 
     @Column(name = "WORLD_USER_CODE", nullable = false, updatable = false, columnDefinition = "CHAR(6)")

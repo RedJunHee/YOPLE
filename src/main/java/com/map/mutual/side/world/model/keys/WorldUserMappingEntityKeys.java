@@ -18,8 +18,6 @@ import java.io.Serializable;
  */
 @EqualsAndHashCode
 public class WorldUserMappingEntityKeys implements Serializable {
-    @Column(name = "USER_SUID")
-    private String userEntity;
-    @Column(name = "WORLD_ID")
-    private Long worldEntity;
+    private String userSuid;
+    private Long worldId;
 }

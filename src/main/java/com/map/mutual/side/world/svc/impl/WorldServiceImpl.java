@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -47,7 +48,7 @@ public class WorldServiceImpl implements WorldService {
 
     //1. 월드 생성하기.
     @Override
-    @Transactional
+    //@Transactional
     public WorldDto createWolrd(WorldDto worldDto) {
         try {
 
@@ -61,15 +62,13 @@ public class WorldServiceImpl implements WorldService {
                     .worldOwner(userInfoDto.getSuid())
                     .build();
 
-
             worldRepo.save(createWorld);
 
+            UserEntity userEntity = userInfoRepo.findById(userInfoDto.getSuid()).get();
 
-            UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
-
-            WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder().
-                    userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build()).
-                    worldEntity(createWorld).
+            WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
+                            .userSuid(userInfoDto.getSuid())
+                                    .worldId(createWorld.getWorldId()).
                     worldUserCode(YOPLEUtils.getWorldRandomCode()).
                     build();
 

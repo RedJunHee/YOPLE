@@ -13,3 +13,12 @@ jwt:
 
 #"Mutual-Maps-AES512-Secret-Key"를 SHA256암호화 후 앞에서 32Byte
 aes-secret: TXV0dWFsLU1hcHMtQUVTNTEyLVNlY3Jl
+
+
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace

@@ -22,7 +22,7 @@ import javax.persistence.*;
 public class UserEntity {
 
     @Id
-    @Column(name="SUID", nullable = false, insertable = false, updatable = false, columnDefinition = "VARCHAR(18)")
+    @Column(name="SUID", nullable = false, updatable = false, columnDefinition = "VARCHAR(18)")
     private String suid;
 
     @Column(name="USER_ID",  unique = true, columnDefinition = "VARCHAR(20)")

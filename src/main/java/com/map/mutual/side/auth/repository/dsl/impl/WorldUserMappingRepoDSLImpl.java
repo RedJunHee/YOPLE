@@ -65,21 +65,20 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                                     QWorldEntity.worldEntity.worldName,
                                                     QWorldEntity.worldEntity.worldDesc,
                         new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(suid)).then("Y").otherwise("N"),
-
-//                                                    new CaseBuilder().when(QWorldEntity.worldEntity.host.suid.eq(suid)).then("Y").otherwise("N"),
                                                     QWorldEntity.worldEntity.count()))
                 .from(QWorldEntity.worldEntity)
                 .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
-                .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId))
-                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId.in(
-                        JPAExpressions.select(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId)
+                .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId))
+                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldId.in(
+                        JPAExpressions.select(QWorldUserMappingEntity.worldUserMappingEntity.worldId)
                                 .from(QWorldUserMappingEntity.worldUserMappingEntity)
-                                .where(QWorldUserMappingEntity.worldUserMappingEntity.userEntity.suid.eq(suid))
+                                .where(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid))
                 ))
                 .groupBy(QWorldEntity.worldEntity.worldId,
                         QWorldEntity.worldEntity.worldName,
                         QWorldEntity.worldEntity.worldDesc,
-                        QWorldEntity.worldEntity.worldOwner).fetch();
+                        QWorldEntity.worldEntity.worldOwner)
+                .fetch();
 
 
         return world;

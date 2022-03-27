@@ -48,7 +48,7 @@ public class WorldServiceImpl implements WorldService {
 
     //1. 월드 생성하기.
     @Override
-    //@Transactional
+    @Transactional
     public WorldDto createWolrd(WorldDto worldDto) {
         try {
 
@@ -63,8 +63,6 @@ public class WorldServiceImpl implements WorldService {
                     .build();
 
             worldRepo.save(createWorld);
-
-            UserEntity userEntity = userInfoRepo.findById(userInfoDto.getSuid()).get();
 
             WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
                             .userSuid(userInfoDto.getSuid())

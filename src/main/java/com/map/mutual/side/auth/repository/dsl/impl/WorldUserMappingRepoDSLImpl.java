@@ -70,11 +70,11 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                                     QWorldEntity.worldEntity.count()))
                 .from(QWorldEntity.worldEntity)
                 .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
-                .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId))
-                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldId.in(
-                        JPAExpressions.select(QWorldUserMappingEntity.worldUserMappingEntity.worldId)
+                .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId))
+                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId.in(
+                        JPAExpressions.select(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId)
                                 .from(QWorldUserMappingEntity.worldUserMappingEntity)
-                                .where(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid))
+                                .where(QWorldUserMappingEntity.worldUserMappingEntity.userEntity.suid.eq(suid))
                 ))
                 .groupBy(QWorldEntity.worldEntity.worldId,
                         QWorldEntity.worldEntity.worldName,
@@ -91,8 +91,8 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 .select(QUserEntity.userEntity)
                 .from(QUserEntity.userEntity)
                 .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
-                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldId.eq(worldId))
-                .on(QUserEntity.userEntity.suid.eq(QWorldUserMappingEntity.worldUserMappingEntity.userSuid))
+                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId.eq(worldId))
+                .on(QUserEntity.userEntity.suid.eq(QWorldUserMappingEntity.worldUserMappingEntity.userEntity.suid))
                 .fetch();
     }
 }

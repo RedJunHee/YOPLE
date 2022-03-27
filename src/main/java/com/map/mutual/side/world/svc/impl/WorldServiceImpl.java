@@ -2,9 +2,11 @@ package com.map.mutual.side.world.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.repository.WorldUserMappingRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,18 +32,22 @@ public class WorldServiceImpl implements WorldService {
     private WorldRepo worldRepo;
     private WorldUserMappingRepo worldUserMappingRepo;
     private ModelMapper modelMapper;
+    private UserInfoRepo userInfoRepo;
 
     @Autowired
     public WorldServiceImpl(WorldRepo worldRepo
             , WorldUserMappingRepo worldUserMappingRepo
-            , ModelMapper modelMapper) {
+            , ModelMapper modelMapper
+    , UserInfoRepo userInfoRepo) {
         this.worldRepo = worldRepo;
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.modelMapper = modelMapper;
+        this.userInfoRepo = userInfoRepo;
     }
 
     //1. 월드 생성하기.
     @Override
+    @Transactional
     public WorldDto createWolrd(WorldDto worldDto) {
         try {
 
@@ -51,9 +58,25 @@ public class WorldServiceImpl implements WorldService {
             WorldEntity createWorld = WorldEntity.builder()
                     .worldName(worldDto.getWorldName())
                     .worldDesc(worldDto.getWorldDesc())
+                    .worldOwner(userInfoDto.getSuid())
                     .build();
 
+
             worldRepo.save(createWorld);
+
+
+            UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+
+            WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder().
+                    userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build()).
+                    worldEntity(createWorld).
+                    worldUserCode(YOPLEUtils.getWorldRandomCode()).
+                    build();
+
+            worldUserMappingRepo.save(worldUserMappingEntity);
+
+
+
 
             WorldDto createdWorld = WorldDto.builder().worldId(createWorld.getWorldId())
                     .worldDesc(createWorld.getWorldDesc())

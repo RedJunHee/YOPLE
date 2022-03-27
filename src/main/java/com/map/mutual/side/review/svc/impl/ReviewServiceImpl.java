@@ -1,5 +1,6 @@
 package com.map.mutual.side.review.svc.impl;
 
+import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.review.model.dto.ReviewDto;
@@ -45,7 +46,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         try {
             ReviewEntity reviewEntity = ReviewEntity.builder()
-                    .userSuid(reviewDto.getUserSuid())
+                    .userEntity(UserEntity.builder().suid(reviewDto.getUserSuid()).build())
                     .title(reviewDto.getTitle())
                     .content(reviewDto.getContent())
 //                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))

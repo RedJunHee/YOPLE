@@ -83,7 +83,7 @@ public class WorldServiceImpl implements WorldService {
             // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
 //            if (worldUserMappingRepo.findByUserInfoEntityAndWorldEntity(modelMapper.map(userInfoDto, UserEntity.class), modelMapper.map(worldDto, WorldEntity.class)).stream().count() != 0) {
             // TODO: 2022/03/25 수정한 api확인
-            if (worldUserMappingRepo.findByUserSuidAndWorldId(userInfoDto.getUserId(), worldDto.getWorldId()).stream().count() != 0) {
+            if (worldUserMappingRepo.findByUserEntityAndWorldEntity(userInfoDto.getUserId(), worldDto.getWorldId()).stream().count() != 0) {
                 logger.error("해당 사용자가 이미 월드에 속해있습니다.");
                 //TODO 해당 사용자가 월드에 속해있을때 파라미터 체크 오류로 나가고 있음.
                 throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);

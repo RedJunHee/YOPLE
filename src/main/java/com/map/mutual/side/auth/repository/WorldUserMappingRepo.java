@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface WorldUserMappingRepo extends JpaRepository<WorldUserMappingEntity, Long>, WorldUserMappingRepoDSL {
 //    List<WorldUserMappingEntity> findByUserInfoEntityAndWorldEntity(UserEntity userEntity, WorldEntity worldEntity);
-    List<WorldUserMappingEntity> findByUserSuidAndWorldId(String userSuid, Long worldId);
+    List<WorldUserMappingEntity> findByUserEntityAndWorldEntity(String userSuid, Long worldId);
     // TODO: 2022/03/25 수정한 api확인
 }

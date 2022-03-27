@@ -28,8 +28,8 @@ public class EmojiStatusEntity {
     @Column(name="REVIEW_ID",insertable = false, updatable = false, columnDefinition = "BIGINT")
     private Long reviewId;
 
-    @Column(name="EMOJI_ID", insertable = false, nullable = false, updatable = false, columnDefinition = "BIGINT")
-    private Long emojiId;
+//    @Column(name="EMOJI_ID", insertable = false, nullable = false, updatable = false, columnDefinition = "BIGINT")
+//    private Long emojiId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "EMOJI_ID", referencedColumnName = "EMOJI_ID")

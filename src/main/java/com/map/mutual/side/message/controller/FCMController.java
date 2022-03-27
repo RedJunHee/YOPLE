@@ -62,7 +62,7 @@ public class FCMController {
         Message message = Message.builder()
                 .putData("score", "850")
                 .putData("time", "2:45")
-                .setToken("d67kxtxsO0MQgfWwExXwCb:APA91bEyapODKjmLgGF8fHJYdB7RImmrvEJt_-vGyYocSJmkPiktGrXzzhBhiEskU1aF5C_xJqM0Zh1OetoyDjI30uWHoeE_nG2KDgwsD9nEzhEuniBmlWGflj2RSBElNqqEXb_GUGsw")
+                .setToken("esBfgt5HiUneryjd8u0DqQ:APA91bER7wFWAKoLPqhzNTVOjnrcI7B0vq9g2LA0CIVviHJ1a7nU95y7i6ri1Jwjg_QoZ0u9zp0HJ5wOEGktRJUkBBLqtk3q8eTMUmujDwMH4nQ6aSnpBjIzzrEveaO2AlReSRouMAgW")
                 .build();
         String response = FirebaseMessaging.getInstance().send(message);
         System.out.println("Successfully sent message: " + response);

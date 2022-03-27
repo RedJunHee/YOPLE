@@ -1,5 +1,7 @@
 package com.map.mutual.side.review.model.keys;
 
+import com.map.mutual.side.review.model.entity.ReviewEntity;
+import com.map.mutual.side.world.model.entity.WorldEntity;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
@@ -16,6 +18,8 @@ import java.io.Serializable;
  */
 @EqualsAndHashCode
 public class ReviewWorldMappingEntityKeys implements Serializable {
-    private Long reviewId;
-    private Long worldId;
+    @Column(name = "REVIEW_ID")
+    private Long reviewEntity;
+    @Column(name = "WORLD_ID")
+    private Long worldEntity;
 }

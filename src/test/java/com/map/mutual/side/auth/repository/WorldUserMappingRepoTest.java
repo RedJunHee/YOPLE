@@ -32,21 +32,21 @@ class WorldUserMappingRepoTest {
     @DisplayName("월드-사용자 매핑 (월드 입장)")
     void inviteJoinWorld()
     {
-        try {
-            WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
-                    .worldEntity(WorldEntity.builder().worldId(1L).build())
-//                    .userInfoEntity(UserInfoEntity.builder().suid("TESTCODESUID").build())
-                    .build();
-
-            worldUserMappingRepo.save(worldUserMappingEntity);
-
-            Assertions.assertEquals(worldUserMappingEntity.getWorldEntity().getWorldId(), 1l);
-//            Assertions.assertEquals(worldUserListEntity.getUserInfoEntity().getSuid(), "TESTCODESUID");
-        }catch(Exception e)
-        {
-            System.out.println(e.getMessage());
-
-        }
+//        try {
+//            WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
+//                    .worldEntity(WorldEntity.builder().worldId(1L).build())
+////                    .userInfoEntity(UserInfoEntity.builder().suid("TESTCODESUID").build())
+//                    .build();
+//
+//            worldUserMappingRepo.save(worldUserMappingEntity);
+//
+//            Assertions.assertEquals(worldUserMappingEntity.getWorldEntity().getWorldId(), 1l);
+////            Assertions.assertEquals(worldUserListEntity.getUserInfoEntity().getSuid(), "TESTCODESUID");
+//        }catch(Exception e)
+//        {
+//            System.out.println(e.getMessage());
+//
+//        }
     }
 
 }

@@ -62,4 +62,22 @@ public class YOPLEUtils {
         }
     }
 
+    public static String getWorldRandomCode()
+    {
+        String code = "";
+
+        for(int i = 0 ; i< 6 ; i++)
+        {
+            int random = (int)(Math.random()*43)+48;
+
+            if(random >= 58 && random <= 64) {
+                i--;
+                continue;
+            }
+            code+= (char)random;
+        }
+
+        return code;
+    }
+
 }

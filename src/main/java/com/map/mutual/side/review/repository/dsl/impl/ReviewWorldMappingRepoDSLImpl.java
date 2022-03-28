@@ -23,8 +23,8 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
                 .select(QReviewEntity.reviewEntity)
                 .from(QReviewEntity.reviewEntity)
                 .join(QReviewWorldMappingEntity.reviewWorldMappingEntity)
-                .on(QReviewEntity.reviewEntity.reviewId.eq(QReviewWorldMappingEntity.reviewWorldMappingEntity.reviewId))
-                .where(QReviewWorldMappingEntity.reviewWorldMappingEntity.worldId.eq(worldId))
+                .on(QReviewEntity.reviewEntity.reviewId.eq(QReviewWorldMappingEntity.reviewWorldMappingEntity.reviewEntity.reviewId))
+                .where(QReviewWorldMappingEntity.reviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
                 .fetch();
         return reviewEntities;
     }

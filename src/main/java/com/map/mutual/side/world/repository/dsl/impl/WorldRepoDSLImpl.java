@@ -1,12 +1,23 @@
 package com.map.mutual.side.world.repository.dsl.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.entity.QUserEntity;
+import com.map.mutual.side.common.enumerate.BooleanType;
+import com.map.mutual.side.world.model.dto.QWorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.map.mutual.side.world.repository.dsl.WorldRepoDSL;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.hibernate.criterion.NullExpression;
+import org.hibernate.criterion.SimpleExpression;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -27,24 +38,25 @@ public class WorldRepoDSLImpl implements WorldRepoDSL {
     @Override
     public WorldDetailResponseDto getWorldDetail(Long worldId, UserInfoDto requestUser) {
 
-        WorldEntity world = jpaQueryFactory.select(QWorldEntity.worldEntity)
+
+        WorldDetailResponseDto worldDetailResponseDto = jpaQueryFactory.select(
+                        new QWorldDetailResponseDto(QWorldEntity.worldEntity.worldId,
+                                QWorldEntity.worldEntity.worldName,
+                                QWorldEntity.worldEntity.worldDesc,
+                                QUserEntity.userEntity.userId,
+                                QUserEntity.userEntity.profileUrl,
+                                new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(requestUser.getSuid())).then(BooleanType.Y.toString()).otherwise(BooleanType.N.toString())))
                 .from(QWorldEntity.worldEntity)
-//                .leftJoin(QWorldEntity.worldEntity.host, QUserInfoEntity.userInfoEntity)
+                .leftJoin( QUserEntity.userEntity)
+                .on(QWorldEntity.worldEntity.worldOwner.eq(QUserEntity.userEntity.suid))
                 .fetchJoin()
+//                .join(QWorldUserMappingEntity.worldUserMappingEntity)
+//                .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId))
                 .where(QWorldEntity.worldEntity.worldId.eq(worldId))
                 .fetchOne();
 
-        WorldDetailResponseDto worldDetailResponseDto
-                = WorldDetailResponseDto.builder().worldId(world.getWorldId())
-                .worldName(world.getWorldName())
-                .worldDesc(world.getWorldDesc())
-//                .isMyworld( (world.getHost().getSuid().equals(requestUser.getSuid()))? BooleanType.Y.toString(): BooleanType.N.toString())
-                //호스트 유저 정보
-//                .hostUser(UserInfoDto.builder().userId(world.getHost().getUserId())
-//                        .profileUrl(world.getHost().getProfileUrl()).build())
-                //todo 다시 Select 나가고 있음.
-                .worldUserCnt(worldUserCnt(worldId))
-                .build();
+        worldDetailResponseDto.setWorldUserCnt(worldUserCnt(worldId));
+
 
         return worldDetailResponseDto;
     }

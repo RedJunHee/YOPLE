@@ -65,8 +65,6 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                                     QWorldEntity.worldEntity.worldName,
                                                     QWorldEntity.worldEntity.worldDesc,
                         new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(suid)).then("Y").otherwise("N"),
-
-//                                                    new CaseBuilder().when(QWorldEntity.worldEntity.host.suid.eq(suid)).then("Y").otherwise("N"),
                                                     QWorldEntity.worldEntity.count()))
                 .from(QWorldEntity.worldEntity)
                 .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
@@ -79,7 +77,8 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 .groupBy(QWorldEntity.worldEntity.worldId,
                         QWorldEntity.worldEntity.worldName,
                         QWorldEntity.worldEntity.worldDesc,
-                        QWorldEntity.worldEntity.worldOwner).fetch();
+                        QWorldEntity.worldEntity.worldOwner)
+                .fetch();
 
 
         return world;
@@ -91,8 +90,8 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 .select(QUserEntity.userEntity)
                 .from(QUserEntity.userEntity)
                 .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
-                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldId.eq(worldId))
-                .on(QUserEntity.userEntity.suid.eq(QWorldUserMappingEntity.worldUserMappingEntity.userSuid))
+                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId.eq(worldId))
+                .on(QUserEntity.userEntity.suid.eq(QWorldUserMappingEntity.worldUserMappingEntity.userEntity.suid))
                 .fetch();
     }
 }

@@ -32,7 +32,7 @@ public class WorldEntity extends TimeEntity {
     @Column(name="WORLD_ID",nullable = false, updatable = false, columnDefinition = "BIGINT")
     private Long worldId;
 
-    @Column(name = "WORLD_OWNER", insertable = false, updatable = false, columnDefinition = "VARCHAR(18)")
+    @Column(name = "WORLD_OWNER", updatable = false, columnDefinition = "VARCHAR(18)")
     private String worldOwner;
 
     //월드 명

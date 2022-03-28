@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -51,7 +52,7 @@ public class UserController {
      * @throws Exception
      */
     @PostMapping("/signUp")
-    public ResponseEntity<ResponseJsonObject> smsSignUp(@RequestBody UserInfoDto userInfoDto) throws Exception {
+    public ResponseEntity<ResponseJsonObject> smsSignUp(@Validated @RequestBody UserInfoDto userInfoDto) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         try {
             String suid = "YO";

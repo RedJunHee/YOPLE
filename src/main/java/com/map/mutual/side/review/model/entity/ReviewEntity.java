@@ -32,9 +32,6 @@ public class ReviewEntity extends TimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
 
-//    @Column(name="USER_SUID", insertable = false, updatable = false, columnDefinition = "VARCHAR(18)")
-//    private String userSuid;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_SUID", referencedColumnName = "SUID")
     private UserEntity userEntity;

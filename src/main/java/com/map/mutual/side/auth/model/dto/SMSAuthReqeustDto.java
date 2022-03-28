@@ -16,8 +16,8 @@ public class SMSAuthReqeustDto {
     @Pattern(regexp = "^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$",
     message = "휴대폰 번호가 올바르지 않습니다.")
     private String phone;
-    @NotNull(message = "uuid가 없습니다.")
-    private String uuid;
+    @NotNull(message = "duid가 없습니다.")
+    private String duid;
     private String responseAuthNum;
 
 }

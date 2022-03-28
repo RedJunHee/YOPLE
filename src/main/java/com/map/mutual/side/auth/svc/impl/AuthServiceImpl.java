@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
             // 2. SMSRequestLog 생성
             SMSRequestLogEntity smsLog = SMSRequestLogEntity.builder().phone(smsAuthReqeustDTO.getPhone())
                     .requestAuthNum(smsAuthNum)
-                    .duid(smsAuthReqeustDTO.getUuid())
+                    .duid(smsAuthReqeustDTO.getDuid())
                     .build();
 
             // 3. Log 저장

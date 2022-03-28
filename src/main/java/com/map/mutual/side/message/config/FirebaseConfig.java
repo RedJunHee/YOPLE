@@ -34,7 +34,7 @@ public class FirebaseConfig {
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
-            FirebaseApp.initializeApp(options);
+            FirebaseApp.initializeApp(options,"fcm");
 
         } catch (FileNotFoundException e) {
             log.error("Firebase ServiceAccountKey FileNotFoundException" + e.getMessage());

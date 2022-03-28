@@ -28,14 +28,6 @@ import java.util.List;
 @IdClass(ReviewWorldMappingEntityKeys.class)
 public class ReviewWorldMappingEntity extends CreateDtEntity {
 
-//    @Id
-//    @Column(name="REVIEW_ID",insertable = false, updatable = false, columnDefinition = "BIGINT")
-//    private Long reviewId;
-
-//    @Id
-//    @Column(name = "WORLD_ID", insertable = false, updatable = false, columnDefinition = "BIGINT")
-//    private Long worldId;
-
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REVIEW_ID", referencedColumnName = "REVIEW_ID")

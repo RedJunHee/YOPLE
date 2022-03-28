@@ -81,7 +81,7 @@ public class AuthController {
             String smsAuthNum = YOPLEUtils.getSMSAuth();
 
             // 2. 핸드폰 번호 인증 요청
-//            authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+            authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);

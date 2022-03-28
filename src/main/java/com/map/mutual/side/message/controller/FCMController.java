@@ -1,9 +1,11 @@
 package com.map.mutual.side.message.controller;
 
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.message.svc.FCMService;
@@ -57,14 +59,16 @@ public class FCMController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
     @PostMapping("/tests")
-    public void tests() throws IOException, FirebaseMessagingException {
+    public void tests(@RequestParam String token) throws IOException, FirebaseMessagingException {
+        Notification notification = Notification.builder().setTitle("타이틀").setBody("body").build();
 
         Message message = Message.builder()
                 .putData("score", "850")
                 .putData("time", "2:45")
-                .setToken("esBfgt5HiUneryjd8u0DqQ:APA91bER7wFWAKoLPqhzNTVOjnrcI7B0vq9g2LA0CIVviHJ1a7nU95y7i6ri1Jwjg_QoZ0u9zp0HJ5wOEGktRJUkBBLqtk3q8eTMUmujDwMH4nQ6aSnpBjIzzrEveaO2AlReSRouMAgW")
+                .setToken(token)
+                .setNotification(notification)
                 .build();
-        String response = FirebaseMessaging.getInstance().send(message);
+        String response = FirebaseMessaging.getInstance(FirebaseApp.getInstance("fcm")).send(message);
         System.out.println("Successfully sent message: " + response);
     }
 }

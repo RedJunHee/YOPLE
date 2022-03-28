@@ -37,6 +37,82 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
+    @PostMapping({"/create/review", "/update/review"})
+    public ResponseEntity<ResponseJsonObject> createUpdateReview(@RequestBody ReviewDto reviewDto) {
+        try {
+            reviewService.createUpdateReview(reviewDto);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+    }
+
+    @DeleteMapping({"/delete/review"})
+    public ResponseEntity<ResponseJsonObject> deleteReview(@RequestBody Long reviewId) {
+        try {
+            reviewService.deleteReview(reviewId);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+    }
+
+    @GetMapping("/read/review")
+    public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId) {
+        ResponseJsonObject responseJsonObject = null;
+
+        try {
+            ReviewDto reviewDto = reviewService.getReview(reviewId);
+            responseJsonObject.setData(reviewDto);
+
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
+    @GetMapping("/read/reviews")
+    public ResponseEntity<ResponseJsonObject> getReviews(@RequestParam Long worldId) {
+        ResponseJsonObject responseJsonObject = null;
+
+        try {
+            List<ReviewDto> reviewDto = reviewService.getReviews(worldId);
+            responseJsonObject.setData(reviewDto);
+
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
+    @PostMapping("/create/reviewWorldMapping")
+    public ResponseEntity<ResponseJsonObject> createReviewWorldMapping(@RequestParam Long worldId, @RequestParam Long reviewId) {
+        ResponseJsonObject responseJsonObject = null;
+
+        try {
+            reviewService.createReviewWorldMapping(worldId, reviewId);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+    }
+
+
     @PostMapping("/upload")
     public ResponseEntity<ResponseJsonObject> upload(@RequestPart MultipartFile file, @RequestParam String tempReview) throws IOException {
 
@@ -75,66 +151,6 @@ public class ReviewController {
             throw e;
         }
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-    }
-
-    @PostMapping({"/createReview", "/updateReview"})
-    public ResponseEntity<ResponseJsonObject> createUpdateReview(@RequestBody ReviewDto reviewDto) {
-        try {
-            reviewService.createUpdateReview(reviewDto);
-        } catch (YOPLEServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
-        }
-
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-    }
-
-    @DeleteMapping({"/deleteReview"})
-    public ResponseEntity<ResponseJsonObject> deleteReview(@RequestBody Long reviewId) {
-        try {
-            reviewService.deleteReview(reviewId);
-        } catch (YOPLEServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
-        }
-
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-    }
-
-    @GetMapping("/getReview")
-    public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId) {
-        ResponseJsonObject responseJsonObject = null;
-
-        try {
-            ReviewDto reviewDto = reviewService.getReview(reviewId);
-            responseJsonObject.setData(reviewDto);
-
-        } catch (YOPLEServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
-        }
-
-        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
-    }
-
-    @GetMapping("/getReviews")
-    public ResponseEntity<ResponseJsonObject> getReviews(@RequestParam Long worldId) {
-        ResponseJsonObject responseJsonObject = null;
-
-        try {
-            List<ReviewDto> reviewDto = reviewService.getReviews(worldId);
-            responseJsonObject.setData(reviewDto);
-
-        } catch (YOPLEServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
-        }
-
-        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
 }

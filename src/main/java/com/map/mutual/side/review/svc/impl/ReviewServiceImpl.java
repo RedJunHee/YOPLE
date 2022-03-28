@@ -5,9 +5,11 @@ import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.review.model.dto.ReviewDto;
 import com.map.mutual.side.review.model.entity.ReviewEntity;
+import com.map.mutual.side.review.model.entity.ReviewWorldMappingEntity;
 import com.map.mutual.side.review.repository.ReviewRepo;
 import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
 import com.map.mutual.side.review.svc.ReviewService;
+import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.map.mutual.side.world.repository.WorldRepo;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -51,8 +53,21 @@ public class ReviewServiceImpl implements ReviewService {
                     .content(reviewDto.getContent())
 //                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
                     .build();
-
             reviewRepo.save(reviewEntity);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public void createReviewWorldMapping(Long worldId, Long reviewId) {
+
+        try {
+            ReviewWorldMappingEntity entity = ReviewWorldMappingEntity.builder()
+                    .worldEntity(WorldEntity.builder().worldId(worldId).build())
+                    .reviewEntity(ReviewEntity.builder().reviewId(reviewId).build())
+                    .build();
+            reviewWorldMappingRepository.save(entity);
         } catch (YOPLEServiceException e) {
             throw e;
         }

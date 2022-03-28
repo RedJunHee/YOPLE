@@ -2,7 +2,10 @@ package com.map.mutual.side.review.model.keys;
 
 import com.map.mutual.side.review.model.entity.ReviewEntity;
 import com.map.mutual.side.world.model.entity.WorldEntity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import java.io.Serializable;
@@ -17,9 +20,10 @@ import java.io.Serializable;
  *
  */
 @EqualsAndHashCode
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReviewWorldMappingEntityKeys implements Serializable {
-    @Column(name = "REVIEW_ID")
     private Long reviewEntity;
-    @Column(name = "WORLD_ID")
     private Long worldEntity;
 }

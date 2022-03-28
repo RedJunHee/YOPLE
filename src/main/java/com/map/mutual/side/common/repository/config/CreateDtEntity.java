@@ -1,8 +1,11 @@
 package com.map.mutual.side.common.repository.config;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
+import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import javax.persistence.*;
 import java.time.LocalDateTime;
 /**
  * fileName       : CreateDtEntity
@@ -15,14 +18,10 @@ import java.time.LocalDateTime;
  *
  */
 @MappedSuperclass
+@EntityListeners(value = {AuditingEntityListener.class})
+@Getter
 public class CreateDtEntity {
-    @Column(name = "CREATE_DT")
+    @CreatedDate
+    @Column(name = "CREATE_DT", updatable = false)
     private LocalDateTime createTime;
-    @PrePersist
-    public void before() {
-        LocalDateTime now = LocalDateTime.now();
-        if (createTime == null) {
-            this.createTime = now;
-        }
-    }
 }

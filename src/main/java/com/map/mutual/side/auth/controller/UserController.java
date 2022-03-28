@@ -103,7 +103,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/getUserById")
+    @GetMapping("/get/user/bySuid")
     public ResponseEntity<ResponseJsonObject> getUserById(@RequestParam String id) {
         ResponseJsonObject response;
         try{
@@ -118,7 +118,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/getUserByPhone")
+    @GetMapping("/get/user/byPhone")
     public ResponseEntity<ResponseJsonObject> getUserByPhone(@RequestParam String phone) {
         ResponseJsonObject response;
         try{
@@ -134,7 +134,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/getUsers")
+    @GetMapping("/get/users")
     public ResponseEntity<ResponseJsonObject> getUsers(@RequestParam long worldCode) {
         ResponseJsonObject response;
         try{

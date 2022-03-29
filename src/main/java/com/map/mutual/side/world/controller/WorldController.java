@@ -51,25 +51,6 @@ public class WorldController {
         }
     }
 
-    /** 월드 초대 수락하기 ( Push ) (월드-유저 매핑 추가)*/
-    @PostMapping(value = "/invite-join-world")
-    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldId") Long world,
-                                                              @RequestParam("worldinvitationCode") String worldinvitationCode){
-        try{
-
-            WorldDto joinedWorld = worldService.inviteJoinWorld(world, worldinvitationCode);
-
-            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinedWorld);
-
-            return new ResponseEntity<>(response, HttpStatus.OK);
-
-        }catch(Exception e)
-        {
-            logger.error("WorldController inviteJoinWorld Failed.!! : " + e.getMessage());
-            throw e;
-        }
-    }
-
     /** 월드 수정하기 API */
     @PutMapping(value = "/world")
     public ResponseEntity<ResponseJsonObject> updateWorld(@RequestBody WorldDto worldDto){

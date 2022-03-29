@@ -8,12 +8,24 @@ import com.map.mutual.side.auth.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.utils.YOPLEUtils;
+import com.map.mutual.side.world.model.dto.WorldDto;
+import com.map.mutual.side.world.model.entity.WorldEntity;
+import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
+import com.map.mutual.side.world.repository.WorldRepo;
+import com.map.mutual.side.world.svc.impl.WorldServiceImpl;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,15 +42,20 @@ import java.util.stream.Collectors;
 @Service
 @Log4j2
 public class UserServiceImpl implements UserService {
+    private final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 
-    @Autowired
     private WorldUserMappingRepo worldUserMappingRepo;
-    @Autowired
     private UserInfoRepo userInfoRepo;
+    private ModelMapper modelMapper;
+    private WorldRepo worldRepo;
 
     @Autowired
-    private ModelMapper modelMapper;
-
+    public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo, ModelMapper modelMapper, WorldRepo worldRepo) {
+        this.worldUserMappingRepo = worldUserMappingRepo;
+        this.userInfoRepo = userInfoRepo;
+        this.modelMapper = modelMapper;
+        this.worldRepo = worldRepo;
+    }
 
     @Override
     public UserInfoDto findUser(String id, String phone) {
@@ -59,6 +76,51 @@ public class UserServiceImpl implements UserService {
         return userInfoDto;
     }
 
+    //3. 월드 초대 수락하기.
+    //todo 초대자의 월드 코드.
+    @Override
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    public WorldDto inviteJoinWorld( String worldinvitationCode) {
+
+        try {
+
+            // 1. 사용자 SUID 가져오기
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
+            Long inviteWorldId = worldUserMappingRepo.exsistUserInWorld(worldinvitationCode, userInfoDto.getSuid());
+
+            if (inviteWorldId == null) {
+                logger.error("해당 사용자가 이미 월드에 속해있습니다.");
+                throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
+            }
+
+            // 3. 초대 수락한 월드 입장 처리
+            WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
+                    .userSuid(userInfoDto.getSuid())
+                    .worldId(inviteWorldId)
+                    .worldUserCode(YOPLEUtils.getWorldRandomCode())
+                    .worldinvitationCode(worldinvitationCode)
+                    .build();
+
+            worldUserMappingRepo.save(worldUserMappingEntity);
+
+            // 4. 참여한 월드 정보 조회
+            WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
+                    .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
+
+            // 5. 참여한 월드 정보 리턴.
+            return WorldDto.builder().worldId(world.getWorldId())
+                    .worldName(world.getWorldName())
+                    .worldDesc(world.getWorldDesc()).build();
+
+
+        } catch (YOPLEServiceException e) {
+            logger.error("World inviteJoinWorld Failed.!! : " + e.getMessage());
+            throw e;
+        }
+    }
     // 월드 참여자 조회하기.
     @Override
     public List<UserInWorld> worldUsers(long worldId) {

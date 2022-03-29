@@ -7,11 +7,15 @@ import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.svc.AuthService;
 import com.map.mutual.side.auth.svc.UserService;
+import com.map.mutual.side.auth.svc.impl.UserServiceImpl;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.filter.AuthorizationCheckFilter;
+import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,6 +41,7 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController {
 
+    private final Logger logger = LogManager.getLogger(UserController.class);
     @Autowired
     private AuthService authService;
 
@@ -88,6 +93,24 @@ public class UserController {
             throw e;
         }
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK),httpHeaders, HttpStatus.OK);
+    }
+
+    /** 월드 초대 수락하기 ( Push ) (월드-유저 매핑 추가)*/
+    @PostMapping(value = "/world/user")
+    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") String worldinvitationCode){
+        try{
+
+            WorldDto joinedWorld = userService.inviteJoinWorld( worldinvitationCode);
+
+            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinedWorld);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        }catch(Exception e)
+        {
+            logger.error("WorldController inviteJoinWorld Failed.!! : " + e.getMessage());
+            throw e;
+        }
     }
 
     @GetMapping("/checkUserId")

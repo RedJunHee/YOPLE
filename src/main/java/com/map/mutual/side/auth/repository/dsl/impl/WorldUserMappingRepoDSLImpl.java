@@ -5,6 +5,8 @@ import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.dsl.WorldUserMappingRepoDSL;
+import com.map.mutual.side.common.enumerate.ApiStatusCode;
+import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.world.model.dto.QWorldDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
@@ -114,4 +116,36 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
 
         return UserInfoInWorld;
     }
+
+
+    // 월드 초대 코드로 월드에 입장하려는 사용자 SUID가 월드에 이미 존재하는지 체크하는 쿼리.
+    // 존재하면 null 존재하지않으면 [입장 worldId]
+    @Override
+    public Long exsistUserInWorld (String worldinvitationCode, String suid)
+    {
+
+        Long worldId = jpaQueryFactory.select(QWorldUserMappingEntity.worldUserMappingEntity.worldId)
+                .from(QWorldUserMappingEntity.worldUserMappingEntity) // 월드초대 코드를 지닌 사용자의 월드정보를 알아낸다.
+                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldUserCode.eq(worldinvitationCode))
+                .fetchOne();
+
+        //월드코드를 가진 사용자의 월드 ID가 없는경우.
+        if(worldId == null)
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+
+
+        Integer result = jpaQueryFactory.selectOne()
+                .from(QWorldUserMappingEntity.worldUserMappingEntity)
+                .where(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid)
+                        .and(QWorldUserMappingEntity.worldUserMappingEntity.worldId.eq(worldId)))
+                .fetchOne();
+
+        //월드에 참여중 아님.
+        if(result == null)
+            return worldId;
+        else // 월드에 참여중.
+            return null;
+
+    }
+
 }

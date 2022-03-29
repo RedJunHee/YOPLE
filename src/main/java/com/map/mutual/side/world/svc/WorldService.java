@@ -11,8 +11,6 @@ public interface WorldService {
     //1. 월드 생성하기.
     WorldDto createWolrd(WorldDto worldDto);
 
-    //2. 월드 초대 수락하기.
-    WorldDto inviteJoinWorld(Long worldDto, String worldinvitationCode);
 
     //3. 월드 수정하기
     void updateWorld(WorldDto worldDto);

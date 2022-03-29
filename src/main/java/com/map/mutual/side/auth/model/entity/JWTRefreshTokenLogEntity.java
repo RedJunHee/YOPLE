@@ -20,14 +20,12 @@ import javax.persistence.*;
 @Getter
 @Builder
 @AllArgsConstructor
-@IdClass(JWTRefreshTokenLogEntityKeys.class)
 public class JWTRefreshTokenLogEntity {
 
     @Id
     @Column(name="USER_SUID", insertable = false, updatable = false, columnDefinition = "VARCHAR(18)")
     private String userSuid;
 
-    @Id
     @Column(name = "REFRESH_TOKEN", nullable = false, columnDefinition = "VARCHAR(200)")
     private String refreshToken;
 }

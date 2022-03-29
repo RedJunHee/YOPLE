@@ -99,7 +99,7 @@ public class RequestAroundLogAop {
             stopWatch.stop();
 
             //api 처리 정보 => INPUT + OUTPUT   ** Exception이 떨어졌을때 Exception정보도 담는지 확인 필요 함.
-            apiResultDescription.append("[INPUT]").append(System.lineSeparator())
+            apiResultDescription.append("\n[INPUT]").append(System.lineSeparator())
                     .append(inputParam).append(System.lineSeparator())
                     .append("[OUTPUT]").append(System.lineSeparator())
                     .append(outputMessage).append(System.lineSeparator());

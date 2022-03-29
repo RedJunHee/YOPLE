@@ -51,7 +51,7 @@ public class WorldController {
         }
     }
 
-    /** 월드 초대 수락하기 (월드-유저 매핑 추가)*/
+    /** 월드 초대 수락하기 ( Push ) (월드-유저 매핑 추가)*/
     @PostMapping(value = "/invite-join-world")
     public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldId") Long world,
                                                               @RequestParam("worldinvitationCode") String worldinvitationCode){

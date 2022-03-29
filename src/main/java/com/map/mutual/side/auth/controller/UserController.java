@@ -11,6 +11,7 @@ import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.filter.AuthorizationCheckFilter;
+import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
 /**
  * fileName       : UserController
  * author         : kimjaejung
@@ -105,11 +106,14 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/get/user/bySuid")
-    public ResponseEntity<ResponseJsonObject> getUserById(@RequestParam String id) {
+    @GetMapping("/findUser")
+    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam String userId,
+                                                                  @RequestParam String phone) {
         ResponseJsonObject response;
         try{
-            UserInfoDto userInfoDto = userService.getUserById(id);
+            UserInfoDto userInfoDto;
+
+            userInfoDto = userService.findUser(userId, phone);
 
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);
@@ -119,22 +123,6 @@ public class UserController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-    @GetMapping("/get/user/byPhone")
-    public ResponseEntity<ResponseJsonObject> getUserByPhone(@RequestParam String phone) {
-        ResponseJsonObject response;
-        try{
-            UserInfoDto userInfoDto = userService.getUserByPhone(phone);
-
-            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            response.setData(userInfoDto);
-        }catch (YOPLEServiceException e) {
-            throw e;
-        }
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
 
     @GetMapping("/world/users")
     public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam long worldId) {
@@ -142,8 +130,13 @@ public class UserController {
         try{
             List<UserInWorld> userInfoDto = userService.worldUsers(worldId);
 
+            Map<String, Object> Users = new HashMap<>();
+
+            Users.put("users", userInfoDto);
+
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            response.setData(userInfoDto);
+            response.setData(Users);
+
         }catch (YOPLEServiceException e) {
             throw e;
         }

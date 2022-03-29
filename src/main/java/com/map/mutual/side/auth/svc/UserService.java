@@ -5,6 +5,7 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * fileName       : UserService
@@ -17,8 +18,7 @@ import java.util.List;
  *
  */
 public interface UserService {
-    UserInfoDto getUserById(String id);
-    UserInfoDto getUserByPhone(String phone);
+    UserInfoDto findUser(String id, String phone);
     UserEntity findById(String suid);
     List<UserInWorld> worldUsers(long worldId);
 }

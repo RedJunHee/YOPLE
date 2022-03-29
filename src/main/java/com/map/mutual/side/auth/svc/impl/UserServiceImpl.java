@@ -8,6 +8,7 @@ import com.map.mutual.side.auth.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
@@ -40,35 +41,23 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserInfoDto getUserById(String id) {
+    public UserInfoDto findUser(String id, String phone) {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
         try {
-            userEntity = userInfoRepo.findBySuid(id);
+
+            if(StringUtil.isNullOrEmpty(id) == true)
+                userEntity = userInfoRepo.findOneByPhone(phone);
+            else
+                userEntity = userInfoRepo.findByUserId(id);
+
             userInfoDto = modelMapper.map(userEntity, UserInfoDto.class);
         } catch (YOPLEServiceException e) {
             log.error("사용자를 찾을 수 없습니다.");
-            throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
+            throw e;
         }
         return userInfoDto;
     }
-
-    @Override
-    public UserInfoDto getUserByPhone(String phone) {
-        UserEntity userEntity;
-        UserInfoDto userInfoDto = null;
-        try {
-            if (StringUtils.isNumeric(phone)) { //
-                userEntity = userInfoRepo.findByPhone(phone);
-                userInfoDto = modelMapper.map(userEntity, UserInfoDto.class);
-            } else throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
-        } catch (YOPLEServiceException e) {
-            log.error("사용자를 찾을 수 없습니다.");
-            throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
-        }
-        return userInfoDto;
-    }
-
 
     // 월드 참여자 조회하기.
     @Override

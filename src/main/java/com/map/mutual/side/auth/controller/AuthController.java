@@ -59,12 +59,6 @@ public class AuthController {
         this.modelMapper = modelMapper;
     }
 
-    @GetMapping("/ping")
-    public ResponseEntity<String> testApi(@RequestParam String who)
-    {
-        return new ResponseEntity<>(who, HttpStatus.OK);
-    }
-
     @PostMapping("/sms-authentication-request")
     public ResponseEntity<ResponseJsonObject> smsAuthenticationRequest(@Validated @RequestBody SMSAuthReqeustDto smsAuthReqeustDTO, Errors errors) throws NoSuchAlgorithmException, KeyStoreException, IOException, InvalidKeyException, KeyManagementException {
 

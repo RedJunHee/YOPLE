@@ -52,7 +52,7 @@ public class WorldController {
     }
 
     /** 월드 수정하기 API */
-    @PutMapping(value = "/world")
+    @PatchMapping(value = "/world")
     public ResponseEntity<ResponseJsonObject> updateWorld(@RequestBody WorldDto worldDto){
         try{
 

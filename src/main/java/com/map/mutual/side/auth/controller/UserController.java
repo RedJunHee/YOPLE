@@ -58,7 +58,7 @@ public class UserController {
      * @return
      * @throws Exception
      */
-    @PostMapping("/signUp")
+    @PostMapping("/signup")
     public ResponseEntity<ResponseJsonObject> smsSignUp(@Validated @RequestBody UserInfoDto userInfoDto) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         try {
@@ -95,7 +95,7 @@ public class UserController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK),httpHeaders, HttpStatus.OK);
     }
 
-    /** 월드 초대 수락하기 ( Push ) (월드-유저 매핑 추가)*/
+    /** 월드 초대 수락하기 (월드-유저 매핑 )*/
     @PostMapping(value = "/world/user")
     public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") String worldinvitationCode){
         try{
@@ -113,7 +113,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/checkUserId")
+    @GetMapping("/check-userid")
     public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam String id) {
         ResponseJsonObject response;
         try{
@@ -129,7 +129,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/findUser")
+    @GetMapping("/find-user")
     public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam String userId,
                                                                   @RequestParam String phone) {
         ResponseJsonObject response;

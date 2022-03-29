@@ -12,7 +12,7 @@ public interface WorldService {
     WorldDto createWolrd(WorldDto worldDto);
 
     //2. 월드 초대 수락하기.
-    WorldDto inviteJoinWorld(WorldDto worldDto);
+    WorldDto inviteJoinWorld(Long worldDto, String worldinvitationCode);
 
     //3. 월드 수정하기
     void updateWorld(WorldDto worldDto);

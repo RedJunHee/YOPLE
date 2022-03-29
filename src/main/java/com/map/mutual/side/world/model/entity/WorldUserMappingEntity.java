@@ -33,8 +33,12 @@ public class WorldUserMappingEntity {
     @JoinColumn(name = "WORLD_ID", referencedColumnName = "WORLD_ID", insertable = false, updatable = false)
     private WorldEntity worldEntity;
 
+    //월드에서 자신의 코드 ( 초대할 때의 코드 )
     @Column(name = "WORLD_USER_CODE", nullable = false, updatable = false, columnDefinition = "CHAR(6)")
     private String worldUserCode;
 
+    //월드에 초대 받은 코드 ( 초대자의 코드 )
+    @Column(name = "WORLD_INVITATION_CODE", nullable = false, updatable = false, columnDefinition = "CHAR(6)")
+    private String worldinvitationCode;
 
 }

@@ -1,5 +1,7 @@
 package com.map.mutual.side.auth.repository.dsl.impl;
 
+import com.map.mutual.side.auth.model.dto.QUserInWorld;
+import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.dsl.WorldUserMappingRepoDSL;
@@ -7,6 +9,7 @@ import com.map.mutual.side.world.model.dto.QWorldDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
+import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -85,13 +88,30 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     }
 
     @Override
-    public List<UserEntity> findAllUsersInWorldCode(long worldId) {
-        return jpaQueryFactory
-                .select(QUserEntity.userEntity)
-                .from(QUserEntity.userEntity)
-                .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
-                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldEntity.worldId.eq(worldId))
-                .on(QUserEntity.userEntity.suid.eq(QWorldUserMappingEntity.worldUserMappingEntity.userEntity.suid))
+    public List<UserInWorld> findAllUsersInWorld(long worldId) {
+
+        QUserEntity userA = new QUserEntity("userA");
+        QUserEntity userB = new QUserEntity("userB");
+        QWorldUserMappingEntity mapA = new QWorldUserMappingEntity("mapA");
+        QWorldUserMappingEntity mapB = new QWorldUserMappingEntity("mapB");
+
+        List<UserInWorld> UserInfoInWorld = jpaQueryFactory
+                .select(new QUserInWorld(userA.suid,
+                        userA.userId,
+                        userA.name,
+                        userA.profileUrl,
+                        userB.userId))
+                .from(userA)
+                .innerJoin(mapA)
+                    .on(mapA.worldId.eq(worldId).and( userA.suid.eq(mapA.userSuid) )) //해당 월드의
+                .leftJoin(mapB)
+                    .on(mapA.worldinvitationCode.eq(mapB.worldUserCode))
+                .innerJoin(userB)
+                    .on(mapB.userEntity.suid.eq(userB.suid))
+                .fetchJoin()
                 .fetch();
+
+
+        return UserInfoInWorld;
     }
 }

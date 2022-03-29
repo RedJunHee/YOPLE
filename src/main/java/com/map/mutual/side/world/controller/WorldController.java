@@ -53,10 +53,11 @@ public class WorldController {
 
     /** 월드 초대 수락하기 (월드-유저 매핑 추가)*/
     @PostMapping(value = "/invite-join-world")
-    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestBody WorldDto worldDto){
+    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldId") Long world,
+                                                              @RequestParam("worldinvitationCode") String worldinvitationCode){
         try{
 
-            WorldDto joinedWorld = worldService.inviteJoinWorld(worldDto);
+            WorldDto joinedWorld = worldService.inviteJoinWorld(world, worldinvitationCode);
 
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinedWorld);
 
@@ -89,7 +90,7 @@ public class WorldController {
 
     /** 월드 상세 정보 보기 API */
     //todo 한방 쿼리로 성능 향상 시키기.
-    @GetMapping(value = "/worldDetail")
+    @GetMapping(value = "/world")
     public ResponseEntity<ResponseJsonObject> worldDetail(@NotNull @RequestParam Long worldId){
         try{
             WorldDetailResponseDto worldDetail ;
@@ -114,7 +115,7 @@ public class WorldController {
     }
 
 //참여 중인 월드 리스트 조회
-    @GetMapping(value = "/world")
+    @GetMapping(value = "/worlds")
     public ResponseEntity<ResponseJsonObject> activityWorlds(){
         try{
             WorldDetailResponseDto worldDetail ;

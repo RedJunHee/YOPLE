@@ -1,6 +1,7 @@
 package com.map.mutual.side.auth.controller;
 
 
+import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
@@ -135,11 +136,11 @@ public class UserController {
     }
 
 
-    @GetMapping("/get/users")
-    public ResponseEntity<ResponseJsonObject> getUsers(@RequestParam long worldCode) {
+    @GetMapping("/world/users")
+    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam long worldId) {
         ResponseJsonObject response;
         try{
-            List<UserInfoDto> userInfoDto = userService.getUsers(worldCode);
+            List<UserInWorld> userInfoDto = userService.worldUsers(worldId);
 
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);

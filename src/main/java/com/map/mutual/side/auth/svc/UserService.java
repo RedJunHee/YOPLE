@@ -1,5 +1,6 @@
 package com.map.mutual.side.auth.svc;
 
+import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 
@@ -19,5 +20,5 @@ public interface UserService {
     UserInfoDto getUserById(String id);
     UserInfoDto getUserByPhone(String phone);
     UserEntity findById(String suid);
-    List<UserInfoDto> getUsers(long worldId);
+    List<UserInWorld> worldUsers(long worldId);
 }

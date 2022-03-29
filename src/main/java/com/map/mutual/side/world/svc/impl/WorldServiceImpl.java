@@ -64,11 +64,13 @@ public class WorldServiceImpl implements WorldService {
 
             worldRepo.save(createWorld);
 
+            String worldCode = YOPLEUtils.getWorldRandomCode();
             WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
                             .userSuid(userInfoDto.getSuid())
                                     .worldId(createWorld.getWorldId()).
-                    worldUserCode(YOPLEUtils.getWorldRandomCode()).
-                    build();
+                    worldUserCode(worldCode).
+                    worldinvitationCode(worldCode).
+            build();
 
             worldUserMappingRepo.save(worldUserMappingEntity);
 
@@ -91,8 +93,9 @@ public class WorldServiceImpl implements WorldService {
 
 
     //3. 월드 초대 수락하기.
+    //todo 초대자의 월드 코드.
     @Override
-    public WorldDto inviteJoinWorld(WorldDto worldDto) {
+    public WorldDto inviteJoinWorld(Long worldId, String worldinvitationCode) {
 
         try {
 
@@ -103,7 +106,7 @@ public class WorldServiceImpl implements WorldService {
             // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
 //            if (worldUserMappingRepo.findByUserInfoEntityAndWorldEntity(modelMapper.map(userInfoDto, UserEntity.class), modelMapper.map(worldDto, WorldEntity.class)).stream().count() != 0) {
             // TODO: 2022/03/25 수정한 api확인
-            if (worldUserMappingRepo.findByUserEntityAndWorldEntity(userInfoDto.getUserId(), worldDto.getWorldId()).stream().count() != 0) {
+            if (worldUserMappingRepo.findByUserSuidAndWorldId(userInfoDto.getSuid(), worldId).stream().count() != 0) {
                 logger.error("해당 사용자가 이미 월드에 속해있습니다.");
                 //TODO 해당 사용자가 월드에 속해있을때 파라미터 체크 오류로 나가고 있음.
                 throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
@@ -112,14 +115,16 @@ public class WorldServiceImpl implements WorldService {
 
             // 3. 초대 수락한 월드 입장 처리
             WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
-//                    .userInfoEntity(modelMapper.map(userInfoDto, UserInfoEntity.class))
-                    .worldEntity(modelMapper.map(worldDto, WorldEntity.class))
+                    .userSuid(userInfoDto.getSuid())
+                    .worldId(worldId)
+                    .worldUserCode(YOPLEUtils.getWorldRandomCode())
+                    .worldinvitationCode(worldinvitationCode)
                     .build();
 
             worldUserMappingRepo.save(worldUserMappingEntity);
 
             // 4. 참여한 월드 정보 조회
-            WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldEntity().getWorldId())
+            WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
                     .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
 
             // 5. 참여한 월드 정보 리턴.
@@ -142,12 +147,17 @@ public class WorldServiceImpl implements WorldService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            // 2. 수정하려는 월드가 자신의 월드인지 확인.  아니라면 Exception
+            // 2. 수정하려는 월드의 정보를 가져옴.
+            //  수정하려는 월드가 없다면 Forbidden에러 발생 => 보안차원 (없는 월드의 ID를 알아낼 수 있으므로.)
             WorldEntity targetWorld = worldRepo.findById(worldDto.getWorldId())
                     .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
 
             targetWorld.updateWorldName(worldDto.getWorldName());
             targetWorld.updateWorldDesc(worldDto.getWorldDesc());
+
+            //3. 월드의 생성자인지 확인.
+            if(userInfoDto.getSuid().equals(targetWorld.getWorldOwner()) == false)
+                throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
 
             worldRepo.save(targetWorld);
 

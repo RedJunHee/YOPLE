@@ -10,7 +10,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,11 +32,11 @@ import java.util.List;
 @Log4j2
 @RequestMapping(value = "/review")
 public class ReviewController {
-
     @Autowired
     private ReviewService reviewService;
 
-    @PostMapping({"/create/review", "/update/review"})
+
+    @PostMapping("/review")@PutMapping("/review")
     public ResponseEntity<ResponseJsonObject> createUpdateReview(@RequestBody ReviewDto reviewDto) {
         try {
             reviewService.createUpdateReview(reviewDto);
@@ -50,7 +49,7 @@ public class ReviewController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-    @DeleteMapping({"/delete/review"})
+    @DeleteMapping({"/review"})
     public ResponseEntity<ResponseJsonObject> deleteReview(@RequestBody Long reviewId) {
         try {
             reviewService.deleteReview(reviewId);
@@ -63,7 +62,7 @@ public class ReviewController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-    @GetMapping("/read/review")
+    @GetMapping("/review")
     public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId) {
         ResponseJsonObject responseJsonObject = null;
 
@@ -80,7 +79,7 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
-    @GetMapping("/read/reviews")
+    @GetMapping("/reviews")
     public ResponseEntity<ResponseJsonObject> getReviews(@RequestParam Long worldId) {
         ResponseJsonObject responseJsonObject = null;
 
@@ -97,7 +96,7 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
-    @PostMapping("/create/reviewWorldMapping")
+    @PostMapping("/reviewWorldMapping")
     public ResponseEntity<ResponseJsonObject> createReviewWorldMapping(@RequestParam Long worldId, @RequestParam Long reviewId) {
         ResponseJsonObject responseJsonObject = null;
 

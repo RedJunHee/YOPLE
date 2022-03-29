@@ -21,6 +21,7 @@ public class WorldDetailResponseDto {
     private String worldName;
     private String worldDesc;
     private UserInfoDto host;
+    private String worldUserCode;
     private String isMyworld;
     private Long worldUserCnt;
 
@@ -34,11 +35,12 @@ public class WorldDetailResponseDto {
 
     @Builder
     @QueryProjection()
-    public WorldDetailResponseDto(Long worldId, String worldName, String worldDesc, String userId, String profileUrl,String isMyworld) {
+    public WorldDetailResponseDto(Long worldId, String worldName, String worldDesc, String userId, String profileUrl,String worldUserCode, String isMyworld) {
         this.worldId = worldId;
         this.worldName = worldName;
         this.worldDesc = worldDesc;
         this.host = new UserInfoDto(null,userId,null,null,profileUrl);
+        this.worldUserCode = worldUserCode;
         this.isMyworld =isMyworld;
     }
 }

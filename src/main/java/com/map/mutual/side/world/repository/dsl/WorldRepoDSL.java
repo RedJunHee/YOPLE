@@ -11,5 +11,5 @@ import com.map.mutual.side.world.model.entity.WorldEntity;
  * History     : [2022-03-21] - 조 준희 - Class Create
  */
 public interface WorldRepoDSL {
-    WorldDetailResponseDto getWorldDetail(Long worldId, UserInfoDto requestUser);
+    WorldDetailResponseDto getWorldDetail(Long worldId, String requestUser);
 }

@@ -35,23 +35,27 @@ public class WorldRepoDSLImpl implements WorldRepoDSL {
         this.jpaQueryFactory = jpaQueryFactory;
     }
 
-    @Override
-    public WorldDetailResponseDto getWorldDetail(Long worldId, UserInfoDto requestUser) {
 
+    //월드 상세정보 조회
+    @Override
+    public WorldDetailResponseDto getWorldDetail(Long worldId, String suid) {
 
         WorldDetailResponseDto worldDetailResponseDto = jpaQueryFactory.select(
                         new QWorldDetailResponseDto(QWorldEntity.worldEntity.worldId,
                                 QWorldEntity.worldEntity.worldName,
                                 QWorldEntity.worldEntity.worldDesc,
-                                QUserEntity.userEntity.userId,
-                                QUserEntity.userEntity.profileUrl,
-                                new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(requestUser.getSuid())).then(BooleanType.Y.toString()).otherwise(BooleanType.N.toString())))
+                                QUserEntity.userEntity.userId,      //host유저 아이디
+                                QUserEntity.userEntity.profileUrl,  //host유저 프로필 사진 경로
+                                QWorldUserMappingEntity.worldUserMappingEntity.worldUserCode,
+                                new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(suid)).then(BooleanType.Y.toString()).otherwise(BooleanType.N.toString())))
                 .from(QWorldEntity.worldEntity)
                 .leftJoin( QUserEntity.userEntity)
                 .on(QWorldEntity.worldEntity.worldOwner.eq(QUserEntity.userEntity.suid))
                 .fetchJoin()
-//                .join(QWorldUserMappingEntity.worldUserMappingEntity)
-//                .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId))
+                .leftJoin(QWorldUserMappingEntity.worldUserMappingEntity)
+                .on(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid).and(
+                        QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId)))
+                .fetchJoin()
                 .where(QWorldEntity.worldEntity.worldId.eq(worldId))
                 .fetchOne();
 

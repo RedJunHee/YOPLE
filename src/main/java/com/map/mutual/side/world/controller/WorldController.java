@@ -70,7 +70,6 @@ public class WorldController {
     }
 
     /** 월드 상세 정보 보기 API */
-    //todo 한방 쿼리로 성능 향상 시키기.
     @GetMapping(value = "/world")
     public ResponseEntity<ResponseJsonObject> worldDetail(@NotNull @RequestParam Long worldId){
         try{
@@ -81,7 +80,7 @@ public class WorldController {
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
 
-            worldDetail = worldService.getWorldDetail(worldId,userInfoDto);
+            worldDetail = worldService.getWorldDetail(worldId,userInfoDto.getSuid());
 
 
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(worldDetail);

@@ -124,10 +124,10 @@ public class WorldServiceImpl implements WorldService {
 
     //4. 월드 상세정보 조회
     @Override
-    public WorldDetailResponseDto getWorldDetail(Long worldId, UserInfoDto requestUser) {
+    public WorldDetailResponseDto getWorldDetail(Long worldId, String suid) {
         try {
 
-            WorldDetailResponseDto worldDetailResponseDto = worldRepo.getWorldDetail(worldId, requestUser);
+            WorldDetailResponseDto worldDetailResponseDto = worldRepo.getWorldDetail(worldId, suid);
 
             return worldDetailResponseDto;
 

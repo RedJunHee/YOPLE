@@ -16,7 +16,7 @@ public interface WorldService {
     void updateWorld(WorldDto worldDto);
 
     // 4. 월드 상세 정보 조회
-    WorldDetailResponseDto getWorldDetail(Long worldDto, UserInfoDto requestUser);
+    WorldDetailResponseDto getWorldDetail(Long worldDto, String suid);
 
     //4. 참여 월드 리스트 조회
     List<WorldDto> getWorldList(String suid);

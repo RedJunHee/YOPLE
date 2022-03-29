@@ -3,8 +3,6 @@ package com.map.mutual.side.review.model.dto;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 /**
  * fileName       : ReviewDto
  * author         : kimjaejung
@@ -26,4 +24,5 @@ public class ReviewDto {
     private String title;
     private String content;
     private MultipartFile[] imageUrls;
+    private Long reviewId;
 }

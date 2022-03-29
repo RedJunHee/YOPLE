@@ -2,6 +2,7 @@ package com.map.mutual.side.review.svc.impl;
 
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.review.model.dto.ReviewDto;
 import com.map.mutual.side.review.model.entity.ReviewEntity;
@@ -44,7 +45,7 @@ public class ReviewServiceImpl implements ReviewService {
     private ModelMapper modelMapper;
 
     @Override
-    public void createUpdateReview(ReviewDto reviewDto) {
+    public void createReview(ReviewDto reviewDto) {
 
         try {
             ReviewEntity reviewEntity = ReviewEntity.builder()
@@ -54,6 +55,23 @@ public class ReviewServiceImpl implements ReviewService {
 //                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
                     .build();
             reviewRepo.save(reviewEntity);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public void updateReview(ReviewDto reviewDto) {
+
+        try {
+            ReviewEntity entity = reviewRepo.findByReviewId(reviewDto.getReviewId());
+            if(entity == null) {
+                throw new YOPLEServiceException(ApiStatusCode.CONTENT_NOT_FOUND);
+            } else {
+                entity.setContent(reviewDto.getContent());
+                entity.setTitle(reviewDto.getTitle());
+                // TODO: 2022/03/29 setting images
+            }
         } catch (YOPLEServiceException e) {
             throw e;
         }

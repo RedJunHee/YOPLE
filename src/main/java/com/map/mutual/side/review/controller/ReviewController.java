@@ -36,10 +36,22 @@ public class ReviewController {
     private ReviewService reviewService;
 
 
-    @PostMapping("/review")@PutMapping("/review")
-    public ResponseEntity<ResponseJsonObject> createUpdateReview(@RequestBody ReviewDto reviewDto) {
+    @PostMapping("/review")
+    public ResponseEntity<ResponseJsonObject> createReview(@RequestBody ReviewDto reviewDto) {
         try {
-            reviewService.createUpdateReview(reviewDto);
+            reviewService.createReview(reviewDto);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+    }
+    @PutMapping("/review")
+    public ResponseEntity<ResponseJsonObject> updateReview(@RequestBody ReviewDto reviewDto) {
+        try {
+            reviewService.updateReview(reviewDto);
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (Exception e) {

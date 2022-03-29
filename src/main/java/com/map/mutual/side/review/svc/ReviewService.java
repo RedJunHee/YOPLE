@@ -21,4 +21,5 @@ public interface ReviewService {
     void deleteReview(Long reviewId);
     ReviewDto getReview(Long reviewDto);
     List<ReviewDto> getReviews(Long worldId);
+    List<ReviewDto> myReviews(String userSuid);
 }

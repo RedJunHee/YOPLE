@@ -23,6 +23,7 @@ public class ReviewDto {
     private Long worldId;
     private String title;
     private String content;
-    private MultipartFile[] imageUrls;
+    private MultipartFile[] imageFiles;
+    private String[] imageUrls;
     private Long reviewId;
 }

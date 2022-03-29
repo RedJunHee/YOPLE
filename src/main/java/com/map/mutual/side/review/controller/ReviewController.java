@@ -76,7 +76,7 @@ public class ReviewController {
 
     @GetMapping("/review")
     public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId) {
-        ResponseJsonObject responseJsonObject = null;
+        ResponseJsonObject responseJsonObject = new ResponseJsonObject();
 
         try {
             ReviewDto reviewDto = reviewService.getReview(reviewId);
@@ -93,7 +93,7 @@ public class ReviewController {
 
     @GetMapping("/reviews")
     public ResponseEntity<ResponseJsonObject> getReviews(@RequestParam Long worldId) {
-        ResponseJsonObject responseJsonObject = null;
+        ResponseJsonObject responseJsonObject = new ResponseJsonObject();
 
         try {
             List<ReviewDto> reviewDto = reviewService.getReviews(worldId);
@@ -108,9 +108,27 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
+    @GetMapping("/myReviews")
+    public ResponseEntity<ResponseJsonObject> myReviews(@RequestParam String userSuid) {
+        ResponseJsonObject responseJsonObject = new ResponseJsonObject();
+
+        try {
+            List<ReviewDto> reviewDto = reviewService.myReviews(userSuid);
+            assert false;
+            responseJsonObject.setData(reviewDto);
+
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
     @PostMapping("/reviewWorldMapping")
     public ResponseEntity<ResponseJsonObject> createReviewWorldMapping(@RequestParam Long worldId, @RequestParam Long reviewId) {
-        ResponseJsonObject responseJsonObject = null;
+        ResponseJsonObject responseJsonObject = new ResponseJsonObject();
 
         try {
             reviewService.createReviewWorldMapping(worldId, reviewId);

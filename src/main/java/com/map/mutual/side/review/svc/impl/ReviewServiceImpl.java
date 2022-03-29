@@ -17,6 +17,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +28,6 @@ import java.util.List;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2022/03/22        kimjaejung       최초 생성
- *
  */
 @Service
 @Log4j2
@@ -65,7 +65,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         try {
             ReviewEntity entity = reviewRepo.findByReviewId(reviewDto.getReviewId());
-            if(entity == null) {
+            if (entity == null) {
                 throw new YOPLEServiceException(ApiStatusCode.CONTENT_NOT_FOUND);
             } else {
                 entity.setContent(reviewDto.getContent());
@@ -117,6 +117,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
         return reviewDto;
     }
+
     @Override
     public List<ReviewDto> getReviews(Long worldId) {
         List<ReviewEntity> reviewEntity;
@@ -124,6 +125,27 @@ public class ReviewServiceImpl implements ReviewService {
         try {
             reviewEntity = reviewWorldMappingRepository.findAllReviewsByWorldId(worldId);
             reviewEntity.stream().map(data -> reviewDto.add(modelMapper.map(data, ReviewDto.class)));
+        } catch (YOPLEServiceException e) {
+            throw e;
+        }
+        return reviewDto;
+    }
+
+    @Override
+    public List<ReviewDto> myReviews(String userSuid) {
+        List<ReviewEntity> reviewEntity;
+        List<ReviewDto> reviewDto = new ArrayList<>();
+        try {
+            reviewEntity = reviewRepo.findAllByUserEntity(UserEntity.builder().suid(userSuid).build());
+            reviewEntity.forEach(data -> reviewDto.add(ReviewDto.builder()
+                            .reviewId(data.getReviewId())
+                            .userSuid(data.getUserEntity().getSuid())
+                            .title(data.getTitle())
+                            .content(data.getContent())
+                            // TODO: 2022/03/29 imageUrl 추가해야함
+//                  .imageUrls()
+                            .build())
+            );
         } catch (YOPLEServiceException e) {
             throw e;
         }

@@ -1,6 +1,8 @@
 package com.map.mutual.side.common.dto;
 
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 /**
  * Class       : ResponseJsonObject
@@ -8,6 +10,7 @@ import com.map.mutual.side.common.enumerate.ApiStatusCode;
  * Description : Class Description
  * History     : [2022-03-11] - 조 준희 - Class Create
  */
+@NoArgsConstructor
 public class ResponseJsonObject {
     // meta
     private Meta meta = null;

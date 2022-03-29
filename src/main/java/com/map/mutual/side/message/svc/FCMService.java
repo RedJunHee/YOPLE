@@ -41,7 +41,6 @@ public class FCMService {
         Request request = new Request.Builder()
                 .url(API_URL)
                 .post(requestBody)
-//                .addHeader(HttpHeaders.AUTHORIZATION, "key=AAAADgolPbg:APA91bFIokeewLLgOpCd0MReDGEfiL6Z3ZU5SKobUreiAFb_TOhMfVM8Opt0vDuytp4rMrm1nWsfybXwR_KQtksRGhqmCN3nWWxwVT4PTRr6Apkq4nVVYKx-FVrByhQrkgoRX879-D4s")
                 .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
                 .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
                 .build();

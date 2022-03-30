@@ -28,6 +28,6 @@ public interface UserService {
     UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl);
     void userLogout(String suid);
 
-    void userWorldInviting(String suid, String targetSuid, String worldinvitationCode);
+    void userWorldInviting(String suid, String targetSuid, Long worldId);
 
 }

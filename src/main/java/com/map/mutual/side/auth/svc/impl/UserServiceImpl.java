@@ -8,6 +8,7 @@ import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.model.entity.UserWorldInvitingLogEntity;
 import com.map.mutual.side.auth.repository.JWTRepo;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.map.mutual.side.auth.repository.UserWorldInvitingLogRepo;
 import com.map.mutual.side.auth.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
@@ -53,14 +54,18 @@ public class UserServiceImpl implements UserService {
     private ModelMapper modelMapper;
     private WorldRepo worldRepo;
     private JWTRepo jwtRepo;
+    private UserWorldInvitingLogRepo userWorldInvitingLogRepo;
 
     @Autowired
-    public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo, ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo) {
+    public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo
+            , ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo
+            , UserWorldInvitingLogRepo userWorldInvitingLogRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
         this.worldRepo = worldRepo;
         this.jwtRepo = jwtRepo;
+        this.userWorldInvitingLogRepo = userWorldInvitingLogRepo;
     }
 
     @Override
@@ -205,12 +210,16 @@ public class UserServiceImpl implements UserService {
 
     //사용자 월드 초대하기.
     @Override
-    public void userWorldInviting(String suid, String targetSuid, String worldinvitationCode) {
+    public void userWorldInviting(String suid, String targetSuid, Long worldId) {
 
         try{
 
-            //1. 이미 초대 대기 상태 인지 확인.
+            // todo 중복 체크 없음. 여러번 초대하기 가능.
 
+            WorldUserMappingEntity worldUserMappingEntity = worldUserMappingRepo.findByWorldIdAndAndUserSuid(worldId,suid)
+                    .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
+
+            String worldinvitationCode = worldUserMappingEntity.getWorldUserCode();
 
             UserWorldInvitingLogEntity userWorldInvitingLogEntity = UserWorldInvitingLogEntity.builder()
                     .targetSuid(targetSuid)
@@ -219,17 +228,15 @@ public class UserServiceImpl implements UserService {
                     .isPushed("N")
                     .build();
 
-
-
-
+            userWorldInvitingLogRepo.save(userWorldInvitingLogEntity);
 
         }catch(YOPLEServiceException e){
+            logger.error("월드 사용자 초대하기 실패. : " + e.getMessage());
             throw e;
 
         }catch(Exception e){
             throw e;
         }
-
 
     }
 

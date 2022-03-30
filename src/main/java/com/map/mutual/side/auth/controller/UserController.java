@@ -256,14 +256,14 @@ public class UserController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
-
-            userService.userLogout(userToken.getSuid());
+            userService.userWorldInviting(userToken.getSuid(),userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
 
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
+            logger.error("월드 사용자 초대하기 실패. : " + e.getMessage());
             throw e;
         }catch(Exception e){
             throw e;

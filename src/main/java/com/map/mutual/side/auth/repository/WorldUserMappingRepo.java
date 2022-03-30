@@ -8,9 +8,8 @@ import com.map.mutual.side.world.model.keys.WorldUserMappingEntityKeys;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface WorldUserMappingRepo extends JpaRepository<WorldUserMappingEntity, WorldUserMappingEntityKeys>, WorldUserMappingRepoDSL {
-//    List<WorldUserMappingEntity> findByUserInfoEntityAndWorldEntity(UserEntity userEntity, WorldEntity worldEntity);
-    List<WorldUserMappingEntity> findByUserSuidAndWorldId(String userSuid, Long worldId);
-    // TODO: 2022/03/25 수정한 api확인
+    Optional<WorldUserMappingEntity> findByWorldIdAndAndUserSuid(Long worldId, String userSuid);
 }

@@ -36,9 +36,13 @@ public class ResponseJsonObject {
     public static class Meta {
         // statusCode (not null)
         private ApiStatusCode apiStatus = ApiStatusCode.NONE;
+        private String msg = null;
         public int getCode(){ return this.apiStatus.getCode(); }
 
 
+        public void setMsg(String msg){
+            this.msg = msg;
+        }
         public String getErrorType() {
             if(apiStatus.getIsErrorType() == false)
                 return null;
@@ -48,8 +52,12 @@ public class ResponseJsonObject {
         public String getErrorMsg() {
             if(apiStatus.getIsErrorType() == false)
                 return null;
+            if(msg != null)
+                return this.apiStatus.getMessage() + "( "+ msg +" )";
+
             return this.apiStatus.getMessage();
         }
+
 
         /**
          * meta 생성자

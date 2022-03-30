@@ -19,6 +19,6 @@ public interface WorldService {
     WorldDetailResponseDto getWorldDetail(Long worldDto, String suid);
 
     //4. 참여 월드 리스트 조회
-    List<WorldDto> getWorldList(String suid);
+    List<WorldDto> getWorldList(String suid, String isDetails);
 
 }

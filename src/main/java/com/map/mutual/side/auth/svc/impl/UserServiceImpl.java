@@ -1,8 +1,12 @@
 package com.map.mutual.side.auth.svc.impl;
 
+import com.google.firebase.auth.UserInfo;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.auth.model.entity.UserWorldInvitingLogEntity;
+import com.map.mutual.side.auth.repository.JWTRepo;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
@@ -48,13 +52,15 @@ public class UserServiceImpl implements UserService {
     private UserInfoRepo userInfoRepo;
     private ModelMapper modelMapper;
     private WorldRepo worldRepo;
+    private JWTRepo jwtRepo;
 
     @Autowired
-    public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo, ModelMapper modelMapper, WorldRepo worldRepo) {
+    public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo, ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
         this.worldRepo = worldRepo;
+        this.jwtRepo = jwtRepo;
     }
 
     @Override
@@ -77,7 +83,6 @@ public class UserServiceImpl implements UserService {
     }
 
     //3. 월드 초대 수락하기.
-    //todo 초대자의 월드 코드.
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public WorldDto inviteJoinWorld( String worldinvitationCode) {
@@ -121,6 +126,113 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
     }
+
+    //유저 상세정보 조회하기.
+    @Override
+    public UserInfoDto userDetails(String suid) {
+        try{
+
+            //토큰에 저장된 SUID의 사용자가 없을 경우.
+            UserEntity userEntity = userInfoRepo.findById(suid)
+                            .orElseThrow( ()->new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR) );
+
+            UserInfoDto userInfoDto = UserInfoDto.builder()
+                    .userId(userEntity.getUserId())
+                    .name(userEntity.getName())
+                    .profileUrl(userEntity.getProfileUrl())
+                    .build();
+
+            return userInfoDto;
+
+        }catch(YOPLEServiceException e){
+            logger.error("사용자 상세정보 조회 없는 SUID 조회.");
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    // 사용자 정보 수정
+    @Override
+    public UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl) {
+
+        try{
+            //사용자 정보 가져오기.
+            UserEntity userEntity = userInfoRepo.findById(suid)
+                    .orElseThrow(()->new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
+
+            if(StringUtil.isNullOrEmpty(userId) == false)
+                userEntity.setUserId(userId);
+
+            if(StringUtil.isNullOrEmpty(profileUrl) == false)
+                userEntity.setProfileUrl(profileUrl);
+
+            userInfoRepo.save(userEntity);
+
+
+            UserInfoDto userInfoDto  = UserInfoDto.builder()
+                    .userId(userEntity.getUserId())
+                    .name(userEntity.getName())
+                    .profileUrl(userEntity.getProfileUrl())
+                    .build();
+
+            return userInfoDto;
+
+        }catch(YOPLEServiceException e){
+            logger.error("사용자 정보 수정 Failed.!! : SUID에 해당하는 사용자를 찾을 수 없음. ");
+            throw e;
+        }catch(Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public void userLogout(String suid) {
+        try{
+
+            JWTRefreshTokenLogEntity jwtRefreshTokenLogEntity = JWTRefreshTokenLogEntity.builder().userSuid(suid).build();
+
+            jwtRepo.delete(jwtRefreshTokenLogEntity);
+
+        }catch(YOPLEServiceException e){
+            throw  e;
+        }catch(Exception e){
+            throw e;
+        }
+
+    }
+
+
+    //사용자 월드 초대하기.
+    @Override
+    public void userWorldInviting(String suid, String targetSuid, String worldinvitationCode) {
+
+        try{
+
+            //1. 이미 초대 대기 상태 인지 확인.
+
+
+            UserWorldInvitingLogEntity userWorldInvitingLogEntity = UserWorldInvitingLogEntity.builder()
+                    .targetSuid(targetSuid)
+                    .userSuid(suid)
+                    .worldinvitationCode(worldinvitationCode)
+                    .isPushed("N")
+                    .build();
+
+
+
+
+
+        }catch(YOPLEServiceException e){
+            throw e;
+
+        }catch(Exception e){
+            throw e;
+        }
+
+
+    }
+
     // 월드 참여자 조회하기.
     @Override
     public List<UserInWorld> worldUsers(long worldId) {
@@ -149,6 +261,9 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
     }
+
+
+
 
 
 }

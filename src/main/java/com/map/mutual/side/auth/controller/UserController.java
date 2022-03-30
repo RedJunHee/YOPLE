@@ -3,6 +3,7 @@ package com.map.mutual.side.auth.controller;
 
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.UserWorldInvitionDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.svc.AuthService;
@@ -20,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -114,10 +117,10 @@ public class UserController {
     }
 
     @GetMapping("/check-userid")
-    public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam String id) {
+    public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") String userId) {
         ResponseJsonObject response;
         try{
-            if(userInfoRepo.findByUserId(id) == null) {
+            if(userInfoRepo.findByUserId(userId) == null) {
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             } else {
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
@@ -146,7 +149,6 @@ public class UserController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
     @GetMapping("/world/users")
     public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam long worldId) {
         ResponseJsonObject response;
@@ -166,4 +168,106 @@ public class UserController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    //사용자 상세정보 조회.
+    @GetMapping("/user")
+    public ResponseEntity<ResponseJsonObject> userDetails() {
+
+        ResponseJsonObject responseJsonObject;
+
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
+
+            UserInfoDto userDetails = userService.userDetails(userToken.getSuid());
+
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            responseJsonObject.setData(userDetails);
+
+            return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
+
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    //사용자 정보 수정
+    @PatchMapping("/user")
+    public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam String userId,
+                                                             @RequestParam String profileUrl){
+
+        ResponseJsonObject responseJsonObject ;
+
+        try{
+
+            //둘 중에 하나도 안들어오면 파라미터 체크 에러.
+            if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(profileUrl))
+                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto) authentication.getPrincipal();
+
+            UserInfoDto updatedUser = userService.userInfoUpdate(userToken.getSuid(), userId,profileUrl);
+
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(updatedUser);
+
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+
+    //사용자 로그아웃 리프레시 토큰 삭제.
+    @DeleteMapping("/user")
+    public ResponseEntity<ResponseJsonObject> userLogout() {
+
+        ResponseJsonObject responseJsonObject;
+
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
+
+            userService.userLogout(userToken.getSuid());
+
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+
+            return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
+
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    //사용자 상세정보 조회.
+    @PostMapping("/user/world")
+    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody UserWorldInvitionDto userWorldInvitionDto) {
+
+        ResponseJsonObject responseJsonObject;
+
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
+
+
+            userService.userLogout(userToken.getSuid());
+
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+
+            return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
+
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
 }

@@ -137,12 +137,17 @@ public class WorldServiceImpl implements WorldService {
         }
     }
 
-    //5. 월드 참여자 리스트 조회
+    //5. 참여 중인 월드 리스트 조회
     @Override
-    public List<WorldDto> getWorldList(String suid) {
+    public List<WorldDto> getWorldList(String suid, String isDetails) {
 
         try {
-            List<WorldDto> activityWorlds = worldUserMappingRepo.findBySuidWithWorld(suid);
+            List<WorldDto> activityWorlds ;
+
+            if(isDetails.equals("Y"))
+                activityWorlds = worldUserMappingRepo.findBySuidWithWorldDetails(suid);
+                else
+                activityWorlds = worldUserMappingRepo.findBySuidWithWorld(suid);
 
             return activityWorlds;
         } catch (Exception e) {

@@ -24,4 +24,10 @@ public interface UserService {
     List<UserInWorld> worldUsers(long worldId);
     //2. 월드 초대 수락하기.
     WorldDto inviteJoinWorld( String worldinvitationCode);
+    UserInfoDto userDetails(String suid);
+    UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl);
+    void userLogout(String suid);
+
+    void userWorldInviting(String suid, String targetSuid, String worldinvitationCode);
+
 }

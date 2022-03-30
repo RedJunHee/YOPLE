@@ -9,6 +9,7 @@ import java.util.List;
 public interface WorldUserMappingRepoDSL {
 
     List<WorldDto> findBySuidWithWorld(String suid);
+    List<WorldDto> findBySuidWithWorldDetails (String suid);
     List<UserInWorld> findAllUsersInWorld(long worldId);
     Long exsistUserInWorld(String worldinvitationCode, String suid);
 }

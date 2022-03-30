@@ -24,5 +24,12 @@ public class YOPLEServiceException extends RuntimeException{
         this.errorStatusCode = apiStatusCode;
         responseJsonObject = ResponseJsonObject.withStatusCode(errorStatusCode);
     }
+    public YOPLEServiceException(ApiStatusCode apiStatusCode, String msg) {
+        super(msg);
+        this.errorStatusCode = apiStatusCode;
+        responseJsonObject = ResponseJsonObject.withStatusCode(errorStatusCode);
+        responseJsonObject.getMeta().setMsg(msg);
+    }
+
 
 }

@@ -22,9 +22,16 @@ public class WorldDto {
     private Long worldUserCnt;
 
 
+
+    @QueryProjection
+    public WorldDto(Long worldId, String worldName) {
+        this.worldId = worldId;
+        this.worldName = worldName;
+    }
+
     @Builder
     @QueryProjection
-    public WorldDto(Long worldId, String worldName, String worldDesc,String isMyworld, Long worldUserCnt) {
+    public WorldDto(Long worldId, String worldName, String worldDesc ,String isMyworld, Long worldUserCnt) {
         this.worldId = worldId;
         this.worldName = worldName;
         this.worldDesc = worldDesc;

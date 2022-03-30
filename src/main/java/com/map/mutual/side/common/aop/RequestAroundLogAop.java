@@ -91,6 +91,7 @@ public class RequestAroundLogAop {
             apiStatus='N';
             //Exception
             ResponseJsonObject resDto = ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR);
+            resDto.getMeta().setMsg(ex.getMessage());
             outputMessage = om.writeValueAsString(resDto);
             throw ex;
         }

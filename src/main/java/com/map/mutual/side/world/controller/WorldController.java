@@ -7,6 +7,7 @@ import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.svc.WorldService;
+import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,17 +95,19 @@ public class WorldController {
         }
     }
 
-//참여 중인 월드 리스트 조회
-    @GetMapping(value = "/worlds")
-    public ResponseEntity<ResponseJsonObject> activityWorlds(){
+    //참여 중인 월드 리스트 조회
+    @GetMapping(value = "/user/worlds")
+    public ResponseEntity<ResponseJsonObject> activityWorlds(@RequestParam("isDetails") String isDetails){
+
         try{
             WorldDetailResponseDto worldDetail ;
+            String deatilsYN = StringUtil.isNullOrEmpty(isDetails)? "N": isDetails;
 
             // 1. 사용자 SUID 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            List<WorldDto> activityWorldDtoList = worldService.getWorldList(userInfoDto.getSuid());
+            List<WorldDto> activityWorldDtoList = worldService.getWorldList(userInfoDto.getSuid(), deatilsYN);
 
             Map<String, Object> responseObj = new HashMap<>();
 

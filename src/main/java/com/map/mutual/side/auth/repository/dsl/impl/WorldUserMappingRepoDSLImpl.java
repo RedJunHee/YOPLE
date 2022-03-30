@@ -12,9 +12,12 @@ import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
+import com.querydsl.core.types.NullExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import javafx.beans.binding.LongExpression;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -28,43 +31,14 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         this.jpaQueryFactory = jpaQueryFactory;
     }
 
-
-    /**
-     *  월드 별 참여자 수를 알아야 함.
-     *    => 월드 그룹으로 지어 Mapping테이블에서 카운팅 해야함.
-     *  그룹을 참여자가 속해 있는 월드로만 그룹 조건인 Having이 들어가야함.
-     *
-
-     SELECT *
-       FROM WORLD w
-      INNER JOIN (
-                SELECT wum.ID as ID, COUNT(wum.ID) as cnt
-                  FROM WORLD_USER_MAPPING wum
-        `        INNER JOIN WORLD_USER_MAPPING wum2
-                    ON wum .ID =wum2 .ID and  wum2.SUID = 'YO2022031827090787'
-                 GROUP BY wum.ID
-                )a
-     ON w.ID = a.ID
-     * */
+    //참여 중인 월드 리스트 조회 ( 상세정보 조회 )
+    // 상세정보 : 자신의 월드인지, 참여자 수 등.
     @Override
-    public List<WorldDto> findBySuidWithWorld(String suid) {
+    public List<WorldDto> findBySuidWithWorldDetails(String suid) {
 
         // 1. 참여중인 월드만 조회가 되어야함.
         // 2. 월드별로 참여 중인 사용자 카운트를 알아야함.
         // 3. 한번에 조회가 되어야함.
-        /**
-         SELECT w.ID ,w.WORLD_NAME ,w.WORLD_DESC , COUNT(1)
-           FROM WORLD w
-          INNER JOIN WORLD_USER_MAPPING wum
-             ON w.ID =wum.ID
-          WHERE wum.ID IN (
-                        SELECT ID
-                        FROM WORLD_USER_MAPPING wum2
-                        WHERE SUID = 'YO2022031827090787'
-                        )
-          GROUP BY w.ID ,w.WORLD_NAME ,w.WORLD_DESC
-         * */
-
         //todo group by 성능 향상 필요함.
         List<WorldDto> world = jpaQueryFactory.select(new QWorldDto(QWorldEntity.worldEntity.worldId,
                                                     QWorldEntity.worldEntity.worldName,
@@ -89,6 +63,26 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         return world;
     }
 
+    // 참여 중인 월드 리스트 (심플 조회)
+    @Override
+    public List<WorldDto> findBySuidWithWorld(String suid) {
+
+        // 1. 참여중인 월드만 조회가 되어야함.
+        // 2. 월드별로 참여 중인 사용자 카운트를 알아야함.
+        // 3. 한번에 조회가 되어야함.
+
+        List<WorldDto> world = jpaQueryFactory.select(new QWorldDto(QWorldEntity.worldEntity.worldId,
+                        QWorldEntity.worldEntity.worldName))
+                .from(QWorldEntity.worldEntity)
+                .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
+                .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId))
+                .where(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid))
+                .fetch();
+
+        return world;
+    }
+
+    //월드에 참여중인 월드 리스트 조회
     @Override
     public List<UserInWorld> findAllUsersInWorld(long worldId) {
 
@@ -117,7 +111,6 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         return UserInfoInWorld;
     }
 
-
     // 월드 초대 코드로 월드에 입장하려는 사용자 SUID가 월드에 이미 존재하는지 체크하는 쿼리.
     // 존재하면 null 존재하지않으면 [입장 worldId]
     @Override
@@ -130,8 +123,9 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 .fetchOne();
 
         //월드코드를 가진 사용자의 월드 ID가 없는경우.
-        if(worldId == null)
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+        if(worldId == null){
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR, "월드 코드를 가진 사용자 월드가 없습니다.");
+        }
 
 
         Integer result = jpaQueryFactory.selectOne()

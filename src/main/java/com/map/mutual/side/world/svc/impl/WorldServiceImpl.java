@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WorldServiceImpl implements WorldService {
@@ -137,7 +138,6 @@ public class WorldServiceImpl implements WorldService {
     }
 
     //5. 참여 중인 월드 리스트 조회
-    //todo 월드에서의 자신 코드 리턴해주기.
     @Override
     public List<WorldDto> getWorldList(String suid, String isDetails) {
 
@@ -155,12 +155,19 @@ public class WorldServiceImpl implements WorldService {
         }
     }
 
+
     @Override
     public Boolean authCheck(Long worldId, String suid) {
 
         try{
-            if(worldUserMappingRepo.exsistUserInWorld(worldId,suid) == true) {
+            Optional<WorldUserMappingEntity> worldUserMappingEntity = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid);
+            if(worldUserMappingEntity.isPresent() == true){
+                // 월드 소속 멤버 인경우
 
+               WorldUserMappingEntity mapping = worldUserMappingEntity.get();
+
+               mapping.setAccessTime(LocalDateTime.now());
+               worldUserMappingRepo.save(mapping);
 
                 return true;
             }

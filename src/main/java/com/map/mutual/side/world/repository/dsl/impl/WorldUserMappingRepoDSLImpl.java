@@ -15,12 +15,20 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
 
     private final JPAQueryFactory jpaQueryFactory;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public WorldUserMappingRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
@@ -31,29 +39,56 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     @Override
     public List<WorldDto> findBySuidWithWorldDetails(String suid) {
 
+
         // 1. 참여중인 월드만 조회가 되어야함.
         // 2. 월드별로 참여 중인 사용자 카운트를 알아야함.
         // 3. 한번에 조회가 되어야함.
-        //todo group by 성능 향상 필요함.
-        List<WorldDto> world = jpaQueryFactory.select(new QWorldDto(QWorldEntity.worldEntity.worldId,
-                                                    QWorldEntity.worldEntity.worldName,
-                                                    QWorldEntity.worldEntity.worldDesc,
-                        new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(suid)).then("Y").otherwise("N"),
-                                                    QWorldEntity.worldEntity.count()))
-                .from(QWorldEntity.worldEntity)
-                .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
-                .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId))
-                .where(QWorldUserMappingEntity.worldUserMappingEntity.worldId.in(
-                        JPAExpressions.select(QWorldUserMappingEntity.worldUserMappingEntity.worldId)
-                                .from(QWorldUserMappingEntity.worldUserMappingEntity)
-                                .where(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid))
-                ))
-                .groupBy(QWorldEntity.worldEntity.worldId,
-                        QWorldEntity.worldEntity.worldName,
-                        QWorldEntity.worldEntity.worldDesc,
-                        QWorldEntity.worldEntity.worldOwner)
-                .fetch();
+        List<WorldDto> world = new ArrayList<>();
 
+        String sql = "CREATE TABLE #WORLD_COUNT ( " +
+                "WORLD_ID BIGINT , " +
+                "USER_COUNT INT " +
+                ") \n" +
+
+                "INSERT INTO #WORLD_COUNT "+
+                "SELECT A.WORLD_ID, COUNT(B.WORLD_ID)" +
+                "  FROM WORLD_USER_MAPPING as A " + // --참여 중 월드
+                " INNER JOIN WORLD_USER_MAPPING as B " + //-- 전체 월드
+                "    ON A.USER_SUID = ? AND A.WORLD_ID = B.WORLD_ID " +
+                " GROUP BY A.WORLD_ID    \n" +
+
+                "SELECT A.WORLD_ID as 'WORLD_ID' " +
+                "        , W.[NAME] as 'WORLD_NAME' " +
+                "        , W.[DESCRIPTION] as 'WORLD_DESC' " +
+                "        , CASE WHEN W.WORLD_OWNER = ? THEN 'Y' ELSE 'N' END as 'isMyWorld' " +
+                "        , A.USER_COUNT as 'WORLD_USER_COUNT' " +
+                "        , M.WORLD_USER_CODE as WORLD_USER_CODE " +
+                "  FROM #WORLD_COUNT as A " +
+                "  LEFT JOIN WORLD as W " +
+                "    ON A.WORLD_ID = W.WORLD_ID " +
+                "  LEFT JOIN WORLD_USER_MAPPING as M" +
+                "    ON A.WORLD_ID = M.WORLD_ID AND M.USER_SUID = ? " +
+                "ORDER BY CASE WHEN  W.WORLD_OWNER = ? THEN 1 ELSE 0 END DESC " +
+                "          ,ACCESS_TIME DESC \n" +
+
+                " DROP TABLE #WORLD_COUNT ";
+
+        Query nativeQuery  = entityManager.createNativeQuery(sql).setParameter(1,suid)
+                .setParameter(2,suid)
+                .setParameter(3,suid)
+                .setParameter(4,suid);
+
+        List<Object[]> result =  nativeQuery.getResultList();
+
+        for(Object[] obj : result){
+            world.add(WorldDto.builder().worldId( Long.parseLong(obj[0].toString()))
+                    .worldName(obj[1].toString())
+                    .worldDesc(obj[2].toString())
+                    .isMyworld(obj[3].toString())
+                    .worldUserCnt(Long.parseLong(obj[4].toString()))
+                    .worldUserCode(obj[5].toString())
+                    .build());
+        }
 
         return world;
     }
@@ -72,6 +107,8 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 .innerJoin(QWorldUserMappingEntity.worldUserMappingEntity)
                 .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId))
                 .where(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid))
+                .orderBy( new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(suid)).then(1).otherwise(0).desc()
+                        , QWorldUserMappingEntity.worldUserMappingEntity.accessTime.desc())
                 .fetch();
 
         return world;
@@ -138,6 +175,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     }
 
 
+    //월드에 해당 사용자가 입장되어있는지 확인.
     @Override
     public Boolean exsistUserInWorld (Long worldId, String suid)
     {
@@ -155,4 +193,6 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
             return true;
 
     }
+
+
 }

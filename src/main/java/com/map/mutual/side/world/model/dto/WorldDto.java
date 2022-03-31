@@ -20,8 +20,7 @@ public class WorldDto {
     private String worldDesc;
     private String isMyworld;
     private Long worldUserCnt;
-
-
+    private String worldUserCode;
 
     @QueryProjection
     public WorldDto(Long worldId, String worldName) {
@@ -29,7 +28,6 @@ public class WorldDto {
         this.worldName = worldName;
     }
 
-    @Builder
     @QueryProjection
     public WorldDto(Long worldId, String worldName, String worldDesc ,String isMyworld, Long worldUserCnt) {
         this.worldId = worldId;
@@ -37,5 +35,15 @@ public class WorldDto {
         this.worldDesc = worldDesc;
         this.isMyworld = isMyworld;
         this.worldUserCnt = worldUserCnt;
+    }
+
+    @Builder
+    public WorldDto(Long worldId, String worldName, String worldDesc, String isMyworld, Long worldUserCnt, String worldUserCode) {
+        this.worldId = worldId;
+        this.worldName = worldName;
+        this.worldDesc = worldDesc;
+        this.isMyworld = isMyworld;
+        this.worldUserCnt = worldUserCnt;
+        this.worldUserCode = worldUserCode;
     }
 }

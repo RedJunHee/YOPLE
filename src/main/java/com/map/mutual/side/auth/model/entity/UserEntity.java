@@ -1,6 +1,5 @@
 package com.map.mutual.side.auth.model.entity;
 
-import com.map.mutual.side.message.model.entity.FcmTokenEntity;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -37,4 +36,7 @@ public class UserEntity {
 
     @Column(name="PROFILE_URL", columnDefinition = "VARCHAR(100)")
     private String profileUrl;
+
+    @Column(name="FCM_TOKEN", columnDefinition = "VARCHAR(170)")
+    private String fcmToken;
 }

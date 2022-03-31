@@ -11,5 +11,6 @@ public interface WorldUserMappingRepoDSL {
     List<WorldDto> findBySuidWithWorld(String suid);
     List<WorldDto> findBySuidWithWorldDetails (String suid);
     List<UserInWorld> findAllUsersInWorld(long worldId);
-    Long exsistUserInWorld(String worldinvitationCode, String suid);
+    Long exsistUserCodeInWorld(String worldinvitationCode, String suid);
+    Boolean exsistUserInWorld(Long worldId, String suid);
 }

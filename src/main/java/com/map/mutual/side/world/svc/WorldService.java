@@ -20,5 +20,6 @@ public interface WorldService {
 
     //4. 참여 월드 리스트 조회
     List<WorldDto> getWorldList(String suid, String isDetails);
+    Boolean authCheck(Long worldId, String suid);
 
 }

@@ -11,5 +11,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WorldUserMappingRepo extends JpaRepository<WorldUserMappingEntity, WorldUserMappingEntityKeys>, WorldUserMappingRepoDSL {
-    Optional<WorldUserMappingEntity> findByWorldIdAndAndUserSuid(Long worldId, String userSuid);
+    Optional<WorldUserMappingEntity> findByWorldIdAndUserSuid(Long worldId, String userSuid);
 }

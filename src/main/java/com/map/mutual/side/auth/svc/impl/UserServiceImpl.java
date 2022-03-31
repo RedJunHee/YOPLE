@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
             // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
-            Long inviteWorldId = worldUserMappingRepo.exsistUserInWorld(worldinvitationCode, userInfoDto.getSuid());
+            Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldinvitationCode, userInfoDto.getSuid());
 
             if (inviteWorldId == null) {
                 logger.error("해당 사용자가 이미 월드에 속해있습니다.");
@@ -216,7 +216,7 @@ public class UserServiceImpl implements UserService {
 
             // todo 중복 체크 없음. 여러번 초대하기 가능.
 
-            WorldUserMappingEntity worldUserMappingEntity = worldUserMappingRepo.findByWorldIdAndAndUserSuid(worldId,suid)
+            WorldUserMappingEntity worldUserMappingEntity = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid)
                     .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
 
             String worldinvitationCode = worldUserMappingEntity.getWorldUserCode();

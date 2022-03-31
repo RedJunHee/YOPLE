@@ -114,7 +114,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     // 월드 초대 코드로 월드에 입장하려는 사용자 SUID가 월드에 이미 존재하는지 체크하는 쿼리.
     // 존재하면 null 존재하지않으면 [입장 worldId]
     @Override
-    public Long exsistUserInWorld (String worldinvitationCode, String suid)
+    public Long exsistUserCodeInWorld (String worldinvitationCode, String suid)
     {
 
         Long worldId = jpaQueryFactory.select(QWorldUserMappingEntity.worldUserMappingEntity.worldId)
@@ -142,4 +142,22 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
 
     }
 
+
+    @Override
+    public Boolean exsistUserInWorld (Long worldId, String suid)
+    {
+
+        Integer result = jpaQueryFactory.selectOne()
+                .from(QWorldUserMappingEntity.worldUserMappingEntity)
+                .where(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid)
+                        .and(QWorldUserMappingEntity.worldUserMappingEntity.worldId.eq(worldId)))
+                .fetchOne();
+
+        //월드에 존재 안함.
+        if(result == null)
+            return false;
+        else // 월드에 참여중.
+            return true;
+
+    }
 }

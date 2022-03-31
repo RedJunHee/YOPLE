@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WorldServiceImpl implements WorldService {
@@ -151,6 +152,22 @@ public class WorldServiceImpl implements WorldService {
 
             return activityWorlds;
         } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public Boolean authCheck(Long worldId, String suid) {
+
+        try{
+            if(worldUserMappingRepo.exsistUserInWorld(worldId,suid) == true)
+                return true;
+            else
+                return false;
+
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
             throw e;
         }
     }

@@ -1,23 +1,18 @@
-package com.map.mutual.side.auth.repository.dsl.impl;
+package com.map.mutual.side.world.repository.dsl.impl;
 
 import com.map.mutual.side.auth.model.dto.QUserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
-import com.map.mutual.side.auth.model.entity.UserEntity;
-import com.map.mutual.side.auth.repository.dsl.WorldUserMappingRepoDSL;
+import com.map.mutual.side.world.repository.dsl.WorldUserMappingRepoDSL;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.world.model.dto.QWorldDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
-import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
-import com.querydsl.core.types.NullExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import javafx.beans.binding.LongExpression;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

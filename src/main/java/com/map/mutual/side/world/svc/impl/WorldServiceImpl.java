@@ -1,9 +1,8 @@
 package com.map.mutual.side.world.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
-import com.map.mutual.side.auth.repository.WorldUserMappingRepo;
+import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.utils.YOPLEUtils;
@@ -20,12 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class WorldServiceImpl implements WorldService {
@@ -68,9 +65,10 @@ public class WorldServiceImpl implements WorldService {
             String worldCode = YOPLEUtils.getWorldRandomCode();
             WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
                             .userSuid(userInfoDto.getSuid())
-                                    .worldId(createWorld.getWorldId()).
-                    worldUserCode(worldCode).
-                    worldinvitationCode(worldCode).
+                            .worldId(createWorld.getWorldId())
+                            .worldUserCode(worldCode)
+                            .worldinvitationCode(worldCode)
+                            .accessTime(LocalDateTime.now()).
             build();
 
             worldUserMappingRepo.save(worldUserMappingEntity);
@@ -139,6 +137,7 @@ public class WorldServiceImpl implements WorldService {
     }
 
     //5. 참여 중인 월드 리스트 조회
+    //todo 월드에서의 자신 코드 리턴해주기.
     @Override
     public List<WorldDto> getWorldList(String suid, String isDetails) {
 
@@ -160,8 +159,11 @@ public class WorldServiceImpl implements WorldService {
     public Boolean authCheck(Long worldId, String suid) {
 
         try{
-            if(worldUserMappingRepo.exsistUserInWorld(worldId,suid) == true)
+            if(worldUserMappingRepo.exsistUserInWorld(worldId,suid) == true) {
+
+
                 return true;
+            }
             else
                 return false;
 

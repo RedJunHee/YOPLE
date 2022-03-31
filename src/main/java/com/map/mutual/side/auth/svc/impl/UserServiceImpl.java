@@ -1,6 +1,5 @@
 package com.map.mutual.side.auth.svc.impl;
 
-import com.google.firebase.auth.UserInfo;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
@@ -9,7 +8,7 @@ import com.map.mutual.side.auth.model.entity.UserWorldInvitingLogEntity;
 import com.map.mutual.side.auth.repository.JWTRepo;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.repository.UserWorldInvitingLogRepo;
-import com.map.mutual.side.auth.repository.WorldUserMappingRepo;
+import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -18,10 +17,8 @@ import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldRepo;
-import com.map.mutual.side.world.svc.impl.WorldServiceImpl;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
@@ -32,8 +29,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * fileName       : UserServiceImpl
@@ -112,6 +109,7 @@ public class UserServiceImpl implements UserService {
                     .worldId(inviteWorldId)
                     .worldUserCode(YOPLEUtils.getWorldRandomCode())
                     .worldinvitationCode(worldinvitationCode)
+                    .accessTime(LocalDateTime.now())
                     .build();
 
             worldUserMappingRepo.save(worldUserMappingEntity);
@@ -191,6 +189,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    //로그아웃
     @Override
     public void userLogout(String suid) {
         try{
@@ -206,7 +205,6 @@ public class UserServiceImpl implements UserService {
         }
 
     }
-
 
     //사용자 월드 초대하기.
     @Override
@@ -254,23 +252,6 @@ public class UserServiceImpl implements UserService {
         }
         return userInfoEntities;
     }
-
-    @Override
-    public UserEntity findById(String suid) {
-
-        try {
-            UserEntity userEntity = userInfoRepo.findById(suid)
-                    .orElse(UserEntity.builder().build());
-
-            return userEntity;
-
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-
-
 
 
 }

@@ -1,4 +1,4 @@
-package com.map.mutual.side.auth.repository.dsl;
+package com.map.mutual.side.world.repository.dsl;
 
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.entity.UserEntity;

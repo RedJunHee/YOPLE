@@ -1,7 +1,11 @@
 package com.map.mutual.side.review.model.dto;
 
+import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.querydsl.core.annotations.QueryProjection;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * fileName       : ReviewDto
@@ -16,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class ReviewDto {
     private String userSuid;
@@ -26,4 +29,18 @@ public class ReviewDto {
     private MultipartFile[] imageFiles;
     private String[] imageUrls;
     private Long reviewId;
+    private List<Long> worldList;
+
+
+    @Builder
+    @QueryProjection
+    public ReviewDto(UserEntity userEntity, String title, String content, String imageUrls, Long reviewId) {
+        this.userSuid = userEntity.getSuid();
+        this.title = title;
+        this.content = content;
+        if(imageUrls != null) {
+            this.imageUrls = imageUrls.split(",");
+        }
+        this.reviewId = reviewId;
+    }
 }

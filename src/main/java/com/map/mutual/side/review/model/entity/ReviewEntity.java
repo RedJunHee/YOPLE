@@ -2,8 +2,8 @@ package com.map.mutual.side.review.model.entity;
 
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.common.repository.config.TimeEntity;
-import com.map.mutual.side.review.model.keys.ReviewEntityKeys;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class ReviewEntity extends TimeEntity {
+public class ReviewEntity extends TimeEntity implements Persistable<Long> {
     @Id
     @Column(name="REVIEW_ID", nullable = false, insertable = false, updatable = false, columnDefinition = "BIGINT")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,4 +48,13 @@ public class ReviewEntity extends TimeEntity {
     @OneToMany(mappedBy = "reviewEntity")
     private List<ReviewWorldMappingEntity> reviewWorldMappingEntities;
 
+    @Override
+    public Long getId() {
+        return reviewId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return getCreateTime() == null;
+    }
 }

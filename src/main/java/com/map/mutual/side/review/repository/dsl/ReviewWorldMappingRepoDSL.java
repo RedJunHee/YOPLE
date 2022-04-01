@@ -1,9 +1,9 @@
 package com.map.mutual.side.review.repository.dsl;
 
-import com.map.mutual.side.review.model.entity.ReviewEntity;
+import com.map.mutual.side.review.model.dto.ReviewDto;
 
 import java.util.List;
 
 public interface ReviewWorldMappingRepoDSL {
-    List<ReviewEntity> findAllReviewsByWorldId(Long worldId);
+    List<ReviewDto> findAllReviewsByWorldId(Long worldId);
 }

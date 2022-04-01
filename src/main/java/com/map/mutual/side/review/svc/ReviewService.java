@@ -15,9 +15,8 @@ import java.util.List;
  *
  */
 public interface ReviewService {
-    void createReview(ReviewDto reviewDto);
-    void updateReview(ReviewDto reviewDto);
-    void createReviewWorldMapping(Long worldId, Long reviewId);
+    ReviewDto createReview(ReviewDto reviewDto);
+    ReviewDto updateReview(ReviewDto reviewDto);
     void deleteReview(Long reviewId);
     ReviewDto getReview(Long reviewDto);
     List<ReviewDto> getReviews(Long worldId);

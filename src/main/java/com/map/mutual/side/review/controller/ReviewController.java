@@ -36,6 +36,17 @@ public class ReviewController {
     private ReviewService reviewService;
 
 
+    /**
+     * Review 생성
+     * @param reviewDto
+     * String userSuid: 유저 suid
+     * String title: 제목
+     * String content: 내용
+     * MultipartFile[] imageFiles: 리뷰에 올릴 이미지들
+     * List[Long] worldList: 월드 리스트
+     * // TODO: 2022/04/01 imageFiles 서버 구축 후 추가 테스트
+     * @return
+     */
     @PostMapping("/review")
     public ResponseEntity<ResponseJsonObject> createReview(@RequestBody ReviewDto reviewDto) {
         try {
@@ -48,6 +59,18 @@ public class ReviewController {
 
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
+    /**
+     * Review 수정
+     * @param reviewDto
+     * String userSuid: 유저 suid
+     * String title: 제목
+     * String content: 내용
+     * Long reviewId: 수정할 리뷰 ID
+     * MultipartFile[] imageFiles: 리뷰에 올릴 이미지들
+     * List[Long] worldList: 월드 리스트
+     * // TODO: 2022/04/01 imageFiles 서버 구축 후 추가 테스트
+     * @return
+     */
     @PutMapping("/review")
     public ResponseEntity<ResponseJsonObject> updateReview(@RequestBody ReviewDto reviewDto) {
         try {
@@ -61,8 +84,15 @@ public class ReviewController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-    @DeleteMapping({"/review"})
-    public ResponseEntity<ResponseJsonObject> deleteReview(@RequestBody Long reviewId) {
+    /**
+     * Review 삭제
+     * @param reviewId
+     * Long reviewId: review id
+     * @return
+     * 해당 메소드는 리뷰뿐만 아니라, ReviewWorldMapping 데이터도 삭제합니다.
+     */
+    @DeleteMapping("/review")
+    public ResponseEntity<ResponseJsonObject> deleteReview(@RequestParam Long reviewId) {
         try {
             reviewService.deleteReview(reviewId);
         } catch (YOPLEServiceException e) {
@@ -74,6 +104,11 @@ public class ReviewController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
+    /**
+     * Review 조회
+     * @param reviewId
+     * @return
+     */
     @GetMapping("/review")
     public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId) {
         ResponseJsonObject responseJsonObject = new ResponseJsonObject();
@@ -91,12 +126,19 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
+    /**
+     * Review List 조회
+     * @param worldId
+     * @return
+     * 월드 id에 해당하는 Review List들 조회
+     */
     @GetMapping("/reviews")
     public ResponseEntity<ResponseJsonObject> getReviews(@RequestParam Long worldId) {
-        ResponseJsonObject responseJsonObject = new ResponseJsonObject();
+        ResponseJsonObject responseJsonObject;
 
         try {
             List<ReviewDto> reviewDto = reviewService.getReviews(worldId);
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             responseJsonObject.setData(reviewDto);
 
         } catch (YOPLEServiceException e) {
@@ -108,15 +150,20 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
+    /**
+     * 내가 쓴 Reviews 조회
+     * @param userSuid
+     * @return
+     * 내가 작성한 리뷰들을 불러옵니다.
+     */
     @GetMapping("/myReviews")
     public ResponseEntity<ResponseJsonObject> myReviews(@RequestParam String userSuid) {
-        ResponseJsonObject responseJsonObject = new ResponseJsonObject();
+        ResponseJsonObject responseJsonObject;
 
         try {
             List<ReviewDto> reviewDto = reviewService.myReviews(userSuid);
-            assert false;
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             responseJsonObject.setData(reviewDto);
-
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (Exception e) {
@@ -126,20 +173,7 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
-    @PostMapping("/reviewWorldMapping")
-    public ResponseEntity<ResponseJsonObject> createReviewWorldMapping(@RequestParam Long worldId, @RequestParam Long reviewId) {
-        ResponseJsonObject responseJsonObject = new ResponseJsonObject();
 
-        try {
-            reviewService.createReviewWorldMapping(worldId, reviewId);
-        } catch (YOPLEServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
-        }
-
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-    }
 
 
     @PostMapping("/upload")

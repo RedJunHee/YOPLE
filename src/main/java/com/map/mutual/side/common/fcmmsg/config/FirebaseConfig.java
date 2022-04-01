@@ -1,4 +1,4 @@
-package com.map.mutual.side.message.config;
+package com.map.mutual.side.common.fcmmsg.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -34,7 +34,7 @@ public class FirebaseConfig {
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
-            FirebaseApp.initializeApp(options,"fcm");
+            FirebaseApp.initializeApp(options,"FCM");
 
         } catch (FileNotFoundException e) {
             log.error("Firebase ServiceAccountKey FileNotFoundException" + e.getMessage());

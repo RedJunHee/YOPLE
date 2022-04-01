@@ -1,4 +1,4 @@
-package com.map.mutual.side.message.model.dto;
+package com.map.mutual.side.common.fcmmsg.model.dto;
 
 
 import lombok.AllArgsConstructor;

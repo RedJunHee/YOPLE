@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * fileName       : ReviewServiceImpl
@@ -45,8 +46,8 @@ public class ReviewServiceImpl implements ReviewService {
     private ModelMapper modelMapper;
 
     @Override
-    public void createReview(ReviewDto reviewDto) {
-
+    public ReviewDto createReview(ReviewDto reviewDto) {
+        ReviewDto result;
         try {
             ReviewEntity reviewEntity = ReviewEntity.builder()
                     .userEntity(UserEntity.builder().suid(reviewDto.getUserSuid()).build())
@@ -54,15 +55,17 @@ public class ReviewServiceImpl implements ReviewService {
                     .content(reviewDto.getContent())
 //                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
                     .build();
-            reviewRepo.save(reviewEntity);
+            result = saveReviewAndMappings(reviewDto, reviewEntity);
         } catch (YOPLEServiceException e) {
             throw e;
         }
+        return result;
     }
 
-    @Override
-    public void updateReview(ReviewDto reviewDto) {
 
+    @Override
+    public ReviewDto updateReview(ReviewDto reviewDto) {
+        ReviewDto result;
         try {
             ReviewEntity entity = reviewRepo.findByReviewId(reviewDto.getReviewId());
             if (entity == null) {
@@ -70,30 +73,76 @@ public class ReviewServiceImpl implements ReviewService {
             } else {
                 entity.setContent(reviewDto.getContent());
                 entity.setTitle(reviewDto.getTitle());
-                // TODO: 2022/03/29 setting images
+                result = saveReviewAndMappings(reviewDto, entity);
             }
         } catch (YOPLEServiceException e) {
             throw e;
         }
+        return result;
     }
 
-    @Override
-    public void createReviewWorldMapping(Long worldId, Long reviewId) {
-
+    private ReviewDto saveReviewAndMappings(ReviewDto reviewDto, ReviewEntity entity) {
+        ReviewEntity returnedReview;
         try {
-            ReviewWorldMappingEntity entity = ReviewWorldMappingEntity.builder()
-                    .worldEntity(WorldEntity.builder().worldId(worldId).build())
-                    .reviewEntity(ReviewEntity.builder().reviewId(reviewId).build())
-                    .build();
-            reviewWorldMappingRepository.save(entity);
+            returnedReview = reviewRepo.save(entity);
+            //공통 리뷰 저장
+
+            List<Long> presentWorldIds = reviewWorldMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(reviewDto.getReviewId()).build())
+                    .stream().map(data -> data.getWorldEntity().getWorldId()).collect(Collectors.toList());
+            //현재 db에 매핑 돼있는 월드 id들 조회
+
+            List<Long> receivedWorldIds = reviewDto.getWorldList();
+            //생성, 수정 할 월드 id들 리스트
+            presentWorldIds.removeAll(receivedWorldIds);
+            //생성, 수정 할 월드 id가 아닐 시 제거 -> DB worldIds - 받은 worldIds = 삭제할 worldIds
+
+
+            List<ReviewWorldMappingEntity> todoDeleteEntities = new ArrayList<>();
+            //삭제하기 위한 리스트 엔티티 생성
+            presentWorldIds.forEach(data -> {
+                ReviewWorldMappingEntity mappingEntity = ReviewWorldMappingEntity.builder()
+                        .worldEntity(WorldEntity.builder().worldId(data).build())
+                        .reviewEntity(ReviewEntity.builder().reviewId(reviewDto.getReviewId()).build())
+                        .build();
+                todoDeleteEntities.add(mappingEntity);
+            });
+
+            reviewWorldMappingRepository.deleteAll(todoDeleteEntities);
+
+
+
+            //생성, 수정 할 월드 ID 저장 로직
+            List<ReviewWorldMappingEntity> reviewWorldMappingEntities = new ArrayList<>();
+
+            if(reviewDto.getWorldList() != null) {
+                reviewDto.getWorldList().forEach(data -> {
+                    ReviewWorldMappingEntity mapping = ReviewWorldMappingEntity.builder()
+                            .reviewEntity(ReviewEntity.builder().reviewId(returnedReview.getReviewId()).build())
+                            .worldEntity(WorldEntity.builder().worldId(data).build())
+                            .build();
+                    reviewWorldMappingEntities.add(mapping);
+                });
+                reviewWorldMappingRepository.saveAll(reviewWorldMappingEntities);
+            }
         } catch (YOPLEServiceException e) {
             throw e;
         }
+
+        ReviewDto result = ReviewDto.builder()
+                .userSuid(returnedReview.getUserEntity().getSuid())
+                .title(returnedReview.getTitle())
+                .content(reviewDto.getContent())
+//                .imageFiles()
+                .reviewId(returnedReview.getReviewId())
+                // TODO: 2022/03/30 월드 리스트 반환여부 , image 관련 처리
+                .build();
+        return result;
     }
 
     @Override
     public void deleteReview(Long reviewId) {
         try {
+            reviewWorldMappingRepository.deleteAllByReviewEntity(ReviewEntity.builder().reviewId(reviewId).build());
             reviewRepo.deleteById(reviewId);
         } catch (YOPLEServiceException e) {
             throw e;
@@ -120,11 +169,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<ReviewDto> getReviews(Long worldId) {
-        List<ReviewEntity> reviewEntity;
-        List<ReviewDto> reviewDto = null;
+        List<ReviewDto> reviewDto;
         try {
-            reviewEntity = reviewWorldMappingRepository.findAllReviewsByWorldId(worldId);
-            reviewEntity.stream().map(data -> reviewDto.add(modelMapper.map(data, ReviewDto.class)));
+            reviewDto = reviewWorldMappingRepository.findAllReviewsByWorldId(worldId);
+            if(reviewDto == null) {
+                return null;
+            }
         } catch (YOPLEServiceException e) {
             throw e;
         }

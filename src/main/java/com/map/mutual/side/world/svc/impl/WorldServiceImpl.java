@@ -2,6 +2,9 @@ package com.map.mutual.side.world.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.map.mutual.side.review.model.entity.ReviewEntity;
+import com.map.mutual.side.review.model.keys.ReviewWorldMappingEntityKeys;
+import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,17 +37,19 @@ public class WorldServiceImpl implements WorldService {
     private WorldUserMappingRepo worldUserMappingRepo;
     private ModelMapper modelMapper;
     private UserInfoRepo userInfoRepo;
+    private ReviewWorldMappingRepository reviewWorldMappingRepo;
 
     @Autowired
-    public WorldServiceImpl(WorldRepo worldRepo
-            , WorldUserMappingRepo worldUserMappingRepo
-            , ModelMapper modelMapper
-    , UserInfoRepo userInfoRepo) {
+    public WorldServiceImpl(WorldRepo worldRepo, WorldUserMappingRepo worldUserMappingRepo
+            , ModelMapper modelMapper, UserInfoRepo userInfoRepo
+            , ReviewWorldMappingRepository reviewWorldMappingRepo) {
         this.worldRepo = worldRepo;
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.modelMapper = modelMapper;
         this.userInfoRepo = userInfoRepo;
+        this.reviewWorldMappingRepo = reviewWorldMappingRepo;
     }
+
 
     //1. 월드 생성하기.
     @Override
@@ -155,7 +161,6 @@ public class WorldServiceImpl implements WorldService {
         }
     }
 
-
     @Override
     public Boolean authCheck(Long worldId, String suid) {
 
@@ -174,6 +179,21 @@ public class WorldServiceImpl implements WorldService {
             else
                 return false;
 
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    //리뷰가 등록된 월드 리스트 조회하기.
+    @Override
+    public List<WorldDto> getWorldOfReivew(Long reviewId, String suid) {
+        try{
+
+            List<WorldDto> worlds = reviewWorldMappingRepo.findAllWorldsByReviewId(reviewId, suid);
+
+            return worlds;
         }catch(YOPLEServiceException e){
             throw e;
         }catch(Exception e){

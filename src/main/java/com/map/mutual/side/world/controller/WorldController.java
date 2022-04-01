@@ -151,4 +151,30 @@ public class WorldController {
         }
 
     }
+
+    @GetMapping(value = "/review/worlds")
+    public ResponseEntity<ResponseJsonObject> getWorldOfReivew(@RequestParam("reviewId") Long reviewId){
+        try{
+
+            ResponseJsonObject responseJsonObject;
+
+            // 1. 사용자 SUID 가져오기
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            List<WorldDto> worlds = worldService.getWorldOfReivew(reviewId, userInfoDto.getSuid());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("worlds",worlds);
+
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(response);
+
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+
+    }
 }

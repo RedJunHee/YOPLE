@@ -5,6 +5,7 @@ import com.map.mutual.side.world.model.keys.WorldUserMappingEntityKeys;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -40,5 +41,8 @@ public class WorldUserMappingEntity {
     //월드에 초대 받은 코드 ( 초대자의 코드 )
     @Column(name = "WORLD_INVITATION_CODE", nullable = false, updatable = false, columnDefinition = "CHAR(6)")
     private String worldinvitationCode;
+
+    @Column(name = "ACCESS_TIME")
+    private LocalDateTime accessTime;
 
 }

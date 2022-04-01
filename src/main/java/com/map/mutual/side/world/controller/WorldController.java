@@ -4,6 +4,7 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
+import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.svc.WorldService;
@@ -125,4 +126,55 @@ public class WorldController {
 
     }
 
+
+    @GetMapping(value = "/user/auth-check")
+    public ResponseEntity<ResponseJsonObject> worldAuthCheck(@RequestParam("worldId") Long worldId){
+        try{
+
+            // 1. 사용자 SUID 가져오기
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            ResponseJsonObject responseJsonObject;
+
+            if(worldService.authCheck(worldId, userInfoDto.getSuid()) == true )
+                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            else
+                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.FORBIDDEN);
+
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+
+    }
+
+    @GetMapping(value = "/review/worlds")
+    public ResponseEntity<ResponseJsonObject> getWorldOfReivew(@RequestParam("reviewId") Long reviewId){
+        try{
+
+            ResponseJsonObject responseJsonObject;
+
+            // 1. 사용자 SUID 가져오기
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            List<WorldDto> worlds = worldService.getWorldOfReivew(reviewId, userInfoDto.getSuid());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("worlds",worlds);
+
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(response);
+
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+
+    }
 }

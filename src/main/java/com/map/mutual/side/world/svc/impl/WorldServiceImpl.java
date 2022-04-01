@@ -1,9 +1,11 @@
 package com.map.mutual.side.world.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
-import com.map.mutual.side.auth.repository.WorldUserMappingRepo;
+import com.map.mutual.side.review.model.entity.ReviewEntity;
+import com.map.mutual.side.review.model.keys.ReviewWorldMappingEntityKeys;
+import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
+import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.utils.YOPLEUtils;
@@ -20,11 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WorldServiceImpl implements WorldService {
@@ -34,17 +37,19 @@ public class WorldServiceImpl implements WorldService {
     private WorldUserMappingRepo worldUserMappingRepo;
     private ModelMapper modelMapper;
     private UserInfoRepo userInfoRepo;
+    private ReviewWorldMappingRepository reviewWorldMappingRepo;
 
     @Autowired
-    public WorldServiceImpl(WorldRepo worldRepo
-            , WorldUserMappingRepo worldUserMappingRepo
-            , ModelMapper modelMapper
-    , UserInfoRepo userInfoRepo) {
+    public WorldServiceImpl(WorldRepo worldRepo, WorldUserMappingRepo worldUserMappingRepo
+            , ModelMapper modelMapper, UserInfoRepo userInfoRepo
+            , ReviewWorldMappingRepository reviewWorldMappingRepo) {
         this.worldRepo = worldRepo;
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.modelMapper = modelMapper;
         this.userInfoRepo = userInfoRepo;
+        this.reviewWorldMappingRepo = reviewWorldMappingRepo;
     }
+
 
     //1. 월드 생성하기.
     @Override
@@ -67,9 +72,10 @@ public class WorldServiceImpl implements WorldService {
             String worldCode = YOPLEUtils.getWorldRandomCode();
             WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
                             .userSuid(userInfoDto.getSuid())
-                                    .worldId(createWorld.getWorldId()).
-                    worldUserCode(worldCode).
-                    worldinvitationCode(worldCode).
+                            .worldId(createWorld.getWorldId())
+                            .worldUserCode(worldCode)
+                            .worldinvitationCode(worldCode)
+                            .accessTime(LocalDateTime.now()).
             build();
 
             worldUserMappingRepo.save(worldUserMappingEntity);
@@ -151,6 +157,46 @@ public class WorldServiceImpl implements WorldService {
 
             return activityWorlds;
         } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public Boolean authCheck(Long worldId, String suid) {
+
+        try{
+            Optional<WorldUserMappingEntity> worldUserMappingEntity = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid);
+            if(worldUserMappingEntity.isPresent() == true){
+                // 월드 소속 멤버 인경우
+
+               WorldUserMappingEntity mapping = worldUserMappingEntity.get();
+
+               mapping.setAccessTime(LocalDateTime.now());
+               worldUserMappingRepo.save(mapping);
+
+                return true;
+            }
+            else
+                return false;
+
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    //리뷰가 등록된 월드 리스트 조회하기.
+    @Override
+    public List<WorldDto> getWorldOfReivew(Long reviewId, String suid) {
+        try{
+
+            List<WorldDto> worlds = reviewWorldMappingRepo.findAllWorldsByReviewId(reviewId, suid);
+
+            return worlds;
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch(Exception e){
             throw e;
         }
     }

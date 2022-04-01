@@ -20,7 +20,6 @@ import java.util.Optional;
  */
 public interface UserService {
     UserInfoDto findUser(String id, String phone);
-    UserEntity findById(String suid);
     List<UserInWorld> worldUsers(long worldId);
     //2. 월드 초대 수락하기.
     WorldDto inviteJoinWorld( String worldinvitationCode);

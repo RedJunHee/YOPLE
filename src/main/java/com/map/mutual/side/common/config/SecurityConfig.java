@@ -81,16 +81,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+
+                // auth
+                .antMatchers(HttpMethod.POST,"/auth/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/auth/refresh-refresh/**").authenticated()
+
+
+                // user
                 .antMatchers(HttpMethod.POST,"/user/signUp/**").permitAll()  // 회원 가입
                 .antMatchers(HttpMethod.POST,"/user/**").authenticated()
+                .antMatchers(HttpMethod.DELETE,"/user/**").authenticated()
+                .antMatchers(HttpMethod.PATCH,"/user/**").authenticated()
+
+                // world
+                .antMatchers(HttpMethod.GET,"/world/code-validation/**").permitAll()
                 .antMatchers(HttpMethod.POST,"/world/**").authenticated()
                 .antMatchers(HttpMethod.GET,"/world/**").authenticated()
+                .antMatchers(HttpMethod.PATCH,"/world/**").authenticated()
+
+                // review
                 .antMatchers(HttpMethod.POST,"/review/**").authenticated()
                 .antMatchers(HttpMethod.GET,"/review/**").authenticated()
                 .antMatchers(HttpMethod.PUT,"/review/**").authenticated()
                 .antMatchers(HttpMethod.DELETE,"/review/**").authenticated()
-                .antMatchers(HttpMethod.POST,"/auth/**").permitAll()
-                .antMatchers(HttpMethod.POST,"/auth/refresh-refresh/**").authenticated()
+
+
+
                 .anyRequest().authenticated()       // 그 외 나머지 리소스들은 무조건 인증을 완료해야 접근 가능
                 .and()
                 //AuthenticationFilterChain- UsernamePasswordAuthenticationFilter 전에 실행될 커스텀 필터 등록

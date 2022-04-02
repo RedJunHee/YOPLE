@@ -126,7 +126,6 @@ public class WorldController {
 
     }
 
-
     @GetMapping(value = "/user/auth-check")
     public ResponseEntity<ResponseJsonObject> worldAuthCheck(@RequestParam("worldId") Long worldId){
         try{
@@ -177,4 +176,26 @@ public class WorldController {
         }
 
     }
+
+
+    //todo selectOne으로 DSL 변경하기.
+    @GetMapping(value = "/code-validation")
+    public ResponseEntity<ResponseJsonObject> worldUserCodeValid(@RequestParam("worldUserCode") String worldUserCode){
+        try{
+            ResponseJsonObject responseJsonObject;
+
+            //유효성 실패 시 throw YOPLEServiceException
+            worldService.worldUserCodeValid(worldUserCode);
+
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+
+        }catch(YOPLEServiceException e){
+            logger.debug("월드 초대 코드 유효성 체크 실패.");
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
 }

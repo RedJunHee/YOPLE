@@ -22,6 +22,7 @@ public enum ApiStatusCode {
     ,UNAUTHORIZED (401, "UnAuthorized", "Unauthorized, 사용자 인증 실패.", true)
     ,FORBIDDEN (403, "Forbidden", "Forbidden, 사용권한 없음.", true)
     ,ALREADY_WORLD_MEMEBER(431,"Already a member of the world","이미 월드소속 입니다.",true)
+    ,WORLD_USER_CDOE_VALID_FAILED (432, "WorldUserCode is not valid", "월드 초대 코드 유효성 실패.", true)
     ,SYSTEM_ERROR(599,"System Error", "시스템오류.",true)
     ;
 

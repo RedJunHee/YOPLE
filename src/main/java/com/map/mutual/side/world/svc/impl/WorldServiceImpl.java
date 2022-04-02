@@ -200,4 +200,21 @@ public class WorldServiceImpl implements WorldService {
             throw e;
         }
     }
+
+    // 월드 초대 코드 유효성 체크
+    @Override
+    public Boolean worldUserCodeValid(String worldUserCode) {
+        try{
+            worldUserMappingRepo.findByWorldUserCode(worldUserCode)
+                    .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.WORLD_USER_CDOE_VALID_FAILED));
+
+            return true;
+
+        }catch(YOPLEServiceException e){
+            logger.debug("월드 초대 코드 유효성 체크 실패.");
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
 }

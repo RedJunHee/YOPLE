@@ -22,4 +22,5 @@ public interface WorldService {
     List<WorldDto> getWorldList(String suid, String isDetails);
     Boolean authCheck(Long worldId, String suid);
     List<WorldDto> getWorldOfReivew (Long reviewId, String suid);
+    Boolean worldUserCodeValid(String worldUserCode);
 }

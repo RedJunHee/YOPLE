@@ -1,9 +1,9 @@
 package com.map.mutual.side.common.config;
 
 import com.map.mutual.side.common.JwtTokenProvider;
-import com.map.mutual.side.common.filter.AuthorizationCheckFilter;
 import com.map.mutual.side.common.exception.handler.AuthenticationExceptionHandler;
 import com.map.mutual.side.common.exception.handler.AuthorizationExceptionHandler;
+import com.map.mutual.side.common.filter.AuthorizationCheckFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -88,6 +87,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET,"/world/**").authenticated()
                 .antMatchers(HttpMethod.POST,"/review/**").authenticated()
                 .antMatchers(HttpMethod.GET,"/review/**").authenticated()
+                .antMatchers(HttpMethod.PUT,"/review/**").authenticated()
+                .antMatchers(HttpMethod.DELETE,"/review/**").authenticated()
                 .antMatchers(HttpMethod.POST,"/auth/**").permitAll()
                 .antMatchers(HttpMethod.POST,"/auth/refresh-refresh/**").authenticated()
                 .anyRequest().authenticated()       // 그 외 나머지 리소스들은 무조건 인증을 완료해야 접근 가능

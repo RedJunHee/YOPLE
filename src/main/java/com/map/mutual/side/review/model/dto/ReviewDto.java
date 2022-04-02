@@ -19,8 +19,8 @@ import java.util.List;
  */
 @Getter
 @Setter
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
 public class ReviewDto {
     private String userSuid;
     private Long worldId;
@@ -32,7 +32,6 @@ public class ReviewDto {
     private List<Long> worldList;
 
 
-    @Builder
     @QueryProjection
     public ReviewDto(UserEntity userEntity, String title, String content, String imageUrls, Long reviewId) {
         this.userSuid = userEntity.getSuid();

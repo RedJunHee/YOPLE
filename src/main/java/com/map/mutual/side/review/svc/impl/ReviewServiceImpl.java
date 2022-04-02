@@ -16,6 +16,7 @@ import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class ReviewServiceImpl implements ReviewService {
     private ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public ReviewDto createReview(ReviewDto reviewDto) {
         ReviewDto result;
         try {
@@ -64,6 +66,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 
     @Override
+    @Transactional
     public ReviewDto updateReview(ReviewDto reviewDto) {
         ReviewDto result;
         try {
@@ -81,7 +84,7 @@ public class ReviewServiceImpl implements ReviewService {
         return result;
     }
 
-    private ReviewDto saveReviewAndMappings(ReviewDto reviewDto, ReviewEntity entity) {
+    public ReviewDto saveReviewAndMappings(ReviewDto reviewDto, ReviewEntity entity) {
         ReviewEntity returnedReview;
         try {
             returnedReview = reviewRepo.save(entity);

@@ -19,8 +19,9 @@ import java.util.List;
  */
 @Getter
 @Setter
-@Builder
+@NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ReviewDto {
     private String userSuid;
     private Long worldId;

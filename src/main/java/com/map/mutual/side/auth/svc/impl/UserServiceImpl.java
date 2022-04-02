@@ -223,7 +223,6 @@ public class UserServiceImpl implements UserService {
                     .targetSuid(targetSuid)
                     .userSuid(suid)
                     .worldinvitationCode(worldinvitationCode)
-                    .isPushed("N")
                     .build();
 
             userWorldInvitingLogRepo.save(userWorldInvitingLogEntity);

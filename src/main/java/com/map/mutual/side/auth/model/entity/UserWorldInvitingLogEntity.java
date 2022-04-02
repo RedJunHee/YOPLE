@@ -29,7 +29,4 @@ public class UserWorldInvitingLogEntity extends TimeEntity {
     @Column(name = "TARGET_SUID", nullable = false, updatable = false, columnDefinition = "VARCHAR(18)")
     private String targetSuid;
 
-    @Column(name = "IS_PUSHED" , nullable = false, columnDefinition = "CHAR(1)")
-    private String isPushed;
-
 }

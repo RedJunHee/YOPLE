@@ -69,5 +69,19 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
         return worlds;
     }
 
+    @Override
+    public List<ReviewDto> findAllReviewsAndIMG(Long worldId) {
+        QReviewEntity qR = new QReviewEntity("qR");
+        QReviewWorldMappingEntity qRWM = new QReviewWorldMappingEntity("qRWM");
 
+        List<ReviewDto> result = jpaQueryFactory.select(new QReviewDto
+                (qR.imageUrl,
+                qR.reviewId))
+                .from(qR)
+                .join(qRWM)
+                .on(qR.reviewId.eq(qRWM.reviewEntity.reviewId))
+                .where(qRWM.worldEntity.worldId.eq(worldId))
+                .fetch();
+        return result;
+    }
 }

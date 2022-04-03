@@ -8,4 +8,5 @@ import java.util.List;
 public interface ReviewWorldMappingRepoDSL {
     List<ReviewDto> findAllReviewsByWorldId(Long worldId);
     List<WorldDto> findAllWorldsByReviewId (Long reviewId, String suid);
+    List<ReviewDto> findAllReviewsAndIMG(Long worldId);
 }

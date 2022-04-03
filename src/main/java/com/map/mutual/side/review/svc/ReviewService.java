@@ -21,4 +21,5 @@ public interface ReviewService {
     ReviewDto getReview(Long reviewDto);
     List<ReviewDto> getReviews(Long worldId);
     List<ReviewDto> myReviews(String userSuid);
+    List<ReviewDto> worldPin(Long worldId);
 }

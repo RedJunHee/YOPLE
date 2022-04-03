@@ -173,6 +173,23 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
+    @GetMapping("/worldPin")
+    public ResponseEntity<ResponseJsonObject> worldPin(@RequestParam Long worldId) {
+        ResponseJsonObject responseJsonObject;
+
+        try {
+            List<ReviewDto> reviewDto = reviewService.worldPin(worldId);
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            responseJsonObject.setData(reviewDto);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
 
 
 

@@ -90,7 +90,7 @@ public class ReviewServiceImpl implements ReviewService {
             returnedReview = reviewRepo.save(entity);
             //공통 리뷰 저장
 
-            List<Long> presentWorldIds = reviewWorldMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(reviewDto.getReviewId()).build())
+            List<Long> presentWorldIds = reviewWorldMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(returnedReview.getReviewId()).build())
                     .stream().map(data -> data.getWorldEntity().getWorldId()).collect(Collectors.toList());
             //현재 db에 매핑 돼있는 월드 id들 조회
 
@@ -203,5 +203,14 @@ public class ReviewServiceImpl implements ReviewService {
             throw e;
         }
         return reviewDto;
+    }
+
+    @Override
+    public List<ReviewDto> worldPin(Long worldId) {
+        try {
+            return reviewWorldMappingRepository.findAllReviewsAndIMG(worldId);
+        }  catch (YOPLEServiceException e) {
+            throw e;
+        }
     }
 }

@@ -43,4 +43,12 @@ public class ReviewDto {
         }
         this.reviewId = reviewId;
     }
+
+    @QueryProjection
+    public ReviewDto(String imageUrls, Long reviewId) {
+        if(imageUrls != null) {
+            this.imageUrls = imageUrls.split(",");
+        }
+        this.reviewId = reviewId;
+    }
 }

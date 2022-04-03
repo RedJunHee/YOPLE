@@ -1,5 +1,6 @@
 package com.map.mutual.side.review.svc.impl;
 
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
@@ -15,6 +16,8 @@ import com.map.mutual.side.world.repository.WorldRepo;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,10 +52,12 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public ReviewDto createReview(ReviewDto reviewDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         ReviewDto result;
         try {
             ReviewEntity reviewEntity = ReviewEntity.builder()
-                    .userEntity(UserEntity.builder().suid(reviewDto.getUserSuid()).build())
+                    .userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build())
                     .title(reviewDto.getTitle())
                     .content(reviewDto.getContent())
 //                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
@@ -68,11 +73,15 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public ReviewDto updateReview(ReviewDto reviewDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         ReviewDto result;
         try {
             ReviewEntity entity = reviewRepo.findByReviewId(reviewDto.getReviewId());
             if (entity == null) {
                 throw new YOPLEServiceException(ApiStatusCode.CONTENT_NOT_FOUND);
+            } else if(!entity.getUserEntity().getSuid().equals(userInfoDto.getSuid())) {
+                throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
             } else {
                 entity.setContent(reviewDto.getContent());
                 entity.setTitle(reviewDto.getTitle());
@@ -144,7 +153,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public void deleteReview(Long reviewId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         try {
+            if(userInfoDto.getSuid().equals(reviewRepo.findByReviewId(reviewId).getUserEntity().getSuid())){
+                throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
+            }
             reviewWorldMappingRepository.deleteAllByReviewEntity(ReviewEntity.builder().reviewId(reviewId).build());
             reviewRepo.deleteById(reviewId);
         } catch (YOPLEServiceException e) {
@@ -185,11 +199,14 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> myReviews(String userSuid) {
+    public List<ReviewDto> myReviews() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
         List<ReviewEntity> reviewEntity;
         List<ReviewDto> reviewDto = new ArrayList<>();
         try {
-            reviewEntity = reviewRepo.findAllByUserEntity(UserEntity.builder().suid(userSuid).build());
+            reviewEntity = reviewRepo.findAllByUserEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build());
             reviewEntity.forEach(data -> reviewDto.add(ReviewDto.builder()
                             .reviewId(data.getReviewId())
                             .userSuid(data.getUserEntity().getSuid())

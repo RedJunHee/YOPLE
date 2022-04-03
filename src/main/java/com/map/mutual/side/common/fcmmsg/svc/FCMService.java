@@ -48,7 +48,30 @@ public class FCMService {
 
 
 
-    private void registryFcmToken(String token)  {
+    public void generateToken(String token) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+        try {
+            UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+
+            if (userEntity.getFcmToken().equals(token)) {
+                return;
+            } else if (userEntity.getFcmToken() == null) {
+                userEntity.setFcmToken(token);
+                userInfoRepo.save(userEntity);
+            } else {
+                registryFcmToken(token);
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+
+    }
+
+
+
+    public void registryFcmToken(String token)  {
 
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -87,16 +110,16 @@ public class FCMService {
     }
 
 
-    private void deleteFcmToken()  {
+    public void deleteFcmToken()  {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
             UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
 
-            List<FcmTopicEntity> fcmTopicEntities = null;
+            List<FcmTopicEntity> fcmTopicEntities;
             if(userEntity.getFcmToken() != null) {
-                userEntity.setFcmToken(null);
+                userEntity.setFcmToken(FCMConstant.EXPIRED);
                 fcmTopicEntities = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
 
                 fcmTopicEntities.forEach(data -> {
@@ -118,7 +141,8 @@ public class FCMService {
         }
     }
 
-    private void sendNotificationToken(String title, String body) {
+    @Async
+    public void sendNotificationToken(String title, String body) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
@@ -157,6 +181,18 @@ public class FCMService {
             throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
         }
     }
+
+    public void subscribeToTopic(String token, String topic) {
+        try {
+            TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance("fcm")).subscribeToTopic(Collections.singletonList(token), topic);
+            log.info("Success To Subscribe : {}", response);
+        } catch (FirebaseMessagingException e) {
+            log.error("Error : {}", e.getMessagingErrorCode());
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+        }
+    }
+
+
 
 //    private void updateFcmToken(String userSuid, String newToken)  {
 //        try {

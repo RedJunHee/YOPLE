@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -17,6 +18,7 @@ public class SMSAuthReqeustDto {
     message = "휴대폰 번호가 올바르지 않습니다.")
     private String phone;
     @NotNull(message = "duid가 없습니다.")
+    @NotEmpty
     private String duid;
     private String responseAuthNum;
 

@@ -39,7 +39,6 @@ public class ReviewController {
     /**
      * Review 생성
      * @param reviewDto
-     * String userSuid: 유저 suid
      * String title: 제목
      * String content: 내용
      * MultipartFile[] imageFiles: 리뷰에 올릴 이미지들
@@ -62,7 +61,6 @@ public class ReviewController {
     /**
      * Review 수정
      * @param reviewDto
-     * String userSuid: 유저 suid
      * String title: 제목
      * String content: 내용
      * Long reviewId: 수정할 리뷰 ID
@@ -74,7 +72,9 @@ public class ReviewController {
     @PutMapping("/review")
     public ResponseEntity<ResponseJsonObject> updateReview(@RequestBody ReviewDto reviewDto) {
         try {
-            reviewService.updateReview(reviewDto);
+            if (reviewDto.getWorldList() == null || reviewDto.getWorldList().isEmpty()) {
+                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+            } else  reviewService.updateReview(reviewDto);
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (Exception e) {
@@ -152,16 +152,16 @@ public class ReviewController {
 
     /**
      * 내가 쓴 Reviews 조회
-     * @param userSuid
      * @return
      * 내가 작성한 리뷰들을 불러옵니다.
+     *
      */
     @GetMapping("/myReviews")
-    public ResponseEntity<ResponseJsonObject> myReviews(@RequestParam String userSuid) {
+    public ResponseEntity<ResponseJsonObject> myReviews() {
         ResponseJsonObject responseJsonObject;
 
         try {
-            List<ReviewDto> reviewDto = reviewService.myReviews(userSuid);
+            List<ReviewDto> reviewDto = reviewService.myReviews();
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             responseJsonObject.setData(reviewDto);
         } catch (YOPLEServiceException e) {

@@ -1,29 +1,23 @@
 package com.map.mutual.side.common.fcmmsg.controller;
 
 
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.messaging.*;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import lombok.extern.log4j.Log4j2;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.util.Collections;
 
 /**
  * fileName       : FCMController
@@ -64,44 +58,50 @@ public class FCMController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-    @PostMapping("/sendNotification")
-    public void testTopic(@RequestParam String title,
-                          @RequestParam String body,
-                          @RequestParam String topic) {
-        fcmService.sendNotificationTopic(title, body, topic);
+    @PostMapping("/generateToken")
+    public void generateToken(@RequestParam String token) {
+        fcmService.generateToken(token);
     }
 
+//    @PostMapping("/sendNotification")
+//    public void testTopic(@RequestParam String title,
+//                          @RequestParam String body,
+//                          @RequestParam String topic) {
+//        fcmService.sendNotificationTopic(title, body, topic);
+//    }
+//
+//
+//    @PostMapping("/subscribeTopic")
+//    public void testSubscribe(@RequestParam String token,
+//                          @RequestParam String topic) throws FirebaseMessagingException {
+//        TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance("fcm")).subscribeToTopic(Collections.singletonList(token), topic);
+//        log.info(response);
+//    }
+//    @PostMapping("/getTopicList")
+//    public void getTopicList(@RequestParam String token) throws FirebaseMessagingException, IOException {
+//        OkHttpClient client = new OkHttpClient();
+//        Request request = new Request.Builder()
+//                .url("https://iid.googleapis.com/iid/info/"+token+"?details=true")
+//                .get()
+//                .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
+//                .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
+//                .build();
+//        FirebaseMessaging firebaseMessaging;
+//        Response response = client.newCall(request).execute();
+//        log.info(response.body().string());
+//
+//    }
+//    public String getAccessToken() throws IOException {
+//        String firebaseConfigPath = "fcm/fcm-yople-keys.json";
+//        GoogleCredentials googleCredentials = GoogleCredentials
+//                .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
+//                .createScoped(com.sun.tools.javac.util.List.of("https://www.googleapis.com/auth/cloud-platform"));
+//        googleCredentials.refreshIfExpired();
+//
+//        log.info("ACCESS TOKEN : {}", googleCredentials.getAccessToken().getTokenValue());
+//        return googleCredentials.getAccessToken().getTokenValue();
+//    }
 
-    @PostMapping("/subscribeTopic")
-    public void testSubscribe(@RequestParam String token,
-                          @RequestParam String topic) throws FirebaseMessagingException {
-        TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance("fcm")).subscribeToTopic(Collections.singletonList(token), topic);
-        log.info(response);
-    }
-    @PostMapping("/getTopicList")
-    public void getTopicList(@RequestParam String token) throws FirebaseMessagingException, IOException {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("https://iid.googleapis.com/iid/info/"+token+"?details=true")
-                .get()
-                .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
-                .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
-                .build();
-        FirebaseMessaging firebaseMessaging;
-        Response response = client.newCall(request).execute();
-        log.info(response.body().string());
-
-    }
-    public String getAccessToken() throws IOException {
-        String firebaseConfigPath = "fcm/fcm-yople-keys.json";
-        GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
-                .createScoped(com.sun.tools.javac.util.List.of("https://www.googleapis.com/auth/cloud-platform"));
-        googleCredentials.refreshIfExpired();
-
-        log.info("ACCESS TOKEN : {}", googleCredentials.getAccessToken().getTokenValue());
-        return googleCredentials.getAccessToken().getTokenValue();
-    }
 
 //====================REST API==================================
 //    @GetMapping("/getToken")

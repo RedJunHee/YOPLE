@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +27,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
@@ -60,12 +62,7 @@ public class AuthController {
     }
 
     @PostMapping("/sms-authentication-request")
-    public ResponseEntity<ResponseJsonObject> smsAuthenticationRequest(@Validated @RequestBody SMSAuthReqeustDto smsAuthReqeustDTO, Errors errors) throws NoSuchAlgorithmException, KeyStoreException, IOException, InvalidKeyException, KeyManagementException {
-
-        if(errors.hasErrors()){
-            logger.error("Validation Error : {}", YOPLEUtils.refineValidationError(errors));
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED), HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<ResponseJsonObject> smsAuthenticationRequest(@RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws MethodArgumentNotValidException, NoSuchAlgorithmException, KeyStoreException, IOException, InvalidKeyException, KeyManagementException {
 
         try {
             // 1. 핸드폰 번호 벨리데이션

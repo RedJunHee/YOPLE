@@ -6,11 +6,14 @@ import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
@@ -34,6 +37,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.USER_NOT_FOUND), HttpStatus.OK);
     }
 
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers,
+                                                                  HttpStatus status, WebRequest request) {
+
+            // "유효성 검사 실패 : " + ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+            logger.debug("Parameter Exception : " + ex.getMessage());
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED), HttpStatus.OK);
+    }
 
     // 사용자 정의 예외
     @ExceptionHandler(YOPLEServiceException.class)

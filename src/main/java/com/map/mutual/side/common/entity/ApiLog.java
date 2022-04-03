@@ -26,7 +26,7 @@ public class ApiLog extends CreateDtEntity {
     @Column(name="API_NAME", nullable = false, length = 100, columnDefinition = "VARCHAR(100)")
     private  String apiName;
 
-    @Column(name="API_DESC", nullable = false, columnDefinition = "VARCHAR(2000)")
+    @Column(name="API_DESC", nullable = false, columnDefinition = "VARCHAR(8000)")
     private  String apiDesc;
 
     @Column(name="API_STATUS", nullable = false, columnDefinition = "VARCHAR(50)")

@@ -123,6 +123,7 @@ public class UserController {
             if(userInfoRepo.findByUserId(userId) == null) {
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             } else {
+                // todo 400에러 수정하기.
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
             }
         }catch (YOPLEServiceException e) {

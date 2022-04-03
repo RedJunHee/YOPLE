@@ -107,8 +107,8 @@ public class RequestAroundLogAop {
 
             elapsedTime = stopWatch.getTotalTimeMillis();
             String apiDesc = "";
-            if(apiResultDescription.length() > 8000)
-                apiDesc = apiResultDescription.toString().substring(0,8000);
+            if(apiResultDescription.length() > 4000)
+                apiDesc = apiResultDescription.toString().substring(0,4000);
             else
                 apiDesc = apiResultDescription.toString();
 

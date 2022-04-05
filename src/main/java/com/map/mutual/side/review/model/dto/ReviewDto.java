@@ -30,6 +30,7 @@ public class ReviewDto {
     private MultipartFile[] imageFiles;
     private String[] imageUrls;
     private Long reviewId;
+    private Long placeId;
     private List<Long> worldList;
 
 
@@ -40,6 +41,8 @@ public class ReviewDto {
         this.content = content;
         if(imageUrls != null) {
             this.imageUrls = imageUrls.split(",");
+        } else {
+            this.imageUrls = new String[0];
         }
         this.reviewId = reviewId;
     }
@@ -48,6 +51,8 @@ public class ReviewDto {
     public ReviewDto(String imageUrls, Long reviewId) {
         if(imageUrls != null) {
             this.imageUrls = imageUrls.split(",");
+        } else {
+            this.imageUrls = new String[0];
         }
         this.reviewId = reviewId;
     }

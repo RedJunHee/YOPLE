@@ -101,11 +101,7 @@ public class HttpSensClient {
         httpPost.setHeader("Accept", "application/json");
         httpPost.addHeader("Connection", "keep-alive");
         httpPost.addHeader("Authorization", "Bearer " + token);
-//        if(proxyToken != null || !proxyToken.equals("")) {
-//            httpPost.addHeader("Proxy-Authorization", "Basic " + proxyToken);
-//        }
         httpPost.addHeader("Content-Type", "application/json");
-//        httpPost.addHeader("RHOCP-TYPE", "nprd");
 
         StringEntity stringEntity = new StringEntity(jsonBody);
 
@@ -121,12 +117,8 @@ public class HttpSensClient {
         httpDelete.setHeader("Accept", "application/json");
         httpDelete.addHeader("Connection", "keep-alive");
         httpDelete.addHeader("Authorization", "Bearer " + token);
-//        if(proxyToken != null || !proxyToken.equals("")) {
-//            httpDelete.addHeader("Proxy-Authorization", "Basic " + proxyToken);
-//        }
         httpDelete.addHeader("Content-Type", "application/json");
 
-//        httpDelete.addHeader("RHOCP-TYPE", "nprd");
 
         HttpResponse httpResponse = httpClient.execute(httpDelete);
 
@@ -141,9 +133,6 @@ public class HttpSensClient {
         httpGet.setHeader("Accept", "application/json");
         httpGet.addHeader("Connection", "keep-alive");
         httpGet.addHeader("Authorization", "Bearer " + token);
-//        if(proxyToken != null || !proxyToken.equals("")) {
-//            httpGet.addHeader("Proxy-Authorization", "Basic " + proxyToken);
-//        }
         httpGet.addHeader("Content-Type", "application/json");
 
         HttpResponse httpResponse = httpClient.execute(httpGet);

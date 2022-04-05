@@ -4,7 +4,11 @@ import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.utils.YOPLEUtils;
+import com.map.mutual.side.review.model.dto.PlaceDetailDto;
 import com.map.mutual.side.review.model.dto.ReviewDto;
+import com.map.mutual.side.review.model.dto.ReviewPlaceDto;
+import com.map.mutual.side.review.model.entity.PlaceEntity;
+import com.map.mutual.side.review.repository.PlaceRepo;
 import com.map.mutual.side.review.svc.ReviewService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,21 +39,53 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
+    @Autowired
+    private PlaceRepo placeRepo;
+
 
     /**
      * Review 생성
-     * @param reviewDto
-     * String title: 제목
-     * String content: 내용
-     * MultipartFile[] imageFiles: 리뷰에 올릴 이미지들
-     * List[Long] worldList: 월드 리스트
+     * @param dto
+     * ReviewPlaceDto:
+     * { reviewDto: {}, placeDto: {} }
+     *
+     * reviewDto: {
+     *      String title: 제목
+     *      String content: 내용
+     *      MultipartFile[] imageFiles: 리뷰에 올릴 이미지들
+     *      List[Long] worldList: 월드 리스트
+     * }
+     * placeDto: {
+     *     Long placeId: place 고유번호
+     *     String name: place 이름
+     *     String address: place 주소
+     *     String roadAddress: place 도로명
+     *     String categoryGroupCode: 카테고리 그룹 코드
+     *     String categoryGroupName: 카테고리 그룹 이름
+     *     BigDecimal x: x좌표
+     *     BigDecimal y: y좌표
+     * }
      * // TODO: 2022/04/01 imageFiles 서버 구축 후 추가 테스트
      * @return
      */
     @PostMapping("/review")
-    public ResponseEntity<ResponseJsonObject> createReview(@RequestBody ReviewDto reviewDto) {
+    public ResponseEntity<ResponseJsonObject> createReview(@RequestBody ReviewPlaceDto dto) {
         try {
-            reviewService.createReview(reviewDto);
+            if (dto.getPlace() != null && !placeRepo.findById(dto.getPlace().getPlaceId()).isPresent()) {
+                PlaceEntity placeEntity = PlaceEntity.builder()
+                        .placeId(dto.getPlace().getPlaceId())
+                        .name(dto.getPlace().getName())
+                        .address(dto.getPlace().getAddress())
+                        .roadAddress(dto.getPlace().getRoadAddress())
+                        .categoryGroupCode(dto.getPlace().getCategoryGroupCode())
+                        .categoryGroupName(dto.getPlace().getCategoryGroupName())
+                        .x(dto.getPlace().getX())
+                        .y(dto.getPlace().getY())
+                        .build();
+
+                placeRepo.save(placeEntity);
+            }
+            reviewService.createReview(dto);
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (Exception e) {
@@ -181,6 +217,23 @@ public class ReviewController {
             List<ReviewDto> reviewDto = reviewService.worldPin(worldId);
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             responseJsonObject.setData(reviewDto);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
+    @GetMapping("/placeDetail")
+    public ResponseEntity<ResponseJsonObject> placeDetail(@RequestParam Long placeId, @RequestParam Long worldId) {
+        ResponseJsonObject responseJsonObject;
+
+        try {
+            PlaceDetailDto result = reviewService.placeDetail(placeId, worldId);
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            responseJsonObject.setData(result);
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (Exception e) {

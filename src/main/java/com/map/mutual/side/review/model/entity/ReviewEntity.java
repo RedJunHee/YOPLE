@@ -45,6 +45,10 @@ public class ReviewEntity extends TimeEntity implements Persistable<Long> {
     @Column(name="IMG_URL", columnDefinition = "VARCHAR(100)")
     private String imageUrl;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PLACE_ID", referencedColumnName = "PLACE_ID")
+    private PlaceEntity placeEntity;
+
     @OneToMany(mappedBy = "reviewEntity")
     private List<ReviewWorldMappingEntity> reviewWorldMappingEntities;
 

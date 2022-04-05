@@ -6,7 +6,6 @@ import com.map.mutual.side.world.model.entity.WorldEntity;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.List;
 
 /**
  * fileName       : ReviewWorldMappingEntity

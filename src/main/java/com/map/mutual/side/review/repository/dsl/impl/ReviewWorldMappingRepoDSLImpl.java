@@ -29,7 +29,7 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
         QReviewEntity qReview = new QReviewEntity("qReview");
         QReviewWorldMappingEntity qRW = new QReviewWorldMappingEntity("qRW");
         List<ReviewDto> reviewDtos = jpaQueryFactory.select(new QReviewDto
-                (qReview.userEntity,
+                        (qReview.userEntity,
                                 qReview.title,
                                 qReview.content,
                                 qReview.imageUrl,
@@ -57,13 +57,13 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
                 .leftJoin(QWorldUserMappingEntity.worldUserMappingEntity)
                 .on(QWorldEntity.worldEntity.worldId.eq(QWorldUserMappingEntity.worldUserMappingEntity.worldId)
                         .and(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(suid)))
-                .orderBy( new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(suid)).then(1).otherwise(0).desc()
-                , QWorldUserMappingEntity.worldUserMappingEntity.accessTime.desc())
+                .orderBy(new CaseBuilder().when(QWorldEntity.worldEntity.worldOwner.eq(suid)).then(1).otherwise(0).desc()
+                        , QWorldUserMappingEntity.worldUserMappingEntity.accessTime.desc())
                 .fetch();
 
         List<WorldDto> worlds = new ArrayList<>();
 
-        for(WorldEntity world : worldEntities){
+        for (WorldEntity world : worldEntities) {
             worlds.add(WorldDto.builder().worldId(world.getWorldId()).worldName(world.getWorldName()).build());
         }
         return worlds;
@@ -75,8 +75,8 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
         QReviewWorldMappingEntity qRWM = new QReviewWorldMappingEntity("qRWM");
 
         List<ReviewDto> result = jpaQueryFactory.select(new QReviewDto
-                (qR.imageUrl,
-                qR.reviewId))
+                        (qR.imageUrl,
+                                qR.reviewId))
                 .from(qR)
                 .join(qRWM)
                 .on(qR.reviewId.eq(qRWM.reviewEntity.reviewId))

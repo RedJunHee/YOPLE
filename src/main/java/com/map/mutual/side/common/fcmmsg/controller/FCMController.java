@@ -2,13 +2,11 @@ package com.map.mutual.side.common.fcmmsg.controller;
 
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.fcmmsg.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collections;
 
 /**
  * fileName       : FCMController
@@ -49,11 +49,11 @@ public class FCMController {
                     .setToken(token)
                     .setNotification(notification)
                     .build();
-            String response = FirebaseMessaging.getInstance(FirebaseApp.getInstance("fcm")).send(message);
+            String response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
             log.info("Successfully sent message: {}", response);
         } catch (FirebaseMessagingException e) {
-            log.error("Error : {}", e.getMessagingErrorCode());
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            log.error("Error : {}", e.getErrorCode());
+            throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
@@ -63,20 +63,26 @@ public class FCMController {
         fcmService.generateToken(token);
     }
 
-//    @PostMapping("/sendNotification")
-//    public void testTopic(@RequestParam String title,
-//                          @RequestParam String body,
-//                          @RequestParam String topic) {
-//        fcmService.sendNotificationTopic(title, body, topic);
-//    }
+    @PostMapping("/sendNotification")
+    public void testTopic(@RequestParam String title,
+                          @RequestParam String body,
+                          @RequestParam String topic) {
+        fcmService.sendNotificationTopic(title, body, topic);
+    }
 //
 //
-//    @PostMapping("/subscribeTopic")
-//    public void testSubscribe(@RequestParam String token,
-//                          @RequestParam String topic) throws FirebaseMessagingException {
-//        TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance("fcm")).subscribeToTopic(Collections.singletonList(token), topic);
-//        log.info(response);
-//    }
+    @PostMapping("/subscribeTopic")
+    public void testSubscribe(@RequestParam String token,
+                          @RequestParam String topic) throws FirebaseMessagingException {
+        try {
+            TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), topic);
+            if (!response.getErrors().isEmpty()) {
+                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+            }
+        } catch (FirebaseMessagingException e) {
+            throw e;
+        }
+    }
 //    @PostMapping("/getTopicList")
 //    public void getTopicList(@RequestParam String token) throws FirebaseMessagingException, IOException {
 //        OkHttpClient client = new OkHttpClient();

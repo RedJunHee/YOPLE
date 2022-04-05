@@ -1,6 +1,8 @@
 package com.map.mutual.side.review.svc;
 
+import com.map.mutual.side.review.model.dto.PlaceDetailDto;
 import com.map.mutual.side.review.model.dto.ReviewDto;
+import com.map.mutual.side.review.model.dto.ReviewPlaceDto;
 
 import java.util.List;
 
@@ -15,11 +17,12 @@ import java.util.List;
  *
  */
 public interface ReviewService {
-    ReviewDto createReview(ReviewDto reviewDto);
+    ReviewDto createReview(ReviewPlaceDto dto);
     ReviewDto updateReview(ReviewDto reviewDto);
     void deleteReview(Long reviewId);
     ReviewDto getReview(Long reviewDto);
     List<ReviewDto> getReviews(Long worldId);
     List<ReviewDto> myReviews();
     List<ReviewDto> worldPin(Long worldId);
+    PlaceDetailDto placeDetail(Long placeId, Long worldId);
 }

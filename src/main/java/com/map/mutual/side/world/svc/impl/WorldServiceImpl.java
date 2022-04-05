@@ -2,8 +2,6 @@ package com.map.mutual.side.world.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
-import com.map.mutual.side.review.model.entity.ReviewEntity;
-import com.map.mutual.side.review.model.keys.ReviewWorldMappingEntityKeys;
 import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
@@ -25,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

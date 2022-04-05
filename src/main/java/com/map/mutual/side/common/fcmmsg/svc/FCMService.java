@@ -184,7 +184,7 @@ public class FCMService {
 
     public void subscribeToTopic(String token, String topic) {
         try {
-            TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance("fcm")).subscribeToTopic(Collections.singletonList(token), topic);
+            TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), topic);
             log.info("Success To Subscribe : {}", response);
         } catch (FirebaseMessagingException e) {
             log.error("Error : {}", e.getMessagingErrorCode());

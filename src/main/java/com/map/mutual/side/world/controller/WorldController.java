@@ -53,6 +53,9 @@ public class WorldController {
             // 3. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        }catch(YOPLEServiceException e){
+            logger.debug(e.getMessage());
+            throw e;
         }catch(Exception e)
         {
             logger.error("WorldController createWorld Failed.!! : "+ e.getMessage());
@@ -82,6 +85,9 @@ public class WorldController {
             // 3. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        }catch(YOPLEServiceException e){
+            logger.debug(e.getMessage());
+            throw e;
         }catch(Exception e)
         {
             logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
@@ -114,6 +120,9 @@ public class WorldController {
             // 4. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        }catch(YOPLEServiceException e){
+            logger.debug(e.getMessage());
+            throw e;
         }catch(Exception e)
         {
             logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
@@ -152,6 +161,9 @@ public class WorldController {
             // 5. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        }catch(YOPLEServiceException e){
+            logger.debug(e.getMessage());
+            throw e;
         }catch(Exception e)
         {
             logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
@@ -186,6 +198,7 @@ public class WorldController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
+            logger.debug(e.getMessage());
             throw e;
         }catch(Exception e){
             throw e;
@@ -220,6 +233,7 @@ public class WorldController {
             // 4. 리턴.
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
         }catch(YOPLEServiceException e){
+            logger.debug(e.getMessage());
             throw e;
         }catch(Exception e){
             throw e;

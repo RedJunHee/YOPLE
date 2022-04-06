@@ -150,6 +150,7 @@ public class UserController {
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.USER_ID_OVERLAPS);
             }
         }catch (YOPLEServiceException e) {
+            logger.debug(e.getMessage());
             throw e;
         }
 
@@ -174,6 +175,7 @@ public class UserController {
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);
         }catch (YOPLEServiceException e) {
+            logger.error(e.getMessage());
             throw e;
         }
 
@@ -190,20 +192,25 @@ public class UserController {
     public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam long worldId) {
         ResponseJsonObject response;
         try{
+
+            // 1. 월드에 참여 중인 사용자 조회.
             List<UserInWorld> userInfoDto = userService.worldUsers(worldId);
 
+            // 2. 응답 객체 설정
             Map<String, Object> Users = new HashMap<>();
 
             Users.put("users", userInfoDto);
-
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(Users);
 
+            // 3. 리턴.
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
         }catch (YOPLEServiceException e) {
+            logger.error(e.getMessage());
             throw e;
         }
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**

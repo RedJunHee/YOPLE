@@ -1,5 +1,6 @@
 package com.map.mutual.side.auth.svc.impl;
 
+import com.google.protobuf.Api;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
@@ -70,239 +71,250 @@ public class UserServiceImpl implements UserService {
         this.userTOSRepo = userTOSRepo;
     }
 
+    /**
+     * Name        : signUp
+     * Author      : 조 준 희
+     * Description : 회원가입.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     @Transactional
-    public UserInfoDto signUp(UserInfoDto user) throws Exception {
-        try {
-            UserEntity userEntity = UserEntity.builder()
-                    .suid(user.getSuid())
-                    .userId(user.getUserId())
-                    .name(user.getName())
-                    .phone(user.getPhone())
-                    .profileUrl(user.getProfileUrl()).build();
+    public UserInfoDto signUp(UserInfoDto user) {
+        UserEntity userEntity = UserEntity.builder()
+                .suid(user.getSuid())
+                .userId(user.getUserId())
+                .name(user.getName())
+                .phone(user.getPhone())
+                .profileUrl(user.getProfileUrl()).build();
 
-            UserTOSEntity userTOSEntity = UserTOSEntity.builder()
-                    .suid(user.getSuid())
-                    .serviceTosYN(user.getUserTOSDto().getServiceTosYN())
-                    .ageCollectionYn(user.getUserTOSDto().getAgeCollectionYn())
-                    .locationInfoYn(user.getUserTOSDto().getLocationInfoYn())
-                    .marketingYn(user.getUserTOSDto().getMarketingYn())
-                    .userInfoYn(user.getUserTOSDto().getUserInfoYn())
-                    .build();
+        UserTOSEntity userTOSEntity = UserTOSEntity.builder()
+                .suid(user.getSuid())
+                .serviceTosYN(user.getUserTOSDto().getServiceTosYN())
+                .ageCollectionYn(user.getUserTOSDto().getAgeCollectionYn())
+                .locationInfoYn(user.getUserTOSDto().getLocationInfoYn())
+                .marketingYn(user.getUserTOSDto().getMarketingYn())
+                .userInfoYn(user.getUserTOSDto().getUserInfoYn())
+                .build();
 
 
-            userInfoRepo.save(userEntity);
-            userTOSRepo.save(userTOSEntity);
-            return user;
-        } catch (Exception e) {
-            log.error("SignUp Error occured : {}", e.getMessage());
-            throw e;
-        }
+        userInfoRepo.save(userEntity);
+        userTOSRepo.save(userTOSEntity);
+        return user;
     }
 
+    /**
+     * Name        : findUser
+     * Author      : 조 준 희
+     * Description : 사용자 검색(찾기).
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public UserInfoDto findUser(String id, String phone) {
+    public UserInfoDto findUser(String id, String phone) throws YOPLEServiceException {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
-        try {
 
-            if(StringUtil.isNullOrEmpty(id) == true)
-                userEntity = userInfoRepo.findOneByPhone(phone);
-            else
-                userEntity = userInfoRepo.findByUserId(id);
+        if(StringUtil.isNullOrEmpty(id) == true)
+            userEntity = userInfoRepo.findOneByPhone(phone);
+        else
+            userEntity = userInfoRepo.findByUserId(id);
 
-            userInfoDto = modelMapper.map(userEntity, UserInfoDto.class);
-        } catch (YOPLEServiceException e) {
-            log.error("사용자를 찾을 수 없습니다.");
-            throw e;
-        }
+        if(userEntity == null)
+            throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
+
+        userInfoDto = modelMapper.map(userEntity, UserInfoDto.class);
+
         return userInfoDto;
+
     }
 
-    //3. 월드 초대 수락하기.
+    /**
+     * Name        : inviteJoinWorld
+     * Author      : 조 준 희
+     * Description : 월드에 참여하기.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public WorldDto inviteJoinWorld( String worldinvitationCode) {
+    public WorldDto inviteJoinWorld( String worldInvitationCode) throws YOPLEServiceException {
 
-        try {
+        // 1. 사용자 SUID 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            // 1. 사용자 SUID 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
+        Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
 
-            // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
-            Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldinvitationCode, userInfoDto.getSuid());
-
-            if (inviteWorldId == null) {
-                logger.error("해당 사용자가 이미 월드에 속해있습니다.");
-                throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
-            }
-
-            // 3. 초대 수락한 월드 입장 처리
-            WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
-                    .userSuid(userInfoDto.getSuid())
-                    .worldId(inviteWorldId)
-                    .worldUserCode(YOPLEUtils.getWorldRandomCode())
-                    .worldinvitationCode(worldinvitationCode)
-                    .accessTime(LocalDateTime.now())
-                    .build();
-
-            worldUserMappingRepo.save(worldUserMappingEntity);
-
-            // 4. 참여한 월드 정보 조회
-            WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
-                    .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
-
-            // 5. 참여한 월드 정보 리턴.
-            return WorldDto.builder().worldId(world.getWorldId())
-                    .worldName(world.getWorldName())
-                    .worldDesc(world.getWorldDesc()).build();
-
-
-        } catch (YOPLEServiceException e) {
-            logger.error("World inviteJoinWorld Failed.!! : " + e.getMessage());
-            throw e;
+        if (inviteWorldId == null) {
+            logger.error("해당 사용자가 이미 월드에 속해있습니다.");
+            throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
         }
+
+        // 3. 초대 수락한 월드 입장 처리
+        WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
+                .userSuid(userInfoDto.getSuid())
+                .worldId(inviteWorldId)
+                .worldUserCode(YOPLEUtils.getWorldRandomCode())
+                .worldinvitationCode(worldInvitationCode)
+                .accessTime(LocalDateTime.now())
+                .build();
+
+        worldUserMappingRepo.save(worldUserMappingEntity);
+
+        // 4. 참여한 월드 정보 조회
+        WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
+                .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
+
+        // 5. 참여한 월드 정보 리턴.
+        return WorldDto.builder().worldId(world.getWorldId())
+                .worldName(world.getWorldName())
+                .worldDesc(world.getWorldDesc()).build();
+
     }
 
-    //유저 상세정보 조회하기.
+    /**
+     * Name        : userDetails
+     * Author      : 조 준 희
+     * Description : 유저 상세정보 조회하기.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public UserInfoDto userDetails(String suid) {
-        try{
+    public UserInfoDto userDetails(String suid) throws YOPLEServiceException {
 
-            //토큰에 저장된 SUID의 사용자가 없을 경우.
-            UserEntity userEntity = userInfoRepo.findById(suid)
-                            .orElseThrow( ()->new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR) );
+        //1. 토큰에 저장된 SUID 사용자가 없을 경우. Exception.
+        UserEntity userEntity = userInfoRepo.findById(suid)
+                        .orElseThrow( ()-> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR) );
 
-            UserInfoDto userInfoDto = UserInfoDto.builder()
-                    .userId(userEntity.getUserId())
-                    .name(userEntity.getName())
-                    .profileUrl(userEntity.getProfileUrl())
-                    .build();
+        // 2. 응답 객체 설정
+        UserInfoDto userInfoDto = UserInfoDto.builder()
+                .userId(userEntity.getUserId())
+                .name(userEntity.getName())
+                .profileUrl(userEntity.getProfileUrl())
+                .build();
 
-            return userInfoDto;
+        // 3. 리턴.
+        return userInfoDto;
 
-        }catch(YOPLEServiceException e){
-            logger.error("사용자 상세정보 조회 없는 SUID 조회.");
-            throw e;
-        }catch(Exception e){
-            throw e;
-        }
     }
 
+    /**
+     * Name        : getRecentAccessWorldID
+     * Author      : 조 준 희
+     * Description : 가장 최근 입장한 월드 ID 조회
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     public Long getRecentAccessWorldID(String suid)
     {
-        try{
 
-            // 1. 가장 최근에 접속한 월드 ID 조회
-            // 최근에 접속한 월드 ID가 존재하지 않다면 Default 0 리턴.
-            WorldUserMappingEntity worldUserMappingEntity = worldUserMappingRepo.findTop1ByUserSuidOrderByAccessTimeDesc(suid)
-                    .orElse( WorldUserMappingEntity.builder().worldId(0l).build() );
+        // 1. 가장 최근에 접속한 월드 ID 조회
+        // 최근에 접속한 월드 ID가 존재하지 않다면 Default 0 리턴.
+        WorldUserMappingEntity worldUserMappingEntity = worldUserMappingRepo.findTop1ByUserSuidOrderByAccessTimeDesc(suid)
+                .orElse( WorldUserMappingEntity.builder().worldId(0l).build() );
 
 
-            return worldUserMappingEntity.getWorldId();
+        return worldUserMappingEntity.getWorldId();
 
-        }catch(YOPLEServiceException e){
-            logger.error("UserService getRecentAccessWorldID Failed.!!" + e.getMessage());
-            throw e;
-        }catch(Exception e){
-            throw e;
-        }
     }
 
-    // 사용자 정보 수정
+    /**
+     * Name        : userInfoUpdate
+     * Author      : 조 준 희
+     * Description : 사용자 정보 수정.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     public UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl) {
 
-        try{
-            //사용자 정보 가져오기.
-            UserEntity userEntity = userInfoRepo.findById(suid)
-                    .orElseThrow(()->new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
+        // 1. 사용자 SUID 가져오기.
+        UserEntity userEntity = userInfoRepo.findById(suid)
+                .orElseThrow(()->new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
 
-            if(StringUtil.isNullOrEmpty(userId) == false)
-                userEntity.setUserId(userId);
+        // 2. 수정 요청 들어온 필드 설정.
+        if(StringUtil.isNullOrEmpty(userId) == false)
+            userEntity.setUserId(userId);
 
-            if(StringUtil.isNullOrEmpty(profileUrl) == false)
-                userEntity.setProfileUrl(profileUrl);
+        if(StringUtil.isNullOrEmpty(profileUrl) == false)
+            userEntity.setProfileUrl(profileUrl);
 
-            userInfoRepo.save(userEntity);
+        // 3. 사용자 프로필 정보 수정.
+        userInfoRepo.save(userEntity);
 
+        // 4. 업데이트된 사용자 정보 설정
+        UserInfoDto userInfoDto  = UserInfoDto.builder()
+                .userId(userEntity.getUserId())
+                .name(userEntity.getName())
+                .profileUrl(userEntity.getProfileUrl())
+                .build();
 
-            UserInfoDto userInfoDto  = UserInfoDto.builder()
-                    .userId(userEntity.getUserId())
-                    .name(userEntity.getName())
-                    .profileUrl(userEntity.getProfileUrl())
-                    .build();
+        // 5. 리턴.
+        return userInfoDto;
 
-            return userInfoDto;
-
-        }catch(YOPLEServiceException e){
-            logger.error("사용자 정보 수정 Failed.!! : SUID에 해당하는 사용자를 찾을 수 없음. ");
-            throw e;
-        }catch(Exception e) {
-            throw e;
-        }
     }
 
-    //로그아웃
+    /**
+     * Name        : userLogout
+     * Author      : 조 준 희
+     * Description : 로그아웃
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     public void userLogout(String suid) {
-        try{
 
-            JWTRefreshTokenLogEntity jwtRefreshTokenLogEntity = JWTRefreshTokenLogEntity.builder().userSuid(suid).build();
+        JWTRefreshTokenLogEntity jwtRefreshTokenLogEntity = JWTRefreshTokenLogEntity.builder().userSuid(suid).build();
 
-            jwtRepo.delete(jwtRefreshTokenLogEntity);
+        jwtRepo.delete(jwtRefreshTokenLogEntity);
 
-        }catch(YOPLEServiceException e){
-            throw  e;
-        }catch(Exception e){
-            throw e;
-        }
 
     }
 
-    //사용자 월드 초대하기.
+    /**
+     * Name        : userWorldInviting
+     * Author      : 조 준 희
+     * Description :  사용자 월드 초대하기.
+     *                  - 초대자가 월드에 참여중이 아닌경우 FORBIDDEN Exception
+     *                  - 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
-    public void userWorldInviting(String suid, String targetSuid, Long worldId) {
+    public void userWorldInviting(String suid, String targetSuid, Long worldId) throws YOPLEServiceException {
 
-        try{
-            WorldUserMappingEntity worldUserMappingEntity = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid)
-                    .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
+        // 1. 초대자가 월드에 참여중이 아닌경우 FORBIDDEN Exception
+        WorldUserMappingEntity suidWorldMapping = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid)
+                .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
 
-            String worldinvitationCode = worldUserMappingEntity.getWorldUserCode();
+        // 2. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
+        if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,suid).isPresent() == true )
+            throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
 
-            UserWorldInvitingLogEntity userWorldInvitingLogEntity = UserWorldInvitingLogEntity.builder()
-                    .targetSuid(targetSuid)
-                    .userSuid(suid)
-                    .worldinvitationCode(worldinvitationCode)
-                    .build();
 
-            userWorldInvitingLogRepo.save(userWorldInvitingLogEntity);
+        // 초대받은 초대 코드.
+        String worldinvitationCode = suidWorldMapping.getWorldUserCode();
 
-        }catch(YOPLEServiceException e){
-            logger.error("월드 사용자 초대하기 실패. : " + e.getMessage());
-            throw e;
+        // 월드 참여 매핑 설정
+        UserWorldInvitingLogEntity userWorldInvitingLogEntity = UserWorldInvitingLogEntity.builder()
+                .targetSuid(targetSuid)
+                .userSuid(suid)
+                .worldinvitationCode(worldinvitationCode)
+                .build();
 
-        }catch(Exception e){
-            throw e;
-        }
+        // 월드에 참여.
+        userWorldInvitingLogRepo.save(userWorldInvitingLogEntity);
 
     }
 
-    // 월드 참여자 조회하기.
+    /**
+     * Name        : worldUsers
+     * Author      : 조 준 희
+     * Description : 월드 참여자 조회하기.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     public List<UserInWorld> worldUsers(long worldId) {
         List<UserInWorld> userInfoEntities;
-        try {
-            userInfoEntities = worldUserMappingRepo.findAllUsersInWorld(worldId);
 
+        userInfoEntities = worldUserMappingRepo.findAllUsersInWorld(worldId);
 
-             } catch (YOPLEServiceException e) {
-            log.error("사용자를 찾을 수 없습니다.");
-            throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
-        }
         return userInfoEntities;
     }
 

@@ -123,6 +123,26 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         QWorldUserMappingEntity mapA = new QWorldUserMappingEntity("mapA");
         QWorldUserMappingEntity mapB = new QWorldUserMappingEntity("mapB");
 
+        String nativeQuery =
+                        "CREATE TABLE #REVIEW_COUNT(" +
+                                "USER_SUID VARCHAR(18)," +
+                                "COUNT INT" +
+                        ")" +
+
+                        "INSERT INTO #REVIEW_COUNT (USER_SUID, COUNT)" +
+                        "SELECT r.USER_SUID, COUNT(rw.REVIEW_ID) as cnt" +
+                        "  FROM REVIEW r" +
+                        " INNER JOIN REVIEW_WORLD_MAPPING rw" +
+                        "    ON r.REVIEW_ID = rw.REVIEW_ID" +
+                        " WHERE r.USER_SUID = ? AMD rw.WORLD_ID = ? " +
+                        " GROUP BY r.USER_SUID" +
+                        " ORDER BY cnt DESC " +
+                        "" +
+                        "" +
+                        "" ;
+
+        Query query = entityManager.createNativeQuery(nativeQuery);
+
         List<UserInWorld> UserInfoInWorld = jpaQueryFactory
                 .select(new QUserInWorld(userA.suid,
                         userA.userId,

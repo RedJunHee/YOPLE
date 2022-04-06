@@ -4,6 +4,7 @@ package com.map.mutual.side.world.model.entity;
 import com.map.mutual.side.common.repository.config.TimeEntity;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 
@@ -25,7 +26,7 @@ import javax.persistence.*;
 @Builder
 @AllArgsConstructor
 @Setter
-public class WorldEntity extends TimeEntity {
+public class WorldEntity extends TimeEntity implements Persistable<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,5 +50,15 @@ public class WorldEntity extends TimeEntity {
 
     public void updateWorldDesc(String worldDesc) {
         this.worldDesc = worldDesc;
+    }
+
+    @Override
+    public Long getId() {
+        return worldId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return getCreateTime() == null;
     }
 }

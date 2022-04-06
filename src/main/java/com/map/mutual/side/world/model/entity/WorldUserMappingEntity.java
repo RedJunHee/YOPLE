@@ -1,8 +1,10 @@
 package com.map.mutual.side.world.model.entity;
 
 import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.common.repository.config.CreateDtEntity;
 import com.map.mutual.side.world.model.keys.WorldUserMappingEntityKeys;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -16,7 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @IdClass(WorldUserMappingEntityKeys.class)
-public class WorldUserMappingEntity {
+public class WorldUserMappingEntity extends CreateDtEntity implements Persistable<WorldUserMappingEntityKeys> {
     @Id
     @Column(name="USER_SUID", nullable = false, columnDefinition = "VARCHAR(18)")
     private String userSuid;
@@ -45,4 +47,13 @@ public class WorldUserMappingEntity {
     @Column(name = "ACCESS_TIME")
     private LocalDateTime accessTime;
 
+    @Override
+    public WorldUserMappingEntityKeys getId() {
+        return WorldUserMappingEntityKeys.builder().worldId(worldId).userSuid(userSuid).build();
+    }
+
+    @Override
+    public boolean isNew() {
+        return getCreateTime() == null;
+    }
 }

@@ -268,9 +268,6 @@ public class UserServiceImpl implements UserService {
     public void userWorldInviting(String suid, String targetSuid, Long worldId) {
 
         try{
-
-            // todo 중복 체크 없음. 여러번 초대하기 가능.
-
             WorldUserMappingEntity worldUserMappingEntity = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid)
                     .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
 

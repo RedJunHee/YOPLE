@@ -23,6 +23,7 @@ public enum ApiStatusCode {
     ,CONTENT_NOT_FOUND (204,"Content Not Found", "컨텐츠 없음.", false)
     ,AUTH_META_NOT_MATCH(211, "Auth Meta Not Match", "인증 메타 정보 불일치.",true)
     ,USER_NOT_FOUND (214,"User Not Found", "유저 찾을 수 없음.", true)
+    ,USER_ID_OVERLAPS (215, "User ID Overlaps.", "사용자 ID 중복.",true)
     ,PARAMETER_CHECK_FAILED (400,"Bad Request","문법상 또는 파라미터 오류가 있어서 서버가 요청사항을 처리하지 못함.", true)
     ,UNAUTHORIZED (401, "UnAuthorized", "Unauthorized, 사용자 인증 실패.", true)
     ,FORBIDDEN (403, "Forbidden", "Forbidden, 사용권한 없음.", true)

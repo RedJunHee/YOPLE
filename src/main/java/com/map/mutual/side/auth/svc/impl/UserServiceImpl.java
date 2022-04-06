@@ -100,8 +100,8 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
     @Override
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public UserInfoDto findUser(String id, String phone) {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
@@ -168,6 +168,7 @@ public class UserServiceImpl implements UserService {
 
     //유저 상세정보 조회하기.
     @Override
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public UserInfoDto userDetails(String suid) {
         try{
 
@@ -185,6 +186,26 @@ public class UserServiceImpl implements UserService {
 
         }catch(YOPLEServiceException e){
             logger.error("사용자 상세정보 조회 없는 SUID 조회.");
+            throw e;
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    public Long getRecentAccessWorldID(String suid)
+    {
+        try{
+
+            // 1. 가장 최근에 접속한 월드 ID 조회
+            // 최근에 접속한 월드 ID가 존재하지 않다면 Default 0 리턴.
+            WorldUserMappingEntity worldUserMappingEntity = worldUserMappingRepo.findTop1ByUserSuidOrderByAccessTimeDesc(suid)
+                    .orElse( WorldUserMappingEntity.builder().worldId(0l).build() );
+
+
+            return worldUserMappingEntity.getWorldId();
+
+        }catch(YOPLEServiceException e){
+            logger.error("UserService getRecentAccessWorldID Failed.!!" + e.getMessage());
             throw e;
         }catch(Exception e){
             throw e;

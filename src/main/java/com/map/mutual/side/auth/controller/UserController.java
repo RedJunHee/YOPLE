@@ -44,23 +44,23 @@ import java.util.*;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-
     private final Logger logger = LogManager.getLogger(UserController.class);
-    @Autowired
     private AuthService authService;
-
-    @Autowired
     private UserService userService;
-
-    @Autowired
     private UserInfoRepo userInfoRepo;
 
+    @Autowired
+    public UserController(AuthService authService, UserService userService, UserInfoRepo userInfoRepo) {
+        this.authService = authService;
+        this.userService = userService;
+        this.userInfoRepo = userInfoRepo;
+    }
 
     /**
-     * 유저 회원가입
-     * @param userInfoDto
-     * @return
-     * @throws Exception
+     * Name        : smsSignUp
+     * Author      : 조 준 희
+     * Description : 사용자 회원가입.
+     * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/signup")
     @Transactional
@@ -111,7 +111,12 @@ public class UserController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK),httpHeaders, HttpStatus.OK);
     }
 
-    /** 월드 초대 수락하기 (월드-유저 매핑 )*/
+    /**
+     * Name        : inviteJoinWorld
+     * Author      : 조 준 희
+     * Description : 월드에 참여하기. (월드-유저 매핑 )
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @PostMapping(value = "/world/user")
     public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") String worldinvitationCode){
         try{
@@ -129,6 +134,12 @@ public class UserController {
         }
     }
 
+    /**
+     * Name        : checkUserId
+     * Author      : 조 준 희
+     * Description : 유저 ID 중복체크
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @GetMapping("/check-userid")
     public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") String userId) {
         ResponseJsonObject response;
@@ -146,6 +157,12 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Name        : findUserByIdOrPhone
+     * Author      : 조 준 희
+     * Description : 월드 초대하기 전 사용자 검색에 사용되는 API
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @GetMapping("/find-user")
     public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam String userId,
                                                                   @RequestParam String phone) {
@@ -163,6 +180,13 @@ public class UserController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    /**
+     * Name        :  worldUsers
+     * Author      : 조 준 희
+     * Description : 월드에서 참여자 리스트 화면에 사용되는 API
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @GetMapping("/world/users")
     public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam long worldId) {
         ResponseJsonObject response;
@@ -183,20 +207,37 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //사용자 상세정보 조회.
+    /**
+     * Name        : userDetails
+     * Author      : 조 준 희
+     * Description : 사용자 상세정보 조회
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @GetMapping("/user")
     public ResponseEntity<ResponseJsonObject> userDetails() {
-
         ResponseJsonObject responseJsonObject;
 
         try{
+
+            // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
+            // 2. 사용자 상세정보 조회
             UserInfoDto userDetails = userService.userDetails(userToken.getSuid());
 
+            // 3. 사용자 최근 접속 월드 ID 조회
+            Long recentAccessWorldID = userService.getRecentAccessWorldID(userToken.getSuid());
+
+            // 4. 응답 생성.
+            Map<String, Object> responseMap = new HashMap<>();
+
+            responseMap.put("recentWorldId",recentAccessWorldID);
+            responseMap.put("user", userDetails);
+
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            responseJsonObject.setData(userDetails);
+            responseJsonObject.setData(responseMap);
+
 
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
@@ -207,7 +248,12 @@ public class UserController {
         }
     }
 
-    //사용자 정보 수정
+    /**
+     * Name        :  userInfoUpdate
+     * Author      : 조 준 희
+     * Description : 사용자 상세정보 수정.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @PatchMapping("/user")
     public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam String userId,
                                                              @RequestParam String profileUrl){
@@ -216,10 +262,11 @@ public class UserController {
 
         try{
 
-            //둘 중에 하나도 안들어오면 파라미터 체크 에러.
+            // 1. 둘 중에 하나도 안들어오면 파라미터 체크 에러.
             if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(profileUrl))
                 throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
 
+            // 2. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto) authentication.getPrincipal();
 
@@ -237,13 +284,19 @@ public class UserController {
     }
 
 
-    //사용자 로그아웃 리프레시 토큰 삭제.
+    /**
+     * Name        :  userLogout
+     * Author      : 조 준 희
+     * Description : 사용자 로그아웃 - 리프레시 토큰 삭제처리
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @DeleteMapping("/user")
     public ResponseEntity<ResponseJsonObject> userLogout() {
 
         ResponseJsonObject responseJsonObject;
 
         try{
+            // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
@@ -260,13 +313,21 @@ public class UserController {
         }
     }
 
-    //사용자 상세정보 조회.
+    
+    /**
+     * Name        : userWorldInviting
+     * Author      : 조 준 희
+     * Description : 월드에 사용자 초대하기. PUSH성
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @PostMapping("/user/world")
     public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody UserWorldInvitionDto userWorldInvitionDto) {
 
         ResponseJsonObject responseJsonObject;
 
         try{
+
+            // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 

@@ -28,5 +28,6 @@ public interface UserService {
     void userLogout(String suid);
     UserInfoDto signUp(UserInfoDto user) throws Exception;
     void userWorldInviting(String suid, String targetSuid, Long worldId);
+    Long getRecentAccessWorldID(String suid);
 
 }

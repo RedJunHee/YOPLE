@@ -4,9 +4,11 @@ import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.auth.model.entity.UserTOSEntity;
 import com.map.mutual.side.auth.model.entity.UserWorldInvitingLogEntity;
 import com.map.mutual.side.auth.repository.JWTRepo;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.map.mutual.side.auth.repository.UserTOSRepo;
 import com.map.mutual.side.auth.repository.UserWorldInvitingLogRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
@@ -52,18 +54,52 @@ public class UserServiceImpl implements UserService {
     private WorldRepo worldRepo;
     private JWTRepo jwtRepo;
     private UserWorldInvitingLogRepo userWorldInvitingLogRepo;
+    private UserTOSRepo userTOSRepo;
 
     @Autowired
     public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo
             , ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo
-            , UserWorldInvitingLogRepo userWorldInvitingLogRepo) {
+            , UserWorldInvitingLogRepo userWorldInvitingLogRepo
+            , UserTOSRepo userTOSRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
         this.worldRepo = worldRepo;
         this.jwtRepo = jwtRepo;
         this.userWorldInvitingLogRepo = userWorldInvitingLogRepo;
+        this.userTOSRepo = userTOSRepo;
     }
+
+    @Override
+    @Transactional
+    public UserInfoDto signUp(UserInfoDto user) throws Exception {
+        try {
+            UserEntity userEntity = UserEntity.builder()
+                    .suid(user.getSuid())
+                    .userId(user.getUserId())
+                    .name(user.getName())
+                    .phone(user.getPhone())
+                    .profileUrl(user.getProfileUrl()).build();
+
+            UserTOSEntity userTOSEntity = UserTOSEntity.builder()
+                    .suid(user.getSuid())
+                    .serviceTosYN(user.getUserTOSDto().getServiceTosYN())
+                    .ageCollectionYn(user.getUserTOSDto().getAgeCollectionYn())
+                    .locationInfoYn(user.getUserTOSDto().getLocationInfoYn())
+                    .marketingYn(user.getUserTOSDto().getMarketingYn())
+                    .userInfoYn(user.getUserTOSDto().getUserInfoYn())
+                    .build();
+
+
+            userInfoRepo.save(userEntity);
+            userTOSRepo.save(userTOSEntity);
+            return user;
+        } catch (Exception e) {
+            log.error("SignUp Error occured : {}", e.getMessage());
+            throw e;
+        }
+    }
+
 
     @Override
     public UserInfoDto findUser(String id, String phone) {

@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,9 +63,19 @@ public class UserController {
      * @throws Exception
      */
     @PostMapping("/signup")
+    @Transactional
     public ResponseEntity<ResponseJsonObject> smsSignUp(@Validated @RequestBody UserInfoDto userInfoDto) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         try {
+
+            if ( userInfoDto.getUserTOSDto().getUserInfoYn().equals("Y") == false
+                || userInfoDto.getUserTOSDto().getLocationInfoYn().equals("Y") == false
+                || userInfoDto.getUserTOSDto().getAgeCollectionYn().equals("Y") == false
+                || userInfoDto.getUserTOSDto().getServiceTosYN().equals("Y") == false
+            ){
+                throw new YOPLEServiceException(ApiStatusCode.USER_TOS_INFO_VALID_FAILED);
+            }
+
             String suid = "YO";
             LocalDate date = LocalDate.now();
 
@@ -77,7 +88,7 @@ public class UserController {
             userInfoDto.setSuid(suid);
 
             // 회원 가입 된 유저의 정보 반환
-            UserInfoDto user = authService.signUp(userInfoDto);
+            UserInfoDto user = userService.signUp(userInfoDto);
 
             //JWT 발급.
             String accessJwt = authService.makeAccessJWT(user);
@@ -92,7 +103,9 @@ public class UserController {
             httpHeaders.add(AuthorizationCheckFilter.ACCESS_TOKEN, accessJwt);
             httpHeaders.add(AuthorizationCheckFilter.REFRESH_TOKEN, refreshJwt);
 
-        } catch (Exception e) {
+        }catch(YOPLEServiceException e){
+            throw e;
+        }catch (Exception e) {
             throw e;
         }
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK),httpHeaders, HttpStatus.OK);

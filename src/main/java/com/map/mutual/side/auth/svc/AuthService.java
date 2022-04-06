@@ -25,7 +25,6 @@ public interface AuthService {
     void sendMessageTest(String sendPhoneNum, String smsAuthNum) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, InvalidKeyException;
     void smsAuthNumSave(SMSAuthReqeustDto smsAuthReqeustDTO, String smsAuthNum);
     void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO);
-    UserInfoDto signUp(UserInfoDto user) throws Exception;
     String makeAccessJWT(UserInfoDto user) throws Exception ;
     String makeRefreshJWT(String suid) throws Exception ;
     UserEntity findOneByPhone (String phone);

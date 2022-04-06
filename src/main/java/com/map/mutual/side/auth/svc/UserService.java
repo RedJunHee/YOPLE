@@ -26,7 +26,7 @@ public interface UserService {
     UserInfoDto userDetails(String suid);
     UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl);
     void userLogout(String suid);
-
+    UserInfoDto signUp(UserInfoDto user) throws Exception;
     void userWorldInviting(String suid, String targetSuid, Long worldId);
 
 }

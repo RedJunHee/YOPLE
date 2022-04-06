@@ -187,17 +187,6 @@ public class AuthServiceImpl implements AuthService {
 
     }
 
-    @Override
-    public UserInfoDto signUp(UserInfoDto user) throws Exception {
-        UserEntity userEntity = modelMapper.map(user, UserEntity.class);
-        try {
-            userInfoRepo.save(userEntity);
-            return user;
-        } catch (Exception e) {
-            log.error("SignUp Error occured : {}", e.getMessage());
-            throw e;
-        }
-    }
     public UserEntity findOneByPhone(String phone){
         try{
             return userInfoRepo.findOneByPhone(phone);

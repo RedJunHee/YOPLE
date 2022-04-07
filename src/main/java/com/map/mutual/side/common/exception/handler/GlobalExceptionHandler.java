@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.validation.ConstraintDefinitionException;
+import javax.validation.ConstraintViolationException;
+
 /**
  * controller 전역적인 예외처리
  */
@@ -37,14 +40,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.USER_NOT_FOUND), HttpStatus.OK);
     }
 
+    // @RequestBody, @RequestHeader 유효성 실패.
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ResponseJsonObject> handleConstraintViolationException(ConstraintViolationException ex) {
+        logger.debug("파라미터 유효성 체크 실패. : " + ex.getMessage());
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED), HttpStatus.OK);
+    }
+
+
+    // @RequestBody 유효성 실패.
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers,
                                                                   HttpStatus status, WebRequest request) {
 
             // "유효성 검사 실패 : " + ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-            logger.debug("Parameter Exception : " + ex.getMessage());
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED), HttpStatus.OK);
+        logger.debug("파라미터 유효성 체크 실패. : " + ex.getMessage());
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED), HttpStatus.OK);
     }
 
     // 사용자 정의 예외

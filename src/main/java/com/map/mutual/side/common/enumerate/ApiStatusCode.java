@@ -6,6 +6,11 @@ import lombok.Getter;
  *  Description : 모든 API에서 사용될 API 처리 상태 코드관리 Enum Class
  *                  - COMMON CODE - 공용 도메인 코드로 모든 도메인에서 사용될 공통 코드 분류
  *                  - ** 추가적인 도메인 코드가 생길 경우 //도메인명 CODE 와 같이 주석 후 코드 정리할 것.
+ *                  - 표준 HTTP Status Code는 피할 것.
+ *                  - 표준 HTTP Status : 100,200,201,204,206
+ *                                      301,302,303,304,307,308
+ *                                      401,403,404,405,406,407,409,410,412,416,418,425,451
+ *                                      500,501,502,503,504
  *  History     : [2022-03-11] - TEMP
  */
 @Getter
@@ -18,6 +23,7 @@ public enum ApiStatusCode {
     ,CONTENT_NOT_FOUND (204,"Content Not Found", "컨텐츠 없음.", false)
     ,AUTH_META_NOT_MATCH(211, "Auth Meta Not Match", "인증 메타 정보 불일치.",true)
     ,USER_NOT_FOUND (214,"User Not Found", "유저 찾을 수 없음.", true)
+    ,USER_ID_OVERLAPS (215, "User ID Overlaps.", "사용자 ID 중복.",true)
     ,PARAMETER_CHECK_FAILED (400,"Bad Request","문법상 또는 파라미터 오류가 있어서 서버가 요청사항을 처리하지 못함.", true)
     ,UNAUTHORIZED (401, "UnAuthorized", "Unauthorized, 사용자 인증 실패.", true)
     ,FORBIDDEN (403, "Forbidden", "Forbidden, 사용권한 없음.", true)
@@ -25,6 +31,7 @@ public enum ApiStatusCode {
     ,ALREADY_EMOJI_ADDED(422, "Emoji status already added", "이미 추가한 이모지입니다.", true)
     ,ALREADY_WORLD_MEMEBER(431,"Already a member of the world.","이미 월드소속 입니다.",true)
     ,WORLD_USER_CDOE_VALID_FAILED (432, "WorldUserCode is not valid.", "월드 초대 코드 유효성 실패.", true)
+    ,USER_TOS_INFO_VALID_FAILED (490, "TOS 정보 체크 실패.", "TOS 정보 체크 실패.",true)
     ,SYSTEM_ERROR(599,"System Error.", "시스템오류.",true)
     ;
 

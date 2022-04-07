@@ -3,6 +3,8 @@ package com.map.mutual.side.world.repository.dsl.impl;
 import com.map.mutual.side.auth.model.dto.QUserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
+import com.map.mutual.side.review.model.entity.QReviewEntity;
+import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
 import com.map.mutual.side.world.repository.dsl.WorldUserMappingRepoDSL;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -10,17 +12,22 @@ import com.map.mutual.side.world.model.dto.QWorldDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import javafx.util.Pair;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.jooq.lambda.Seq.seq;
+import static org.jooq.lambda.tuple.Tuple.tuple;
 
 @Repository
 public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
@@ -114,39 +121,79 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         return world;
     }
 
-    //월드에 참여중인 월드 리스트 조회
+    //월드에 참여중인 사용자 조회
     @Override
-    public List<UserInWorld> findAllUsersInWorld(long worldId) {
+    public List<UserInWorld> findAllUsersInWorld(long worldId, String suid) {
 
         QUserEntity userA = new QUserEntity("userA");
         QUserEntity userB = new QUserEntity("userB");
         QWorldUserMappingEntity mapA = new QWorldUserMappingEntity("mapA");
         QWorldUserMappingEntity mapB = new QWorldUserMappingEntity("mapB");
 
-        List<UserInWorld> UserInfoInWorld = jpaQueryFactory
+
+        // 1. 해당 월드 사용자들의 리뷰 작성 수 조회
+        List<Tuple> reviewCnt = jpaQueryFactory
+                .select(QReviewEntity.reviewEntity.userEntity.suid,
+                        QReviewWorldMappingEntity.reviewWorldMappingEntity.reviewEntity.reviewId.count())
+                .from(QReviewEntity.reviewEntity)
+                .innerJoin(QReviewWorldMappingEntity.reviewWorldMappingEntity)
+                .on(QReviewEntity.reviewEntity.reviewId.eq(QReviewWorldMappingEntity.reviewWorldMappingEntity.reviewEntity.reviewId))
+                .where(QReviewWorldMappingEntity.reviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
+                .groupBy(QReviewEntity.reviewEntity.userEntity.suid)
+                .orderBy(QReviewWorldMappingEntity.reviewWorldMappingEntity.reviewEntity.reviewId.count().desc())
+                .fetch();
+
+        // 2. 월드 참여자들 조회. (초대자 포함.)
+        List<UserInWorld> userInfoInWorld = jpaQueryFactory
                 .select(new QUserInWorld(userA.suid,
                         userA.userId,
                         userA.name,
                         userA.profileUrl,
-                        userB.userId))
+                        userB.userId,
+                        // 월드에 참여 중인 사용자SUID와 초대자SUID가 같다면 Host사용자
+                        new CaseBuilder().when(mapA.userSuid.eq(mapB.userSuid)).then("Y").otherwise("N")))
                 .from(userA)
-                .innerJoin(mapA)
-                    .on(mapA.worldId.eq(worldId).and( userA.suid.eq(mapA.userSuid) )) //해당 월드의
-                .leftJoin(mapB)
+                .innerJoin(mapA) // 1. 월드에 참여 중인 사용자 필터링.
+                    .on(mapA.worldId.eq(worldId).and( userA.suid.eq(mapA.userSuid) ))
+                .leftJoin(mapB) // 2.  월드에 참여 중인 사용자들 초대자 판별.
                     .on(mapA.worldinvitationCode.eq(mapB.worldUserCode))
-                .innerJoin(userB)
+                .innerJoin(userB)   // 3. 초대자 정보 조회 조인
                     .on(mapB.userEntity.suid.eq(userB.suid))
                 .fetchJoin()
                 .fetch();
 
 
-        return UserInfoInWorld;
+        // 3. Left Outer Join && 자기자신, 호스트 사용자 최상단 정렬 및 리뷰 수 정렬.
+        List<UserInWorld> list = seq(userInfoInWorld)
+                                    .flatMap( user ->
+                                            seq(reviewCnt)
+                                                    // 조인 조건.
+                                                    .filter( review -> user.getSuid().equals(review.get(0, String.class).toString()))
+                                                    .onEmpty(null)  // left outer join
+                                                    .map(review -> { // select
+                                                        long reviewCount = 0l;
+
+                                                        if(review == null)
+                                                            reviewCount = 0l;
+                                                        else if(user.getSuid().equals(suid))  // "나" 자기 자신인 경우. 최상단.
+                                                            reviewCount = 9999l;
+                                                        else if(user.getIsHost().equals("Y")) // 월드 host 인 경우 2번째 우선순위
+                                                            reviewCount= 9998l;
+
+                                                        return new Pair<UserInWorld, Long>(user, reviewCount);
+                                                    })
+                                    )
+                                .sorted( Comparator.comparingLong( v -> Long.parseLong(v.getValue().toString()))).reverse() // order by
+                                .map(v -> v.getKey()) //select
+                                .collect(Collectors.toList());
+
+        return list;
     }
 
     // 월드 초대 코드로 월드에 입장하려는 사용자 SUID가 월드에 이미 존재하는지 체크하는 쿼리.
     // 존재하면 null 존재하지않으면 [입장 worldId]
     @Override
-    public Long exsistUserCodeInWorld (String worldinvitationCode, String suid)
+    public Long exsistUserCodeInWorld (String worldinvitationCode, String suid) throws YOPLEServiceException
     {
 
         Long worldId = jpaQueryFactory.select(QWorldUserMappingEntity.worldUserMappingEntity.worldId)

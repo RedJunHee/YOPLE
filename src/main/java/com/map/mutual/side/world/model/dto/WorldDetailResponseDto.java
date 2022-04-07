@@ -39,7 +39,7 @@ public class WorldDetailResponseDto {
         this.worldId = worldId;
         this.worldName = worldName;
         this.worldDesc = worldDesc;
-        this.host = new UserInfoDto(null,userId,null,null,profileUrl);
+        this.host = UserInfoDto.builder().userId(userId).profileUrl(profileUrl).build();
         this.worldUserCode = worldUserCode;
         this.isMyworld =isMyworld;
     }

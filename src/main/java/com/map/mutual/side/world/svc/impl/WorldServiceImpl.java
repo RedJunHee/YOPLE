@@ -21,7 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -48,170 +47,179 @@ public class WorldServiceImpl implements WorldService {
     }
 
 
-    //1. 월드 생성하기.
+    /**
+     * Name        : createWolrd
+     * Author      : 조 준 희
+     * Description : 월드 생성하기.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     @Transactional
     public WorldDto createWolrd(WorldDto worldDto) {
-        try {
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        // 1. 사용자 SUID 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-//            WorldEntity createWorld = WorldEntity.builder().host(UserInfoEntity.builder().suid(userInfoDto.getSuid()).build())
-            WorldEntity createWorld = WorldEntity.builder()
-                    .worldName(worldDto.getWorldName())
-                    .worldDesc(worldDto.getWorldDesc())
-                    .worldOwner(userInfoDto.getSuid())
-                    .build();
+        // 2. 생성할 WorldEntity 설정.
+        WorldEntity createWorld = WorldEntity.builder()
+                .worldName(worldDto.getWorldName())
+                .worldDesc(worldDto.getWorldDesc())
+                .worldOwner(userInfoDto.getSuid())
+                .build();
 
-            worldRepo.save(createWorld);
+        // 3. 월드 생성.
+        worldRepo.save(createWorld);
 
-            String worldCode = YOPLEUtils.getWorldRandomCode();
-            WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
-                            .userSuid(userInfoDto.getSuid())
-                            .worldId(createWorld.getWorldId())
-                            .worldUserCode(worldCode)
-                            .worldinvitationCode(worldCode)
-                            .accessTime(LocalDateTime.now()).
-            build();
+        // 4. 월드 코드 생성.
+        String worldCode = YOPLEUtils.getWorldRandomCode();
 
-            worldUserMappingRepo.save(worldUserMappingEntity);
+        // 5. 월드 매핑 설정.
+        WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
+                        .userSuid(userInfoDto.getSuid())
+                        .worldId(createWorld.getWorldId())
+                        .worldUserCode(worldCode)
+                        .worldinvitationCode(worldCode)
+                        .accessTime(LocalDateTime.now()).
+        build();
 
+        // 6. 월드 매핑 저장.
+        worldUserMappingRepo.save(worldUserMappingEntity);
 
+        // 7. 생성된 월드 정보 DTO 생성.
+        WorldDto createdWorld = WorldDto.builder().worldId(createWorld.getWorldId())
+                .worldDesc(createWorld.getWorldDesc())
+                .worldName(createWorld.getWorldName())
+                .build();
 
+        // 8. 리턴.
+        return createdWorld;
 
-            WorldDto createdWorld = WorldDto.builder().worldId(createWorld.getWorldId())
-                    .worldDesc(createWorld.getWorldDesc())
-                    .worldName(createWorld.getWorldName())
-                    .build();
-
-            return createdWorld;
-
-        } catch (Exception e) {
-            logger.error("World Create Failed.!! : " + e.getMessage());
-            throw e;
-
-        }
     }
 
-    //4. 월드 수정하기
+    /**
+     * Name        : updateWorld
+     * Author      : 조 준 희
+     * Description : 월드 수정하기.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
-    public void updateWorld(WorldDto worldDto) {
-        try {
-            // 1. 사용자 SUID 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+    public void updateWorld(WorldDto worldDto) throws YOPLEServiceException {
 
-            // 2. 수정하려는 월드의 정보를 가져옴.
-            //  수정하려는 월드가 없다면 Forbidden에러 발생 => 보안차원 (없는 월드의 ID를 알아낼 수 있으므로.)
-            WorldEntity targetWorld = worldRepo.findById(worldDto.getWorldId())
-                    .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
+        // 1. 사용자 SUID 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            targetWorld.updateWorldName(worldDto.getWorldName());
-            targetWorld.updateWorldDesc(worldDto.getWorldDesc());
+        // 2. 수정하려는 월드의 정보를 가져옴.
+        //  수정하려는 월드가 없다면 Forbidden에러 발생 => 보안차원 (없는 월드의 ID를 알아낼 수 있으므로.)
+        WorldEntity targetWorld = worldRepo.findById(worldDto.getWorldId())
+                .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
 
-            //3. 월드의 생성자인지 확인.
-            if(userInfoDto.getSuid().equals(targetWorld.getWorldOwner()) == false)
-                throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
+        targetWorld.updateWorldName(worldDto.getWorldName());
+        targetWorld.updateWorldDesc(worldDto.getWorldDesc());
 
-            worldRepo.save(targetWorld);
+        //3. 월드의 생성자인지 확인.
+        if(userInfoDto.getSuid().equals(targetWorld.getWorldOwner()) == false)
+            throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
 
-        } catch (YOPLEServiceException e) {
-            logger.error("World updateWorld Failed.!! : " + e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            logger.error("World updateWorld Failed.!! : " + e.getMessage());
-            throw e;
-        }
+        worldRepo.save(targetWorld);
+
     }
 
-    //4. 월드 상세정보 조회
+    /**
+     * Name        : getWorldDetail
+     * Author      : 조 준 희
+     * Description : 월드 상세정보 조회
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     public WorldDetailResponseDto getWorldDetail(Long worldId, String suid) {
-        try {
 
-            WorldDetailResponseDto worldDetailResponseDto = worldRepo.getWorldDetail(worldId, suid);
+        // 1. 월드 상세정보 조회 - suid 생성자와 같다면 마이월드.
+        WorldDetailResponseDto worldDetailResponseDto = worldRepo.getWorldDetail(worldId, suid);
 
-            return worldDetailResponseDto;
+        // 2. 리턴.
+        return worldDetailResponseDto;
 
-        } catch (Exception e) {
-            logger.error("World getWorldDetail Failed.!! : " + e.getMessage());
-            throw e;
-        }
     }
 
-    //5. 참여 중인 월드 리스트 조회
+    /**
+     * Name        : getWorldList
+     * Author      : 조 준 희
+     * Description : 참여 중인 월드 리스트 조회
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     public List<WorldDto> getWorldList(String suid, String isDetails) {
 
-        try {
-            List<WorldDto> activityWorlds ;
+        List<WorldDto> activityWorlds ;
 
-            if(isDetails.equals("Y"))
-                activityWorlds = worldUserMappingRepo.findBySuidWithWorldDetails(suid);
-                else
-                activityWorlds = worldUserMappingRepo.findBySuidWithWorld(suid);
+        // 1. isDetails 여부에 따라 월드 상세정보 조회 분기.
+        if(isDetails.equals("Y"))
+            activityWorlds = worldUserMappingRepo.findBySuidWithWorldDetails(suid);
+        else
+            activityWorlds = worldUserMappingRepo.findBySuidWithWorld(suid);
 
-            return activityWorlds;
-        } catch (Exception e) {
-            throw e;
-        }
+        // 2. 리턴.
+        return activityWorlds;
+
     }
 
+    /**
+     * Name        : authCheck
+     * Author      : 조 준 희
+     * Description : 월드에 입장 권한이 있는지 확인.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     public Boolean authCheck(Long worldId, String suid) {
 
-        try{
-            Optional<WorldUserMappingEntity> worldUserMappingEntity = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid);
-            if(worldUserMappingEntity.isPresent() == true){
-                // 월드 소속 멤버 인경우
+        // 1. 월드 매핑 정보 조회
+        Optional<WorldUserMappingEntity> worldUserMappingEntity
+                = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid);
 
-               WorldUserMappingEntity mapping = worldUserMappingEntity.get();
+        // 월드 소속 멤버 인경우
+        if(worldUserMappingEntity.isPresent() == true){
+           WorldUserMappingEntity mapping = worldUserMappingEntity.get();
+           // 월드 입장 시간 갱신.
+           mapping.setAccessTime(LocalDateTime.now());
+           worldUserMappingRepo.save(mapping);
 
-               mapping.setAccessTime(LocalDateTime.now());
-               worldUserMappingRepo.save(mapping);
-
-                return true;
-            }
-            else
-                return false;
-
-        }catch(YOPLEServiceException e){
-            throw e;
-        }catch(Exception e){
-            throw e;
+            return true;    // 월드에 참여중이므로 입장 가능.
         }
+        else    // 월드에 참여되어있지 않음. => 월드 입장 권한 없음.
+            return false;
     }
 
-    //리뷰가 등록된 월드 리스트 조회하기.
+    /**
+     * Name        : getWorldOfReivew
+     * Author      : 조 준 희
+     * Description : 리뷰가 등록된 월드 리스트 조회하기.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
     public List<WorldDto> getWorldOfReivew(Long reviewId, String suid) {
-        try{
 
-            List<WorldDto> worlds = reviewWorldMappingRepo.findAllWorldsByReviewId(reviewId, suid);
+        // 1. 리뷰가 등록된 월드 리스트 조회하기.
+        List<WorldDto> worlds = reviewWorldMappingRepo.findAllWorldsByReviewId(reviewId, suid);
 
-            return worlds;
-        }catch(YOPLEServiceException e){
-            throw e;
-        }catch(Exception e){
-            throw e;
-        }
+        // 2. 리턴.
+        return worlds;
+
     }
 
-    // 월드 초대 코드 유효성 체크
+    /**
+     * Name        : worldUserCodeValid
+     * Author      : 조 준 희
+     * Description : 월드 코드 유효성 체크.
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
     @Override
-    public Boolean worldUserCodeValid(String worldUserCode) {
-        try{
-            worldUserMappingRepo.findByWorldUserCode(worldUserCode)
+    public Boolean worldUserCodeValid(String worldUserCode) throws YOPLEServiceException {
+            worldUserMappingRepo.findOneByWorldUserCode(worldUserCode)
                     .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.WORLD_USER_CDOE_VALID_FAILED));
 
             return true;
 
-        }catch(YOPLEServiceException e){
-            logger.debug("월드 초대 코드 유효성 체크 실패.");
-            throw e;
-        }catch(Exception e){
-            throw e;
-        }
     }
 }

@@ -1,14 +1,15 @@
 package com.map.mutual.side.auth.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.validation.constraints.Pattern;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserInfoDto {
     private String suid;
     @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}",
@@ -19,4 +20,9 @@ public class UserInfoDto {
             message = "핸드폰 번호가 올바르지 않습니다.")
     private String phone;
     private String profileUrl;
+
+    @JsonProperty(value = "tos")
+    private UserTOSDto userTOSDto;
+
+
 }

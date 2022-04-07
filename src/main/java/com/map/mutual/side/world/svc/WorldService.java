@@ -1,26 +1,21 @@
 package com.map.mutual.side.world.svc;
 
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
-import com.map.mutual.side.world.model.entity.WorldEntity;
 
 import java.util.List;
 
 public interface WorldService {
-    //1. 월드 생성하기.
-    WorldDto createWolrd(WorldDto worldDto);
 
+    void updateWorld(WorldDto worldDto);    // 월드 수정하기
 
-    //3. 월드 수정하기
-    void updateWorld(WorldDto worldDto);
+    WorldDto createWolrd(WorldDto worldDto);    // 월드 생성하기.
 
-    // 4. 월드 상세 정보 조회
-    WorldDetailResponseDto getWorldDetail(Long worldDto, String suid);
+    List<WorldDto> getWorldList(String suid, String isDetails); // 참여 중인 월드 리스트 조회
+    List<WorldDto> getWorldOfReivew (Long reviewId, String suid);   // 리뷰가 등록된 월드 조회
 
-    //4. 참여 월드 리스트 조회
-    List<WorldDto> getWorldList(String suid, String isDetails);
-    Boolean authCheck(Long worldId, String suid);
-    List<WorldDto> getWorldOfReivew (Long reviewId, String suid);
-    Boolean worldUserCodeValid(String worldUserCode);
+    WorldDetailResponseDto getWorldDetail(Long worldDto, String suid); // 월드 상세 정보 조회
+
+    Boolean authCheck(Long worldId, String suid);   // 월드 입장 권한 체크
+    Boolean worldUserCodeValid(String worldUserCode);   // 월드 코드 유효성 체크.
 }

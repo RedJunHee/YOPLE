@@ -1,8 +1,6 @@
 package com.map.mutual.side.review.model.entity;
 
-import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.review.model.keys.EmojiStatusEntityKeys;
-import com.map.mutual.side.world.model.entity.WorldEntity;
 import lombok.*;
 
 import javax.persistence.*;

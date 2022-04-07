@@ -31,11 +31,12 @@ public class EmojiEntity extends TimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long emojiId;
 
+    @Convert(converter = EmojiTypeConverter.class)
     @Column(name="EMOJI_VALUE", nullable = false, columnDefinition = "VARCHAR(200)")
-    private String emojiValue;
+    private EmojiType emojiValue;
 
     @Column(name="EMOJI_IMG", columnDefinition = "VARCHAR(200)")
-    private String userId;
+    private String emojiImg;
 
     @Convert(converter = BooleanTypeConverter.class)
     @Column(name="EMOJI_STATUS", nullable = false, columnDefinition = "VARCHAR(20)")

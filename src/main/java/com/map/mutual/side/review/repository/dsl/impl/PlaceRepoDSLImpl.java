@@ -32,13 +32,13 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
 
 
     @Override
-    public List<PlaceDetailDto.tempReview> findPlaceDetails(Long worldId, Long placeId) {
+    public List<PlaceDetailDto.TempReview> findPlaceDetails(Long worldId, Long placeId) {
         QReviewEntity qReview = new QReviewEntity("qReview");
         QReviewWorldMappingEntity qRW = new QReviewWorldMappingEntity("qRW");
         QUserWorldInvitingLogEntity qLog = new QUserWorldInvitingLogEntity("qLog");
         QUserEntity qUser = new QUserEntity("qUser");
 
-        List<PlaceDetailDto.tempReview> results = jpaQueryFactory.select(new QPlaceDetailDto_tempReview(
+        List<PlaceDetailDto.TempReview> results = jpaQueryFactory.select(new QPlaceDetailDto_tempReview(
                 qReview.reviewId,
                 qReview.title,
                 qReview.content,

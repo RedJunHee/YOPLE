@@ -2,12 +2,16 @@ package com.map.mutual.side.review.controller;
 
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
+import com.map.mutual.side.common.enumerate.BooleanType;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.review.model.dto.PlaceDetailDto;
 import com.map.mutual.side.review.model.dto.ReviewDto;
 import com.map.mutual.side.review.model.dto.ReviewPlaceDto;
+import com.map.mutual.side.review.model.entity.EmojiEntity;
 import com.map.mutual.side.review.model.entity.PlaceEntity;
+import com.map.mutual.side.review.model.enumeration.EmojiType;
+import com.map.mutual.side.review.repository.EmojiRepo;
 import com.map.mutual.side.review.repository.PlaceRepo;
 import com.map.mutual.side.review.svc.ReviewService;
 import lombok.extern.log4j.Log4j2;
@@ -41,6 +45,8 @@ public class ReviewController {
 
     @Autowired
     private PlaceRepo placeRepo;
+    @Autowired
+    private EmojiRepo emojiRepo;
 
 
     /**
@@ -69,7 +75,7 @@ public class ReviewController {
      * @return
      */
     @PostMapping("/review")
-    public ResponseEntity<ResponseJsonObject> createReview(@RequestBody ReviewPlaceDto dto) {
+    public ResponseEntity<ResponseJsonObject> createReview(@RequestBody ReviewPlaceDto dto) throws Exception {
         try {
             if (dto.getPlace() != null && !placeRepo.findById(dto.getPlace().getPlaceId()).isPresent()) {
                 PlaceEntity placeEntity = PlaceEntity.builder()
@@ -243,9 +249,47 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
+    @PostMapping("/emoji")
+    public ResponseEntity<ResponseJsonObject> addEmoji(@RequestParam Long reviewId, @RequestParam Long worldId, @RequestParam EmojiType emojiType) {
+        ResponseJsonObject responseJsonObject;
+        try {
+            reviewService.addEmoji(reviewId, worldId, emojiType);
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+//            responseJsonObject.setData(result);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
+
+    /**
+     * TEST
+     */
+    @PostMapping("/emojiAdd")
+    public void emojiAddTest() {
+        ResponseJsonObject responseJsonObject;
+        try {
+            emojiRepo.save(EmojiEntity.builder()
+                            .emojiStatus(BooleanType.Y)
+                            .emojiImg(null)
+                            .emojiValue(EmojiType.GOOD)
+                    .build());
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 
 
 
+    /**
+     * TEST
+     */
     @PostMapping("/upload")
     public ResponseEntity<ResponseJsonObject> upload(@RequestPart MultipartFile file, @RequestParam String tempReview) throws IOException {
 

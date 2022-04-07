@@ -60,8 +60,8 @@ public class FCMService {
             } else if (userEntity.getFcmToken() == null) {
                 userEntity.setFcmToken(token);
                 userInfoRepo.save(userEntity);
-            } else {
-                registryFcmToken(token);
+            } else if (userEntity.getFcmToken().equals(FCMConstant.EXPIRED)){
+                registryFcmToken(userEntity, token);
             }
         } catch (Exception e) {
             throw e;
@@ -71,13 +71,9 @@ public class FCMService {
 
 
 
-    public void registryFcmToken(String token)  {
+    public void registryFcmToken(UserEntity userEntity, String token)  {
 
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-
-            UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
             userEntity.setFcmToken(token);
 
             if (userEntity.getFcmToken() == null) {
@@ -85,7 +81,7 @@ public class FCMService {
             } else if (!userEntity.getFcmToken().equals(token)) {
                 List<FcmTopicEntity> fcmTopicEntities = new ArrayList<>();
 
-                List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(userInfoDto.getSuid());
+                List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(userEntity.getSuid());
                 if(!worldUserMappingEntities.isEmpty()) {
                     worldUserMappingEntities.forEach(data -> {
                         try {
@@ -173,6 +169,7 @@ public class FCMService {
             Message message = Message.builder()
                     .setTopic(topic)
                     .setNotification(notification)
+                    .putData("worldId", topic)
                     .build();
             String response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
             log.info("Successfully sent : {}", response);

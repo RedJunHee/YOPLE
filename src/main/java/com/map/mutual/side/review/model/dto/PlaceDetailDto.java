@@ -23,13 +23,13 @@ import java.util.List;
 @Builder
 public class PlaceDetailDto {
 
-    private List<tempReview> reviews;
+    private List<TempReview> reviews;
     private PlaceDto place;
 
     @Getter
     @Setter
     @NoArgsConstructor
-    public static class tempReview {
+    public static class TempReview {
         private Long reviewId;
         private String title;
         private String content;
@@ -38,11 +38,11 @@ public class PlaceDetailDto {
         private String invitingUserSuid;
 
         @QueryProjection
-        public tempReview(Long reviewId, String title, String content, String imageUrls, String userSuid, String invitingUserSuid, LocalDateTime updateTime) {
+        public TempReview(Long reviewId, String title, String content, String imageUrls, String userSuid, String invitingUserSuid, LocalDateTime updateTime) {
             this.reviewId = reviewId;
             this.title = title;
             this.content = content;
-            if(imageUrls != null) {
+            if (imageUrls != null) {
                 this.imageUrls = imageUrls.split(",");
             } else {
                 this.imageUrls = new String[0];
@@ -50,7 +50,5 @@ public class PlaceDetailDto {
             this.userSuid = userSuid;
             this.invitingUserSuid = invitingUserSuid;
         }
-
     }
-
 }

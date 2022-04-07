@@ -8,7 +8,6 @@ import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.svc.AuthService;
 import com.map.mutual.side.auth.svc.UserService;
-import com.map.mutual.side.auth.svc.impl.UserServiceImpl;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -26,9 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**

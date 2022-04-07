@@ -171,7 +171,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                                     .filter( review -> user.getSuid().equals(review.get(0, String.class).toString()))
                                                     .onEmpty(null)  // left outer join
                                                     .map(review -> { // select
-                                                        Long reviewCount = 0l;
+                                                        long reviewCount = 0l;
 
                                                         if(review == null)
                                                             reviewCount = 0l;

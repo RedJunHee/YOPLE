@@ -10,7 +10,10 @@ public interface WorldUserMappingRepoDSL {
 
     List<WorldDto> findBySuidWithWorld(String suid);
     List<WorldDto> findBySuidWithWorldDetails (String suid);
-    List<UserInWorld> findAllUsersInWorld(long worldId);
+
+    //월드에 참여중인 사용자 조회
+    List<UserInWorld> findAllUsersInWorld(long worldId, String suid);
+
     Long exsistUserCodeInWorld(String worldinvitationCode, String suid);
     Boolean exsistUserInWorld(Long worldId, String suid);
 }

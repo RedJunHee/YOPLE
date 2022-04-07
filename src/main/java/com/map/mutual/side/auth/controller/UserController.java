@@ -193,8 +193,12 @@ public class UserController {
         ResponseJsonObject response;
         try{
 
+            // 1. 토큰에서 사용자 SUID 정보 조회
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
+
             // 1. 월드에 참여 중인 사용자 조회.
-            List<UserInWorld> userInfoDto = userService.worldUsers(worldId);
+            List<UserInWorld> userInfoDto = userService.worldUsers(worldId, userToken.getSuid());
 
             // 2. 응답 객체 설정
             Map<String, Object> Users = new HashMap<>();
@@ -288,7 +292,6 @@ public class UserController {
             throw e;
         }
     }
-
 
     /**
      * Name        :  userLogout

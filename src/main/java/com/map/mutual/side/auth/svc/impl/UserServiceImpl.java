@@ -1,6 +1,5 @@
 package com.map.mutual.side.auth.svc.impl;
 
-import com.google.protobuf.Api;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
@@ -310,10 +309,10 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public List<UserInWorld> worldUsers(long worldId) {
+    public List<UserInWorld> worldUsers(long worldId, String suid) {
         List<UserInWorld> userInfoEntities;
 
-        userInfoEntities = worldUserMappingRepo.findAllUsersInWorld(worldId);
+        userInfoEntities = worldUserMappingRepo.findAllUsersInWorld(worldId, suid);
 
         return userInfoEntities;
     }

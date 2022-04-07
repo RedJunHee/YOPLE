@@ -21,7 +21,8 @@ import java.util.Optional;
  */
 public interface UserService {
     UserInfoDto findUser(String id, String phone);
-    List<UserInWorld> worldUsers(long worldId);
+    List<UserInWorld> worldUsers(long worldId, String suid);
+
     //2. 월드 초대 수락하기.
     WorldDto inviteJoinWorld( String worldinvitationCode);
     UserInfoDto userDetails(String suid);

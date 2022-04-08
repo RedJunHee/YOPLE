@@ -57,7 +57,6 @@ class ReviewRepoTest {
     {
         //given
         ReviewDto reviewDto = ReviewDto.builder()
-                .title("test Title")
                 .content("test Content")
 //                .imageUrls(Arrays.asList("a","b","c"))
                 .userSuid("test")
@@ -68,7 +67,6 @@ class ReviewRepoTest {
          ReviewEntity reviewEntity = ReviewEntity.builder()
 //                 .worldEntity(WorldEntity.builder().worldId(1L).build())
                  .userEntity(UserEntity.builder().suid("TEST_SUID").build())
-                .title(reviewDto.getTitle())
                 .content(reviewDto.getContent())
 //                .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
                 .build();

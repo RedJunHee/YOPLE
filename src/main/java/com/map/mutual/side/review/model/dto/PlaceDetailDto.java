@@ -31,16 +31,14 @@ public class PlaceDetailDto {
     @NoArgsConstructor
     public static class TempReview {
         private Long reviewId;
-        private String title;
         private String content;
         private String[] imageUrls;
         private String userSuid;
         private String invitingUserSuid;
 
         @QueryProjection
-        public TempReview(Long reviewId, String title, String content, String imageUrls, String userSuid, String invitingUserSuid, LocalDateTime updateTime) {
+        public TempReview(Long reviewId, String content, String imageUrls, String userSuid, String invitingUserSuid, LocalDateTime updateTime) {
             this.reviewId = reviewId;
-            this.title = title;
             this.content = content;
             if (imageUrls != null) {
                 this.imageUrls = imageUrls.split(",");

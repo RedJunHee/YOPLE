@@ -18,9 +18,12 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +41,7 @@ import java.util.List;
  */
 @RestController
 @Log4j2
+@Validated
 @RequestMapping(value = "/review")
 public class ReviewController {
     @Autowired
@@ -56,7 +60,6 @@ public class ReviewController {
      * { reviewDto: {}, placeDto: {} }
      *
      * reviewDto: {
-     *      String title: 제목
      *      String content: 내용
      *      MultipartFile[] imageFiles: 리뷰에 올릴 이미지들
      *      List[Long] worldList: 월드 리스트
@@ -75,7 +78,7 @@ public class ReviewController {
      * @return
      */
     @PostMapping("/review")
-    public ResponseEntity<ResponseJsonObject> createReview(@RequestBody ReviewPlaceDto dto) throws Exception {
+    public ResponseEntity<ResponseJsonObject> createReview(@Valid @RequestBody ReviewPlaceDto dto) throws Exception {
         try {
             if (dto.getPlace() != null && !placeRepo.findById(dto.getPlace().getPlaceId()).isPresent()) {
                 PlaceEntity placeEntity = PlaceEntity.builder()
@@ -103,7 +106,6 @@ public class ReviewController {
     /**
      * Review 수정
      * @param reviewDto
-     * String title: 제목
      * String content: 내용
      * Long reviewId: 수정할 리뷰 ID
      * MultipartFile[] imageFiles: 리뷰에 올릴 이미지들
@@ -134,7 +136,7 @@ public class ReviewController {
      * 해당 메소드는 리뷰뿐만 아니라, ReviewWorldMapping 데이터도 삭제합니다.
      */
     @DeleteMapping("/review")
-    public ResponseEntity<ResponseJsonObject> deleteReview(@RequestParam Long reviewId) {
+    public ResponseEntity<ResponseJsonObject> deleteReview(@NotNull @RequestParam Long reviewId) {
         try {
             reviewService.deleteReview(reviewId);
         } catch (YOPLEServiceException e) {

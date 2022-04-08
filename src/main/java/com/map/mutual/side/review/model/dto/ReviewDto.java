@@ -5,6 +5,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -25,19 +26,20 @@ import java.util.List;
 public class ReviewDto {
     private String userSuid;
     private Long worldId;
-    private String title;
+    @Size(min = 1, max = 500)
     private String content;
+    @Size(min = 0, max = 9)
     private MultipartFile[] imageFiles;
     private String[] imageUrls;
     private Long reviewId;
     private Long placeId;
+    @Size(min = 1)
     private List<Long> worldList;
 
 
     @QueryProjection
-    public ReviewDto(UserEntity userEntity, String title, String content, String imageUrls, Long reviewId) {
+    public ReviewDto(UserEntity userEntity, String content, String imageUrls, Long reviewId) {
         this.userSuid = userEntity.getSuid();
-        this.title = title;
         this.content = content;
         if(imageUrls != null) {
             this.imageUrls = imageUrls.split(",");

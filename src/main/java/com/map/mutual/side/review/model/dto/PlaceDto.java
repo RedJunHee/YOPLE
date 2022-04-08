@@ -2,6 +2,7 @@ package com.map.mutual.side.review.model.dto;
 
 import lombok.*;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 /**
  * fileName       : PlaceDto
@@ -19,12 +20,20 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class PlaceDto {
+    @NotNull
     private Long placeId;
+    @NotNull
     private String name;
+    @NotNull
     private String address;
+    @NotNull
     private String roadAddress;
+    @NotNull
     private String categoryGroupCode;
+    @NotNull
     private String categoryGroupName;
+    @NotNull
     private BigDecimal x;
+    @NotNull
     private BigDecimal y;
 }

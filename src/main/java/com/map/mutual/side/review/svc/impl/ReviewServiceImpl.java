@@ -69,7 +69,6 @@ public class ReviewServiceImpl implements ReviewService {
         try {
             ReviewEntity reviewEntity = ReviewEntity.builder()
                     .userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build())
-                    .title(dto.getReview().getTitle())
                     .content(dto.getReview().getContent())
 //                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
                     .build();
@@ -95,7 +94,6 @@ public class ReviewServiceImpl implements ReviewService {
                 throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
             } else {
                 entity.setContent(reviewDto.getContent());
-                entity.setTitle(reviewDto.getTitle());
                 result = saveReviewAndMappings(reviewDto, entity, null);
             }
         } catch (YOPLEServiceException e) {
@@ -152,7 +150,6 @@ public class ReviewServiceImpl implements ReviewService {
 
         ReviewDto result = ReviewDto.builder()
                 .userSuid(returnedReview.getUserEntity().getSuid())
-                .title(returnedReview.getTitle())
                 .content(reviewDto.getContent())
 //                .imageFiles()
                 .reviewId(returnedReview.getReviewId())
@@ -184,7 +181,6 @@ public class ReviewServiceImpl implements ReviewService {
             reviewEntity = reviewRepo.findById(reviewId).orElseThrow(NullPointerException::new);
             reviewDto = ReviewDto.builder()
                     .userSuid(reviewEntity.getUserEntity().getSuid())
-                    .title(reviewEntity.getTitle())
                     .content(reviewEntity.getContent())
 //                    .imageUrls(Arrays.stream(reviewEntity.getImageUrl().split(",")).collect(Collectors.toList()))
                     .build();
@@ -220,7 +216,6 @@ public class ReviewServiceImpl implements ReviewService {
             reviewEntity.forEach(data -> reviewDto.add(ReviewDto.builder()
                             .reviewId(data.getReviewId())
                             .userSuid(data.getUserEntity().getSuid())
-                            .title(data.getTitle())
                             .content(data.getContent())
                             // TODO: 2022/03/29 imageUrl 추가해야함
 //                  .imageUrls()

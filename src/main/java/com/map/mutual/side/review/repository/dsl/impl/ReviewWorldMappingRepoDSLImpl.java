@@ -30,7 +30,6 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
         QReviewWorldMappingEntity qRW = new QReviewWorldMappingEntity("qRW");
         List<ReviewDto> reviewDtos = jpaQueryFactory.select(new QReviewDto
                         (qReview.userEntity,
-                                qReview.title,
                                 qReview.content,
                                 qReview.imageUrl,
                                 qReview.reviewId))

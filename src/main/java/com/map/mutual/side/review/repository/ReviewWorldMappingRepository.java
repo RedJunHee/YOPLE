@@ -3,7 +3,6 @@ package com.map.mutual.side.review.repository;
 import com.map.mutual.side.review.model.entity.ReviewEntity;
 import com.map.mutual.side.review.model.entity.ReviewWorldMappingEntity;
 import com.map.mutual.side.review.repository.dsl.ReviewWorldMappingRepoDSL;
-import com.map.mutual.side.world.model.entity.WorldEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

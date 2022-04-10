@@ -27,6 +27,7 @@ public enum ApiStatusCode {
     ,PARAMETER_CHECK_FAILED (400,"Bad Request","문법상 또는 파라미터 오류가 있어서 서버가 요청사항을 처리하지 못함.", true)
     ,UNAUTHORIZED (401, "UnAuthorized", "Unauthorized, 사용자 인증 실패.", true)
     ,FORBIDDEN (403, "Forbidden", "Forbidden, 사용권한 없음.", true)
+    ,WORLD_LIST_IS_NULL(421, "World list is null.", "최소 하나의 월드를 추가해야 합니다.", true)
     ,NOT_USABLE_EMOJI(421, "Emoji type isn`t usable", "해당 이모지는 비활성화 상태입니다.", true)
     ,ALREADY_EMOJI_ADDED(422, "Emoji status already added", "이미 추가한 이모지입니다.", true)
     ,ALREADY_WORLD_MEMEBER(431,"Already a member of the world.","이미 월드소속 입니다.",true)

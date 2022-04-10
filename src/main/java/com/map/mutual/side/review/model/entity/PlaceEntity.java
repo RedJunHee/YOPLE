@@ -17,8 +17,8 @@ import java.math.BigDecimal;
 @Builder
 public class PlaceEntity {
     @Id
-    @Column(name="PLACE_ID", nullable = false, updatable = false, columnDefinition = "BIGINT")
-    private Long placeId;
+    @Column(name="PLACE_ID", nullable = false, updatable = false, columnDefinition = "VARCHAR(20)")
+    private String placeId;
 
     @Column(name = "NAME", columnDefinition = "VARCHAR(200)")
     private String name;

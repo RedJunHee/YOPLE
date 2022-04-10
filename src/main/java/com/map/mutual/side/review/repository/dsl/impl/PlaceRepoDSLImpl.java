@@ -32,7 +32,7 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
 
 
     @Override
-    public List<PlaceDetailDto.TempReview> findPlaceDetails(Long worldId, Long placeId) {
+    public List<PlaceDetailDto.TempReview> findPlaceDetails(Long worldId, String placeId) {
         QReviewEntity qReview = new QReviewEntity("qReview");
         QReviewWorldMappingEntity qRW = new QReviewWorldMappingEntity("qRW");
         QUserWorldInvitingLogEntity qLog = new QUserWorldInvitingLogEntity("qLog");

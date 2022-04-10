@@ -15,6 +15,6 @@ import org.springframework.stereotype.Repository;
  *
  */
 @Repository
-public interface PlaceRepo extends JpaRepository<PlaceEntity, Long>, PlaceRepoDSL {
-    PlaceEntity findByPlaceId(Long placeId);
+public interface PlaceRepo extends JpaRepository<PlaceEntity, String>, PlaceRepoDSL {
+    PlaceEntity findByPlaceId(String placeId);
 }

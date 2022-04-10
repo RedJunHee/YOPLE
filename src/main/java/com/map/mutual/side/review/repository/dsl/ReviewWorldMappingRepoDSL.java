@@ -1,5 +1,7 @@
 package com.map.mutual.side.review.repository.dsl;
 
+import com.map.mutual.side.review.model.dto.PlaceDto;
+import com.map.mutual.side.review.model.dto.PlaceRangeDto;
 import com.map.mutual.side.review.model.dto.ReviewDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 
@@ -9,4 +11,5 @@ public interface ReviewWorldMappingRepoDSL {
     List<ReviewDto> findAllReviewsByWorldId(Long worldId);
     List<WorldDto> findAllWorldsByReviewId (Long reviewId, String suid);
     List<ReviewDto> findAllReviewsAndIMG(Long worldId);
+    List<PlaceDto.PlaceInRange> findRangePlaces(PlaceRangeDto placeRangeDto);
 }

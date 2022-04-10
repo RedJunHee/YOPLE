@@ -5,9 +5,7 @@ import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.enumerate.BooleanType;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.utils.YOPLEUtils;
-import com.map.mutual.side.review.model.dto.PlaceDetailDto;
-import com.map.mutual.side.review.model.dto.ReviewDto;
-import com.map.mutual.side.review.model.dto.ReviewPlaceDto;
+import com.map.mutual.side.review.model.dto.*;
 import com.map.mutual.side.review.model.entity.EmojiEntity;
 import com.map.mutual.side.review.model.entity.PlaceEntity;
 import com.map.mutual.side.review.model.enumeration.EmojiType;
@@ -65,7 +63,7 @@ public class ReviewController {
      *      List[Long] worldList: 월드 리스트
      * }
      * placeDto: {
-     *     Long placeId: place 고유번호
+     *     String placeId: place 고유번호
      *     String name: place 이름
      *     String address: place 주소
      *     String roadAddress: place 도로명
@@ -80,6 +78,9 @@ public class ReviewController {
     @PostMapping("/review")
     public ResponseEntity<ResponseJsonObject> createReview(@Valid @RequestBody ReviewPlaceDto dto) throws Exception {
         try {
+            if (dto.getReview().getWorldList() == null || dto.getReview().getWorldList().isEmpty()) {
+                throw new YOPLEServiceException(ApiStatusCode.WORLD_LIST_IS_NULL);
+            }
             if (dto.getPlace() != null && !placeRepo.findById(dto.getPlace().getPlaceId()).isPresent()) {
                 PlaceEntity placeEntity = PlaceEntity.builder()
                         .placeId(dto.getPlace().getPlaceId())
@@ -117,7 +118,7 @@ public class ReviewController {
     public ResponseEntity<ResponseJsonObject> updateReview(@RequestBody ReviewDto reviewDto) {
         try {
             if (reviewDto.getWorldList() == null || reviewDto.getWorldList().isEmpty()) {
-                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+                throw new YOPLEServiceException(ApiStatusCode.WORLD_LIST_IS_NULL);
             } else  reviewService.updateReview(reviewDto);
         } catch (YOPLEServiceException e) {
             throw e;
@@ -217,12 +218,12 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
-    @GetMapping("/worldPin")
-    public ResponseEntity<ResponseJsonObject> worldPin(@RequestParam Long worldId) {
+    @GetMapping("/worldPin/review")
+    public ResponseEntity<ResponseJsonObject> worldPinReview(@RequestParam Long worldId) {
         ResponseJsonObject responseJsonObject;
 
         try {
-            List<ReviewDto> reviewDto = reviewService.worldPin(worldId);
+            List<ReviewDto> reviewDto = reviewService.worldPinReview(worldId);
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             responseJsonObject.setData(reviewDto);
         } catch (YOPLEServiceException e) {
@@ -234,8 +235,37 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
+    /**
+     * x축, y축 범위에 따른 장소들 리스트를 가져옴.
+     * @param placeRangeDto
+     * @return
+     */
+    @GetMapping("/worldPin/place")
+    public ResponseEntity<ResponseJsonObject> worldPinPlace(@RequestBody PlaceRangeDto placeRangeDto) {
+        ResponseJsonObject responseJsonObject;
+
+        try {
+            List<PlaceDto.PlaceInRange> places = reviewService.worldPinPlace(placeRangeDto);
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            responseJsonObject.setData(places);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
+    /**
+     * 선택한 월드, 장소값에 따라서
+     * 장소의 리뷰들, 장소의 정보 가져옴.
+     * @param placeId
+     * @param worldId
+     * @return
+     */
     @GetMapping("/placeDetail")
-    public ResponseEntity<ResponseJsonObject> placeDetail(@RequestParam Long placeId, @RequestParam Long worldId) {
+    public ResponseEntity<ResponseJsonObject> placeDetail(@RequestParam String placeId, @RequestParam Long worldId) {
         ResponseJsonObject responseJsonObject;
 
         try {

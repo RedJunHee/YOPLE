@@ -6,10 +6,7 @@ import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.enumerate.BooleanType;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
-import com.map.mutual.side.review.model.dto.PlaceDetailDto;
-import com.map.mutual.side.review.model.dto.PlaceDto;
-import com.map.mutual.side.review.model.dto.ReviewDto;
-import com.map.mutual.side.review.model.dto.ReviewPlaceDto;
+import com.map.mutual.side.review.model.dto.*;
 import com.map.mutual.side.review.model.entity.*;
 import com.map.mutual.side.review.model.enumeration.EmojiType;
 import com.map.mutual.side.review.repository.*;
@@ -228,7 +225,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> worldPin(Long worldId) {
+    public List<ReviewDto> worldPinReview(Long worldId) {
         try {
             return reviewWorldPlaceMappingRepository.findAllReviewsAndIMG(worldId);
         } catch (YOPLEServiceException e) {
@@ -237,7 +234,16 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public PlaceDetailDto placeDetail(Long placeId, Long worldId) {
+    public List<PlaceDto.PlaceInRange> worldPinPlace(PlaceRangeDto placeRangeDto) {
+        try {
+            return reviewWorldPlaceMappingRepository.findRangePlaces(placeRangeDto);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public PlaceDetailDto placeDetail(String placeId, Long worldId) {
         PlaceDto placeDto;
         List<PlaceDetailDto.TempReview> tempReview;
         PlaceDetailDto result;
@@ -297,4 +303,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw e;
         }
     }
+
+
+
 }

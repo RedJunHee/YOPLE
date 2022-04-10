@@ -32,7 +32,7 @@ public class ReviewDto {
     private MultipartFile[] imageFiles;
     private String[] imageUrls;
     private Long reviewId;
-    private Long placeId;
+    private String placeId;
     @Size(min = 1)
     private List<Long> worldList;
 

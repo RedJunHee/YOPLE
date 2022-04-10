@@ -324,6 +324,7 @@ public class UserServiceImpl implements UserService {
      * Name        : worldUsers
      * Author      : 조 준 희
      * Description : 월드 참여자 조회하기.
+     * // TODO: 2022/04/10  월드 참여자 조회 권한이 있는지 확인하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override

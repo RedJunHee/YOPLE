@@ -121,7 +121,12 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         return world;
     }
 
-    //월드에 참여중인 사용자 조회
+    /**
+     * Name        : findAllUsersInWorld
+     * Author      : 조 준 희
+     * Description : 월드에 참여 중인 사용자 조회하기.
+     * History     : [2022/04/10] - 조 준 희 - Create
+     */
     @Override
     public List<UserInWorld> findAllUsersInWorld(long worldId, String suid) {
 

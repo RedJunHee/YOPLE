@@ -23,8 +23,11 @@ import org.springframework.messaging.handler.annotation.support.MethodArgumentNo
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
@@ -39,6 +42,7 @@ import java.security.NoSuchAlgorithmException;
  */
 @RestController
 @RequestMapping(value="/auth")
+@Validated
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
@@ -59,7 +63,7 @@ public class AuthController {
     }
 
     @PostMapping("/sms-authentication-request")
-    public ResponseEntity<ResponseJsonObject> smsAuthenticationRequest(@RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws MethodArgumentNotValidException, NoSuchAlgorithmException, KeyStoreException, IOException, InvalidKeyException, KeyManagementException {
+    public ResponseEntity<ResponseJsonObject> smsAuthenticationRequest( @RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws MethodArgumentNotValidException, NoSuchAlgorithmException, KeyStoreException, IOException, InvalidKeyException, KeyManagementException {
 
         try {
             // 1. 핸드폰 번호 벨리데이션
@@ -69,7 +73,7 @@ public class AuthController {
             String smsAuthNum = YOPLEUtils.getSMSAuth();
 
             // 2. 핸드폰 번호 인증 요청
-            authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+           // authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);
@@ -81,7 +85,7 @@ public class AuthController {
     }
 
     @PostMapping("/sms-authentication-response")
-    public ResponseEntity<ResponseJsonObject> smsAuthenticationResponse(@RequestBody SMSAuthReqeustDto smsAuthReqeustDTO) throws Exception {
+    public ResponseEntity<ResponseJsonObject> smsAuthenticationResponse(@RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         try {
             // 응답 확인
@@ -123,7 +127,7 @@ public class AuthController {
 
     // 액세스 토큰 갱신
     @PostMapping("/access-refresh")
-    public ResponseEntity<ResponseJsonObject> jwtAccessRefresh(@RequestHeader(value = AuthorizationCheckFilter.REFRESH_TOKEN) String refreshToken) throws Exception {
+    public ResponseEntity<ResponseJsonObject> jwtAccessRefresh(@RequestHeader(value = AuthorizationCheckFilter.REFRESH_TOKEN, required = false) @Valid @NotBlank(message = "리프레시 토큰이 널이거나 빈값입니다.") String refreshToken) throws Exception {
         try{
             String jwt ;
             HttpHeaders headers = new HttpHeaders();
@@ -142,6 +146,7 @@ public class AuthController {
             throw e;
         }
     }
+
     // 리프레시 토큰 갱신
     @PostMapping("/refresh-refresh")
     public ResponseEntity<ResponseJsonObject> jwtRefreshRefresh() throws Exception {

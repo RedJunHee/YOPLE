@@ -83,9 +83,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 
                 // auth
-                .antMatchers(HttpMethod.POST,"/auth/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/auth/sms-authentication-request/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/auth/sms-authentication-response/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/auth/access-refresh/**").permitAll()
                 .antMatchers(HttpMethod.POST,"/auth/refresh-refresh/**").authenticated()
-
 
                 // user
                 .antMatchers(HttpMethod.POST,"/user/signUp/**").permitAll()  // 회원 가입

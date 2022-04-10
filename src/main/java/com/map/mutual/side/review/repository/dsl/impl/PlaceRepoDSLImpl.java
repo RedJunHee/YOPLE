@@ -3,7 +3,7 @@ package com.map.mutual.side.review.repository.dsl.impl;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.auth.model.entity.QUserWorldInvitingLogEntity;
 import com.map.mutual.side.review.model.dto.PlaceDetailDto;
-import com.map.mutual.side.review.model.dto.QPlaceDetailDto_tempReview;
+import com.map.mutual.side.review.model.dto.QPlaceDetailDto_TempReview;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
 import com.map.mutual.side.review.repository.dsl.PlaceRepoDSL;
@@ -38,7 +38,7 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
         QUserWorldInvitingLogEntity qLog = new QUserWorldInvitingLogEntity("qLog");
         QUserEntity qUser = new QUserEntity("qUser");
 
-        List<PlaceDetailDto.TempReview> results = jpaQueryFactory.select(new QPlaceDetailDto_tempReview(
+        List<PlaceDetailDto.TempReview> results = jpaQueryFactory.select(new QPlaceDetailDto_TempReview(
                 qReview.reviewId,
                 qReview.title,
                 qReview.content,

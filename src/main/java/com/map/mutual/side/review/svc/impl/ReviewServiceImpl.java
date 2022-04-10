@@ -6,10 +6,7 @@ import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.enumerate.BooleanType;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
-import com.map.mutual.side.review.model.dto.PlaceDetailDto;
-import com.map.mutual.side.review.model.dto.PlaceDto;
-import com.map.mutual.side.review.model.dto.ReviewDto;
-import com.map.mutual.side.review.model.dto.ReviewPlaceDto;
+import com.map.mutual.side.review.model.dto.*;
 import com.map.mutual.side.review.model.entity.*;
 import com.map.mutual.side.review.model.enumeration.EmojiType;
 import com.map.mutual.side.review.repository.*;
@@ -69,7 +66,6 @@ public class ReviewServiceImpl implements ReviewService {
         try {
             ReviewEntity reviewEntity = ReviewEntity.builder()
                     .userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build())
-                    .title(dto.getReview().getTitle())
                     .content(dto.getReview().getContent())
 //                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
                     .build();
@@ -95,7 +91,6 @@ public class ReviewServiceImpl implements ReviewService {
                 throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
             } else {
                 entity.setContent(reviewDto.getContent());
-                entity.setTitle(reviewDto.getTitle());
                 result = saveReviewAndMappings(reviewDto, entity, null);
             }
         } catch (YOPLEServiceException e) {
@@ -152,7 +147,6 @@ public class ReviewServiceImpl implements ReviewService {
 
         ReviewDto result = ReviewDto.builder()
                 .userSuid(returnedReview.getUserEntity().getSuid())
-                .title(returnedReview.getTitle())
                 .content(reviewDto.getContent())
 //                .imageFiles()
                 .reviewId(returnedReview.getReviewId())
@@ -184,7 +178,6 @@ public class ReviewServiceImpl implements ReviewService {
             reviewEntity = reviewRepo.findById(reviewId).orElseThrow(NullPointerException::new);
             reviewDto = ReviewDto.builder()
                     .userSuid(reviewEntity.getUserEntity().getSuid())
-                    .title(reviewEntity.getTitle())
                     .content(reviewEntity.getContent())
 //                    .imageUrls(Arrays.stream(reviewEntity.getImageUrl().split(",")).collect(Collectors.toList()))
                     .build();
@@ -220,7 +213,6 @@ public class ReviewServiceImpl implements ReviewService {
             reviewEntity.forEach(data -> reviewDto.add(ReviewDto.builder()
                             .reviewId(data.getReviewId())
                             .userSuid(data.getUserEntity().getSuid())
-                            .title(data.getTitle())
                             .content(data.getContent())
                             // TODO: 2022/03/29 imageUrl 추가해야함
 //                  .imageUrls()
@@ -233,7 +225,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> worldPin(Long worldId) {
+    public List<ReviewDto> worldPinReview(Long worldId) {
         try {
             return reviewWorldPlaceMappingRepository.findAllReviewsAndIMG(worldId);
         } catch (YOPLEServiceException e) {
@@ -242,7 +234,16 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public PlaceDetailDto placeDetail(Long placeId, Long worldId) {
+    public List<PlaceDto.PlaceInRange> worldPinPlace(PlaceRangeDto placeRangeDto) {
+        try {
+            return reviewWorldPlaceMappingRepository.findRangePlaces(placeRangeDto);
+        } catch (YOPLEServiceException e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public PlaceDetailDto placeDetail(String placeId, Long worldId) {
         PlaceDto placeDto;
         List<PlaceDetailDto.TempReview> tempReview;
         PlaceDetailDto result;
@@ -302,4 +303,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw e;
         }
     }
+
+
+
 }

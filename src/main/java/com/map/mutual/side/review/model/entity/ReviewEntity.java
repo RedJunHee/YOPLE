@@ -36,9 +36,6 @@ public class ReviewEntity extends TimeEntity implements Persistable<Long> {
     @JoinColumn(name = "USER_SUID", referencedColumnName = "SUID")
     private UserEntity userEntity;
 
-    @Column(name="TITLE", columnDefinition = "VARCHAR(100)")
-    private String title;
-
     @Column(name="CONTENT", columnDefinition = "VARCHAR(1000)")
     private String content;
 

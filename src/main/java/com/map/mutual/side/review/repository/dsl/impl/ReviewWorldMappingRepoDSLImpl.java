@@ -11,6 +11,7 @@ import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.List;
 @Repository
 public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL {
     private final JPAQueryFactory jpaQueryFactory;
-
+    @Autowired
     public ReviewWorldMappingRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
     }

@@ -25,6 +25,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -40,6 +46,7 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/user")
+@Validated
 public class UserController {
     private final Logger logger = LogManager.getLogger(UserController.class);
     private AuthService authService;
@@ -61,7 +68,7 @@ public class UserController {
      */
     @PostMapping("/signup")
     @Transactional
-    public ResponseEntity<ResponseJsonObject> smsSignUp(@Validated @RequestBody UserInfoDto userInfoDto) throws Exception {
+    public ResponseEntity<ResponseJsonObject> smsSignUp(@RequestBody @Valid UserInfoDto userInfoDto) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         try {
 
@@ -115,7 +122,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world/user")
-    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") String worldinvitationCode){
+    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6,message = "인증 코드는 6자리 입니다.") String worldinvitationCode){
         try{
 
             WorldDto joinedWorld = userService.inviteJoinWorld( worldinvitationCode);
@@ -138,7 +145,8 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/check-userid")
-    public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") String userId) {
+    public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") @Valid
+                                                              @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}", message = "ID가 올바르지 않습니다.") String userId) {
         ResponseJsonObject response;
         try{
             if(userInfoRepo.findByUserId(userId) == null) {
@@ -161,10 +169,15 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/find-user")
-    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam String userId,
-                                                                  @RequestParam String phone) {
+    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam  String userId,
+                                                                  @RequestParam  String phone) {
         ResponseJsonObject response;
         try{
+
+            // 1. 둘 중에 하나도 안들어오면 파라미터 체크 에러.
+            if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(phone))
+                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED,"사용자 ID 또는 핸드폰 번호 중에 한 정보 이상 요청해야합니다.");
+
             UserInfoDto userInfoDto;
 
             userInfoDto = userService.findUser(userId, phone);
@@ -172,9 +185,13 @@ public class UserController {
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);
         }catch (YOPLEServiceException e) {
+            logger.debug(e.getMessage());
+            throw e;
+        }catch(Exception e){
             logger.error(e.getMessage());
             throw e;
         }
+
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -186,7 +203,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/world/users")
-    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam long worldId) {
+    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam @Valid @NotNull long worldId) {
         ResponseJsonObject response;
         try{
 

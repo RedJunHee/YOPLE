@@ -24,37 +24,37 @@ import static org.junit.jupiter.api.Assertions.*;
 class WorldUserMappingRepoDSLImplTest {
 
 
-    @Test
-    @DisplayName("List Table Join")
-    public void joinTest()
-    {
-
-        List<UserInWorld> userInfoInWorld = new ArrayList<>();
-        List<Pair> reviewCnt = new ArrayList<>();
-
-        userInfoInWorld.add(UserInWorld.builder().suid("1").build());
-        userInfoInWorld.add(UserInWorld.builder().suid("2").build());
-        userInfoInWorld.add(UserInWorld.builder().suid("3").build());
-        userInfoInWorld.add(UserInWorld.builder().suid("4").build());
-        userInfoInWorld.add(UserInWorld.builder().suid("5").build());
-
-        reviewCnt.add(new Pair("1",4));
-        reviewCnt.add(new Pair("2",3));
-        reviewCnt.add(new Pair("3",55));
-        reviewCnt.add(new Pair("4",32));
-        reviewCnt.add(new Pair("5",5));
-
-        List<Object> list = seq(userInfoInWorld)
-                .flatMap( user -> seq(reviewCnt)
-                        .filter(review -> user.getSuid().equals(review.getKey()))
-                        .onEmpty(null)
-                        .map(review -> tuple(user,review)))
-                .sorted( Comparator.comparing(v -> Long.parseLong(v.v2.getValue().toString()))).reverse()
-                .map(v -> v.v1)
-                .collect(Collectors.toList());
-
-
-        System.out.println(list);
-    }
+//    @Test
+//    @DisplayName("List Table Join")
+//    public void joinTest()
+//    {
+//
+//        List<UserInWorld> userInfoInWorld = new ArrayList<>();
+//        List<Pair> reviewCnt = new ArrayList<>();
+//
+//        userInfoInWorld.add(UserInWorld.builder().suid("1").build());
+//        userInfoInWorld.add(UserInWorld.builder().suid("2").build());
+//        userInfoInWorld.add(UserInWorld.builder().suid("3").build());
+//        userInfoInWorld.add(UserInWorld.builder().suid("4").build());
+//        userInfoInWorld.add(UserInWorld.builder().suid("5").build());
+//
+//        reviewCnt.add(new Pair("1",4));
+//        reviewCnt.add(new Pair("2",3));
+//        reviewCnt.add(new Pair("3",55));
+//        reviewCnt.add(new Pair("4",32));
+//        reviewCnt.add(new Pair("5",5));
+//
+//        List<Object> list = seq(userInfoInWorld)
+//                .flatMap( user -> seq(reviewCnt)
+//                        .filter(review -> user.getSuid().equals(review.getKey()))
+//                        .onEmpty(null)
+//                        .map(review -> tuple(user,review)))
+//                .sorted( Comparator.comparing(v -> Long.parseLong(v.v2.getValue().toString()))).reverse()
+//                .map(v -> v.v1)
+//                .collect(Collectors.toList());
+//
+//
+//        System.out.println(list);
+//    }
 
 }

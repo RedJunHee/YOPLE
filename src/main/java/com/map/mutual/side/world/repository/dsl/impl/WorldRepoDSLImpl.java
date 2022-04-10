@@ -1,23 +1,15 @@
 package com.map.mutual.side.world.repository.dsl.impl;
 
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.common.enumerate.BooleanType;
 import com.map.mutual.side.world.model.dto.QWorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
-import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.map.mutual.side.world.repository.dsl.WorldRepoDSL;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.hibernate.criterion.NullExpression;
-import org.hibernate.criterion.SimpleExpression;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -30,7 +22,7 @@ import org.springframework.stereotype.Repository;
 public class WorldRepoDSLImpl implements WorldRepoDSL {
 
     private final JPAQueryFactory jpaQueryFactory;
-
+    @Autowired
     public WorldRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
     }

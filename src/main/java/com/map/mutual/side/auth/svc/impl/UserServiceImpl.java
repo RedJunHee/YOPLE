@@ -113,18 +113,36 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
 
-        if(StringUtil.isNullOrEmpty(id) == true)
+        //폰으로 검색.
+        if(StringUtil.isNullOrEmpty(id) == true) {
             userEntity = userInfoRepo.findOneByPhone(phone);
-        else
+        }
+        else { // 유저 ID로 검색.
             userEntity = userInfoRepo.findByUserId(id);
+        }
+
 
         if(userEntity == null)
             throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
 
-        userInfoDto = modelMapper.map(userEntity, UserInfoDto.class);
+        //폰으로 검색.
+        if(StringUtil.isNullOrEmpty(id) == true) {
+            userInfoDto = UserInfoDto.builder()
+                    .suid(userEntity.getSuid())
+                    .build();
+
+        }
+        else { // 유저 ID로 검색.
+            userInfoDto = UserInfoDto.builder()
+                    .suid(userEntity.getSuid())
+                    .userId(userEntity.getUserId())
+                    .name(userEntity.getName())
+                    .profileUrl(userEntity.getProfileUrl())
+                    .build();
+        }
+
 
         return userInfoDto;
-
     }
 
     /**

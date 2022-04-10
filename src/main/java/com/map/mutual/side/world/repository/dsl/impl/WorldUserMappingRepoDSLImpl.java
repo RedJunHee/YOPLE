@@ -15,9 +15,8 @@ import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import javafx.util.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -37,6 +36,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
     public WorldUserMappingRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
     }
@@ -180,11 +180,11 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                                         else if(user.getIsHost().equals("Y")) // 월드 host 인 경우 2번째 우선순위
                                                             reviewCount= 9998l;
 
-                                                        return new Pair<UserInWorld, Long>(user, reviewCount);
+                                                        return tuple(user, reviewCount);
                                                     })
                                     )
-                                .sorted( Comparator.comparingLong( v -> Long.parseLong(v.getValue().toString()))).reverse() // order by
-                                .map(v -> v.getKey()) //select
+                                .sorted( Comparator.comparingLong( v -> Long.parseLong(v.v2.toString()))).reverse() // order by
+                                .map(v -> v.v1) //select
                                 .collect(Collectors.toList());
 
         return list;

@@ -1,5 +1,7 @@
 package com.map.mutual.side.review.repository.dsl.impl;
 
+import com.map.mutual.side.review.model.dto.PlaceDto;
+import com.map.mutual.side.review.model.dto.PlaceRangeDto;
 import com.map.mutual.side.review.model.dto.QReviewDto;
 import com.map.mutual.side.review.model.dto.ReviewDto;
 import com.map.mutual.side.review.model.entity.QReviewEntity;

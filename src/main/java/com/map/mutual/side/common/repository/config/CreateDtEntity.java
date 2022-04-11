@@ -22,6 +22,6 @@ import java.time.LocalDateTime;
 @Getter
 public class CreateDtEntity {
     @CreatedDate
-    @Column(name = "CREATE_DT", updatable = false)
+    @Column(name = "CREATE_DT", nullable = false, updatable = false, columnDefinition = "DATETIME")
     private LocalDateTime createTime;
 }

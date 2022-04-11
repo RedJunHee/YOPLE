@@ -29,7 +29,7 @@ public class ApiLog extends CreateDtEntity {
     @Column(name="API_DESC", nullable = false, columnDefinition = "VARCHAR(8000)")
     private  String apiDesc;
 
-    @Column(name="API_STATUS", nullable = false, columnDefinition = "VARCHAR(50)")
+    @Column(name="API_STATUS", nullable = false, columnDefinition = "CHAR(1)")
     private char apiStatus;
 
     @Column(name="PROCESS_TIME", nullable = false, columnDefinition = "FLOAT")

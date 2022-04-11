@@ -21,6 +21,6 @@ import java.time.LocalDateTime;
 @Getter
 public class UpdateDtEntity {
     @LastModifiedDate
-    @Column(name = "UPDATE_DT", updatable = true)
+    @Column(name = "UPDATE_DT", nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime updateTime;
 }

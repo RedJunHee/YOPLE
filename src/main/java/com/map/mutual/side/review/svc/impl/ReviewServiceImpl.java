@@ -189,20 +189,6 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> getReviews(Long worldId) {
-        List<ReviewDto> reviewDto;
-        try {
-            reviewDto = reviewWorldPlaceMappingRepository.findAllReviewsByWorldId(worldId);
-            if (reviewDto == null) {
-                return null;
-            }
-        } catch (YOPLEServiceException e) {
-            throw e;
-        }
-        return reviewDto;
-    }
-
-    @Override
     public List<ReviewDto> myReviews() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
@@ -223,19 +209,6 @@ public class ReviewServiceImpl implements ReviewService {
             throw e;
         }
         return reviewDto;
-    }
-
-    @Override
-    public List<PlaceDto.PlaceSimpleDto> worldPinAllPlace(Long worldId) {
-        try {
-            List<PlaceDto.PlaceSimpleDto> result = reviewWorldPlaceMappingRepository.findAllReviewsAndIMG(worldId);
-            if (result.isEmpty()) {
-                throw new YOPLEServiceException(ApiStatusCode.CONTENT_NOT_FOUND);
-            }
-            return result;
-        } catch (YOPLEServiceException e) {
-            throw e;
-        }
     }
 
     @Override

@@ -172,29 +172,6 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
-    /**
-     * Review List 조회
-     * @param worldId
-     * @return
-     * 월드 id에 해당하는 Review List들 조회
-     */
-    @GetMapping("/reviews")
-    public ResponseEntity<ResponseJsonObject> getReviews(@RequestParam Long worldId) {
-        ResponseJsonObject responseJsonObject;
-
-        try {
-            List<ReviewDto> reviewDto = reviewService.getReviews(worldId);
-            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            responseJsonObject.setData(reviewDto);
-
-        } catch (YOPLEServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
-        }
-
-        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
-    }
 
     /**
      * 내가 쓴 Reviews 조회

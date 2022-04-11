@@ -160,6 +160,7 @@ public class ReviewController {
 
         try {
             ReviewDto reviewDto = reviewService.getReview(reviewId);
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             responseJsonObject.setData(reviewDto);
 
         } catch (YOPLEServiceException e) {

@@ -83,7 +83,9 @@ public class RequestAroundLogAop {
 
         }
         catch(YOPLEServiceException ex){
-            apiStatus = 'N';
+            // 에러가 아닌 경우
+            if(ex.getResponseJsonObject().getMeta().getErrorType() != null)
+                apiStatus = 'N';
             outputMessage = om.writeValueAsString(ex.getResponseJsonObject());
             throw ex;
         }

@@ -50,7 +50,7 @@ public class PlaceDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class PlaceInRange {
+    public static class PlaceSimpleDto {
         private String placeId;
         private String name;
         private BigDecimal x;

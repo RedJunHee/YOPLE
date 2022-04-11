@@ -22,8 +22,8 @@ public interface ReviewService {
     ReviewDto getReview(Long reviewDto);
     List<ReviewDto> getReviews(Long worldId);
     List<ReviewDto> myReviews();
-    List<ReviewDto> worldPinReview(Long worldId);
-    List<PlaceDto.PlaceInRange> worldPinPlace(PlaceRangeDto placeRangeDto);
+    List<PlaceDto.PlaceSimpleDto> worldPinAllPlace(Long worldId);
+    List<PlaceDto.PlaceSimpleDto> worldPinPlaceInRange(PlaceRangeDto placeRangeDto);
     PlaceDetailDto placeDetail(String placeId, Long worldId);
     void addEmoji(Long reviewId, Long worldId, EmojiType emojiType);
 }

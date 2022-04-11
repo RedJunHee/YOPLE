@@ -10,6 +10,6 @@ import java.util.List;
 public interface ReviewWorldMappingRepoDSL {
     List<ReviewDto> findAllReviewsByWorldId(Long worldId);
     List<WorldDto> findAllWorldsByReviewId (Long reviewId, String suid);
-    List<ReviewDto> findAllReviewsAndIMG(Long worldId);
-    List<PlaceDto.PlaceInRange> findRangePlaces(PlaceRangeDto placeRangeDto);
+    List<PlaceDto.PlaceSimpleDto> findAllReviewsAndIMG(Long worldId);
+    List<PlaceDto.PlaceSimpleDto> findRangePlaces(PlaceRangeDto placeRangeDto);
 }

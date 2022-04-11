@@ -78,24 +78,60 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
     }
 
     @Override
-    public List<ReviewDto> findAllReviewsAndIMG(Long worldId) {
-        QReviewEntity qR = new QReviewEntity("qR");
-        QReviewWorldMappingEntity qRWM = new QReviewWorldMappingEntity("qRWM");
+    public List<PlaceDto.PlaceSimpleDto> findAllReviewsAndIMG(Long worldId) {
+        List<PlaceDto.PlaceSimpleDto> result = new ArrayList<>();
 
-        List<ReviewDto> result = jpaQueryFactory.select(new QReviewDto
-                        (qR.imageUrl,
-                                qR.reviewId))
-                .from(qR)
-                .join(qRWM)
-                .on(qR.reviewId.eq(qRWM.reviewEntity.reviewId))
-                .where(qRWM.worldEntity.worldId.eq(worldId))
-                .fetch();
+        String sql = "SELECT " +
+                "p.PLACE_ID ," +
+                "p.NAME," +
+                "p.X ," +
+                "p.Y ," +
+                "ui.PROFILE_URL " +
+                "FROM" +
+                "(" +
+                "SELECT " +
+                "ROW_NUMBER() OVER(PARTITION BY r.PLACE_ID " +
+                "ORDER BY " +
+                "m.CREATE_DT DESC) as NUM" +
+                " ," +
+                "r.PLACE_ID," +
+                "r.REVIEW_ID," +
+                "m.WORLD_ID," +
+                "r.USER_SUID " +
+                "FROM " +
+                "REVIEW_WORLD_MAPPING m " +
+                "INNER JOIN REVIEW r" +
+                " ON " +
+                "m.REVIEW_ID = r.REVIEW_ID " +
+                "WHERE " +
+                "m.WORLD_ID = " + worldId +
+                " ) as subrow " +
+                "LEFT JOIN CMS.dbo.PLACE p " +
+                "ON " +
+                "p.PLACE_ID = subrow.PLACE_ID " +
+                "LEFT JOIN CMS.dbo.USER_INFO ui " +
+                "ON " +
+                "subrow.USER_SUID = ui.SUID " +
+                "WHERE " +
+                "subrow.num = 1";
+
+        List<Object[]> dtos = entityManager.createNativeQuery(sql).getResultList();
+        dtos.forEach(data -> {
+            PlaceDto.PlaceSimpleDto placeInRange = PlaceDto.PlaceSimpleDto.builder()
+                    .placeId(data[0].toString())
+                    .name(data[1].toString())
+                    .x((BigDecimal)data[2])
+                    .y((BigDecimal)data[3])
+                    .profileUrl(data[4].toString())
+                    .build();
+            result.add(placeInRange);
+        });
         return result;
     }
 
     @Override
-    public List<PlaceDto.PlaceInRange> findRangePlaces(PlaceRangeDto placeRangeDto) {
-        List<PlaceDto.PlaceInRange> result = new ArrayList<>();
+    public List<PlaceDto.PlaceSimpleDto> findRangePlaces(PlaceRangeDto placeRangeDto) {
+        List<PlaceDto.PlaceSimpleDto> result = new ArrayList<>();
 
         String sql = "SELECT p.PLACE_ID , p.NAME, p.X , p.Y , ui.PROFILE_URL" +
                 " FROM (" +
@@ -114,7 +150,7 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
 
         List<Object[]> dtos = entityManager.createNativeQuery(sql).getResultList();
         dtos.forEach(data -> {
-                        PlaceDto.PlaceInRange placeInRange = PlaceDto.PlaceInRange.builder()
+                        PlaceDto.PlaceSimpleDto placeInRange = PlaceDto.PlaceSimpleDto.builder()
                     .placeId(data[0].toString())
                     .name(data[1].toString())
                     .x((BigDecimal)data[2])

@@ -219,12 +219,19 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
-    @GetMapping("/worldPin/review")
-    public ResponseEntity<ResponseJsonObject> worldPinReview(@RequestParam Long worldId) {
+
+    /**
+     * 해당하는 월드의 pin (
+     * @param worldId
+     * @return
+     */
+    @GetMapping("/worldPin/allPlace")
+    public ResponseEntity<ResponseJsonObject> worldPinAllPlace(@RequestParam Long worldId) {
         ResponseJsonObject responseJsonObject;
 
         try {
-            List<ReviewDto> reviewDto = reviewService.worldPinReview(worldId);
+            List<PlaceDto.PlaceSimpleDto> reviewDto = reviewService.worldPinAllPlace(worldId);
+
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             responseJsonObject.setData(reviewDto);
         } catch (YOPLEServiceException e) {
@@ -241,12 +248,12 @@ public class ReviewController {
      * @param placeRangeDto
      * @return
      */
-    @GetMapping("/worldPin/place")
-    public ResponseEntity<ResponseJsonObject> worldPinPlace(@RequestBody PlaceRangeDto placeRangeDto) {
+    @GetMapping("/worldPin/placeInRange")
+    public ResponseEntity<ResponseJsonObject> worldPinPlaceInRange(@RequestBody PlaceRangeDto placeRangeDto) {
         ResponseJsonObject responseJsonObject;
 
         try {
-            List<PlaceDto.PlaceInRange> places = reviewService.worldPinPlace(placeRangeDto);
+            List<PlaceDto.PlaceSimpleDto> places = reviewService.worldPinPlaceInRange(placeRangeDto);
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             responseJsonObject.setData(places);
         } catch (YOPLEServiceException e) {
@@ -259,6 +266,7 @@ public class ReviewController {
     }
 
     /**
+     *
      * 선택한 월드, 장소값에 따라서
      * 장소의 리뷰들, 장소의 정보 가져옴.
      * @param placeId
@@ -282,6 +290,19 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
+
+
+
+
+
+
+
+
+//    TEST AREA
+
+    /**
+     * TEST
+     */
     @PostMapping("/emoji")
     public ResponseEntity<ResponseJsonObject> addEmoji(@RequestParam Long reviewId, @RequestParam Long worldId, @RequestParam EmojiType emojiType) {
         ResponseJsonObject responseJsonObject;

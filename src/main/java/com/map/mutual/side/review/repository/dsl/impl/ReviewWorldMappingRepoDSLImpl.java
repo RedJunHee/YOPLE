@@ -2,9 +2,6 @@ package com.map.mutual.side.review.repository.dsl.impl;
 
 import com.map.mutual.side.review.model.dto.PlaceDto;
 import com.map.mutual.side.review.model.dto.PlaceRangeDto;
-import com.map.mutual.side.review.model.dto.QReviewDto;
-import com.map.mutual.side.review.model.dto.ReviewDto;
-import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
 import com.map.mutual.side.review.repository.dsl.ReviewWorldMappingRepoDSL;
 import com.map.mutual.side.world.model.dto.WorldDto;
@@ -31,23 +28,6 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
     @Autowired
     public ReviewWorldMappingRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
-    }
-
-    @Override
-    public List<ReviewDto> findAllReviewsByWorldId(Long worldId) {
-        QReviewEntity qReview = new QReviewEntity("qReview");
-        QReviewWorldMappingEntity qRW = new QReviewWorldMappingEntity("qRW");
-        List<ReviewDto> reviewDtos = jpaQueryFactory.select(new QReviewDto
-                        (qReview.userEntity,
-                                qReview.content,
-                                qReview.imageUrl,
-                                qReview.reviewId))
-                .from(qReview)
-                .join(qRW)
-                .on(qReview.reviewId.eq(qRW.reviewEntity.reviewId))
-                .where(qRW.worldEntity.worldId.eq(worldId))
-                .fetch();
-        return reviewDtos;
     }
 
 

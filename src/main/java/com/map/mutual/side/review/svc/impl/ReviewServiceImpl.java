@@ -67,6 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
             ReviewEntity reviewEntity = ReviewEntity.builder()
                     .userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build())
                     .content(dto.getReview().getContent())
+                    .placeEntity(PlaceEntity.builder().placeId(dto.getPlace().getPlaceId()).build())
 //                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
                     .build();
             result = saveReviewAndMappings(dto.getReview(), reviewEntity, dto.getPlace());
@@ -225,18 +226,26 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> worldPinReview(Long worldId) {
+    public List<PlaceDto.PlaceSimpleDto> worldPinAllPlace(Long worldId) {
         try {
-            return reviewWorldPlaceMappingRepository.findAllReviewsAndIMG(worldId);
+            List<PlaceDto.PlaceSimpleDto> result = reviewWorldPlaceMappingRepository.findAllReviewsAndIMG(worldId);
+            if (result.isEmpty()) {
+                throw new YOPLEServiceException(ApiStatusCode.CONTENT_NOT_FOUND);
+            }
+            return result;
         } catch (YOPLEServiceException e) {
             throw e;
         }
     }
 
     @Override
-    public List<PlaceDto.PlaceInRange> worldPinPlace(PlaceRangeDto placeRangeDto) {
+    public List<PlaceDto.PlaceSimpleDto> worldPinPlaceInRange(PlaceRangeDto placeRangeDto) {
         try {
-            return reviewWorldPlaceMappingRepository.findRangePlaces(placeRangeDto);
+            List<PlaceDto.PlaceSimpleDto> result = reviewWorldPlaceMappingRepository.findRangePlaces(placeRangeDto);
+            if (result.isEmpty()) {
+                throw new YOPLEServiceException(ApiStatusCode.CONTENT_NOT_FOUND);
+            }
+            return result;
         } catch (YOPLEServiceException e) {
             throw e;
         }

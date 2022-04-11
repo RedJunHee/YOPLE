@@ -19,7 +19,7 @@ public class SMSAuthReqeustDto {
     @NotBlank(message = "디바이스값이 널 이거나 빈값입니다.")
     private String duid;
 
-    @Size(min = 6,max = 6)
+    @Size(min = 4,max = 4)
     private String responseAuthNum;
 
 }

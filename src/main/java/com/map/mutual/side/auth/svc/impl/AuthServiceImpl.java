@@ -153,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO) throws RuntimeException{
+    public void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO) throws YOPLEServiceException{
 
         try {
             SMSRequestLogEntity smslog = smsLogRepo
@@ -162,9 +162,9 @@ public class AuthServiceImpl implements AuthService {
                             LocalDateTime.now().minusMinutes(5),
                             LocalDateTime.now());
             if (smslog == null) {
-                throw new RuntimeException();
+                throw new YOPLEServiceException(ApiStatusCode.AUTH_META_NOT_MATCH);
             }
-
+            // TODO: 2022-04-11  duid 불일치 체크 안하고있음. 
             // 인증 코드 확인
             if(smslog.getRequestAuthNum().equals(smsAuthResponseDTO.getResponseAuthNum()))
             {
@@ -179,9 +179,9 @@ public class AuthServiceImpl implements AuthService {
                 throw new YOPLEServiceException(ApiStatusCode.AUTH_META_NOT_MATCH);
             }
 
-        }catch(RuntimeException e)
+        }catch(YOPLEServiceException e)
         {
-            log.error("smsAuthNumber Response Failed : %s",e.getMessage());
+            log.error("smsAuthNumber Response Failed : " + e.getMessage());
             throw e;
         }
 

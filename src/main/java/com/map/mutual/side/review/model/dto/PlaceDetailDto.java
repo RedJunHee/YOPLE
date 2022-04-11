@@ -4,6 +4,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -29,24 +30,27 @@ public class PlaceDetailDto {
     @Getter
     @Setter
     @NoArgsConstructor
-    public static class TempReview {
+    public static class TempReview{
         private Long reviewId;
-        private String content;
         private String[] imageUrls;
-        private String userSuid;
-        private String invitingUserSuid;
+        private String profileUrl;
 
         @QueryProjection
-        public TempReview(Long reviewId, String content, String imageUrls, String userSuid, String invitingUserSuid, LocalDateTime updateTime) {
+        public TempReview(Long reviewId, String imageUrls, String profileUrl, LocalDateTime createDt) {
             this.reviewId = reviewId;
-            this.content = content;
+            this.profileUrl = profileUrl;
             if (imageUrls != null) {
                 this.imageUrls = imageUrls.split(",");
             } else {
                 this.imageUrls = new String[0];
             }
-            this.userSuid = userSuid;
-            this.invitingUserSuid = invitingUserSuid;
+        }
+
+        public static class TempReviewComparatorByImageNum implements Comparator<TempReview> {
+            @Override
+            public int compare(TempReview o1, TempReview o2) {
+                return Integer.compare(o2.imageUrls.length, o1.imageUrls.length);
+            }
         }
     }
 }

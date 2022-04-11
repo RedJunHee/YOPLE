@@ -1,11 +1,9 @@
 package com.map.mutual.side.review.repository.dsl.impl;
 
 import com.map.mutual.side.auth.model.entity.QUserEntity;
-import com.map.mutual.side.auth.model.entity.QUserWorldInvitingLogEntity;
 import com.map.mutual.side.review.model.dto.PlaceDetailDto;
 import com.map.mutual.side.review.model.dto.QPlaceDetailDto_TempReview;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
-import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
 import com.map.mutual.side.review.repository.dsl.PlaceRepoDSL;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
@@ -34,28 +32,18 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
     @Override
     public List<PlaceDetailDto.TempReview> findPlaceDetails(Long worldId, String placeId) {
         QReviewEntity qReview = new QReviewEntity("qReview");
-        QReviewWorldMappingEntity qRW = new QReviewWorldMappingEntity("qRW");
-        QUserWorldInvitingLogEntity qLog = new QUserWorldInvitingLogEntity("qLog");
         QUserEntity qUser = new QUserEntity("qUser");
 
         List<PlaceDetailDto.TempReview> results = jpaQueryFactory.select(new QPlaceDetailDto_TempReview(
                 qReview.reviewId,
-                qReview.content,
                 qReview.imageUrl,
-                qReview.userEntity.suid,
-                qUser.userId,
-                qReview.updateTime
-                )).distinct()
-                .from(qRW)
-                .join(qReview)
-                .on(qReview.reviewId.eq(qRW.reviewEntity.reviewId))
-                .join(qLog)
-                .on(qReview.userEntity.suid.eq(qLog.targetSuid))
+                qUser.profileUrl,
+                qReview.createTime
+                ))
+                .from(qReview)
                 .join(qUser)
-                .on(qUser.suid.eq(qLog.userSuid))
-                .where(qRW.worldEntity.worldId.eq(worldId)
-                        .and(qReview.placeEntity.placeId.eq(placeId)))
-                .orderBy(qReview.updateTime.desc())
+                .on(qReview.userEntity.suid.eq(qUser.suid))
+                .orderBy(qReview.createTime.desc())
                 .fetch();
         return results;
     }

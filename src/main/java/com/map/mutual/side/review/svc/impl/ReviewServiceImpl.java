@@ -247,10 +247,7 @@ public class ReviewServiceImpl implements ReviewService {
 
             tempReview = placeRepo.findPlaceDetails(worldId, placeId);
 
-
-
-
-
+            tempReview.sort(new PlaceDetailDto.TempReview.TempReviewComparatorByImageNum());
 
 
             result = PlaceDetailDto.builder()

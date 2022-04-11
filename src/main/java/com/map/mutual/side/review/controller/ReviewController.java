@@ -198,29 +198,6 @@ public class ReviewController {
 
 
     /**
-     * 해당하는 월드의 pin (
-     * @param worldId
-     * @return
-     */
-    @GetMapping("/worldPin/allPlace")
-    public ResponseEntity<ResponseJsonObject> worldPinAllPlace(@RequestParam Long worldId) {
-        ResponseJsonObject responseJsonObject;
-
-        try {
-            List<PlaceDto.PlaceSimpleDto> reviewDto = reviewService.worldPinAllPlace(worldId);
-
-            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            responseJsonObject.setData(reviewDto);
-        } catch (YOPLEServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
-        }
-
-        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
-    }
-
-    /**
      * x축, y축 범위에 따른 장소들 리스트를 가져옴.
      * @param placeRangeDto
      * @return

@@ -295,6 +295,7 @@ public class UserServiceImpl implements UserService {
      * Description :  사용자 월드 초대하기.
      *                  - 초대자가 월드에 참여중이 아닌경우 FORBIDDEN Exception
      *                  - 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
+     *                  - 초대 수락 대기 중인 경우 ALREADY_WORLD_INVITING_STATUS
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override

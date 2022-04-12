@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/world")
+@Validated
 public class WorldController {
     private final Logger logger = LogManager.getLogger(WorldController.class);
     private WorldService worldService;
@@ -136,20 +138,18 @@ public class WorldController {
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
      */
+    // TODO: 2022/04/12  정규식 확인.
     @GetMapping(value = "/user/worlds")
-    public ResponseEntity<ResponseJsonObject> activityWorlds(@RequestParam("isDetails") String isDetails){
+    public ResponseEntity<ResponseJsonObject> activityWorlds(@RequestParam(value = "isDetails", required = false, defaultValue = "N")  String isDetails){
         try{
             WorldDetailResponseDto worldDetail ;
-
-            // 1. isDetails 기본 값 설정.
-            String deatilsYN = StringUtil.isNullOrEmpty(isDetails)? "N": isDetails;
 
             // 2. 사용자 SUID 가져오기.
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
             // 3. 참여 중인 월드 리스트 조회하기.
-            List<WorldDto> activityWorldDtoList = worldService.getWorldList(userInfoDto.getSuid(), deatilsYN);
+            List<WorldDto> activityWorldDtoList = worldService.getWorldList(userInfoDto.getSuid(), isDetails);
 
 
             // 4. 응답 객체 생성.

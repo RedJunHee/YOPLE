@@ -99,6 +99,7 @@ public class WorldController {
 
     /**
      * Description : 월드 상세정보 조회.
+     * - 존재하지 않는 월드 조회 시 권한 없음 403 에러
      * Name        : worldDetail
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create

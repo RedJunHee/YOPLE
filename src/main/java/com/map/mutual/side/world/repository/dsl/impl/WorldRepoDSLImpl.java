@@ -1,7 +1,9 @@
 package com.map.mutual.side.world.repository.dsl.impl;
 
 import com.map.mutual.side.auth.model.entity.QUserEntity;
+import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.enumerate.BooleanType;
+import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.world.model.dto.QWorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
@@ -28,7 +30,13 @@ public class WorldRepoDSLImpl implements WorldRepoDSL {
     }
 
 
-    //월드 상세정보 조회
+    /**
+     * Description : 월드 상세정보 조회
+     * - 존재하지 않는 월 드 조회 시 권한 없음 403 에러
+     * Name        : getWorldDetail
+     * Author      : 조 준 희
+     * History     : [2022/04/12] - 조 준 희 - Create
+     */
     @Override
     public WorldDetailResponseDto getWorldDetail(Long worldId, String suid) {
 
@@ -50,6 +58,12 @@ public class WorldRepoDSLImpl implements WorldRepoDSL {
                 .fetchJoin()
                 .where(QWorldEntity.worldEntity.worldId.eq(worldId))
                 .fetchOne();
+
+
+        // 없는 월드인 경우 권한없음
+        if(worldDetailResponseDto == null) {
+            throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
+        }
 
         worldDetailResponseDto.setWorldUserCnt(worldUserCnt(worldId));
 

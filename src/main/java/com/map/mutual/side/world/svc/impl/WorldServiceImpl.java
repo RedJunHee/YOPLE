@@ -127,9 +127,10 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
+     * Description : 월드 상세정보 조회
+     * - 존재하지 않는 월 드 조회 시 권한 없음 403 에러
      * Name        : getWorldDetail
      * Author      : 조 준 희
-     * Description : 월드 상세정보 조회
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override

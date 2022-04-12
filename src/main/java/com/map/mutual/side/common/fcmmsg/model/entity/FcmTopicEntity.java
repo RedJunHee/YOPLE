@@ -25,10 +25,10 @@ import javax.persistence.*;
 @IdClass(FcmTopicKeys.class)
 public class FcmTopicEntity {
     @Id
-    @Column(name="FCM_TOKEN", columnDefinition = "VARCHAR(170)")
+    @Column(name="FCM_TOKEN", nullable = false, columnDefinition = "VARCHAR(170)")
     private String fcmToken;
 
     @Id
-    @Column(name="WORLD_ID", columnDefinition = "BIGINT")
+    @Column(name="WORLD_ID", nullable = false, columnDefinition = "BIGINT")
     private Long worldId;
 }

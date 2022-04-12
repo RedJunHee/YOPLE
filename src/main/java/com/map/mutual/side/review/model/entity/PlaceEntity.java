@@ -20,24 +20,24 @@ public class PlaceEntity {
     @Column(name="PLACE_ID", nullable = false, updatable = false, columnDefinition = "VARCHAR(20)")
     private String placeId;
 
-    @Column(name = "NAME", columnDefinition = "VARCHAR(200)")
+    @Column(name = "NAME", nullable = false, columnDefinition = "VARCHAR(200)")
     private String name;
 
-    @Column(name = "ADDRESS", columnDefinition = "VARCHAR(200)")
+    @Column(name = "ADDRESS", nullable = false, columnDefinition = "VARCHAR(200)")
     private String address;
 
-    @Column(name = "ROAD_ADDRESS", columnDefinition = "VARCHAR(200)")
+    @Column(name = "ROAD_ADDRESS", nullable = false, columnDefinition = "VARCHAR(200)")
     private String roadAddress;
 
-    @Column(name = "CATEGORY_GROUP_CODE", columnDefinition = "VARCHAR(10)")
+    @Column(name = "CATEGORY_GROUP_CODE", nullable = false, columnDefinition = "VARCHAR(10)")
     private String categoryGroupCode;
 
-    @Column(name = "CATEGORY_GROUP_NAME", columnDefinition = "VARCHAR(50)")
+    @Column(name = "CATEGORY_GROUP_NAME", nullable = false, columnDefinition = "VARCHAR(50)")
     private String categoryGroupName;
 
-    @Column(name = "X", columnDefinition = "DECIMAL(16,13)")
+    @Column(name = "X", nullable = false, columnDefinition = "DECIMAL(16,13)")
     private BigDecimal x;
 
-    @Column(name = "Y", columnDefinition = "DECIMAL(16,14)")
+    @Column(name = "Y", nullable = false, columnDefinition = "DECIMAL(16,14)")
     private BigDecimal y;
 }

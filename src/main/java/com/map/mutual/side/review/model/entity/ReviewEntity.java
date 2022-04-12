@@ -33,10 +33,10 @@ public class ReviewEntity extends TimeEntity implements Persistable<Long> {
     private Long reviewId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_SUID", referencedColumnName = "SUID")
+    @JoinColumn(name = "USER_SUID", nullable = false, referencedColumnName = "SUID")
     private UserEntity userEntity;
 
-    @Column(name="CONTENT", columnDefinition = "VARCHAR(1000)")
+    @Column(name="CONTENT", nullable = false, columnDefinition = "VARCHAR(1000)")
     private String content;
 
     @Column(name="IMG_URL", columnDefinition = "VARCHAR(100)")

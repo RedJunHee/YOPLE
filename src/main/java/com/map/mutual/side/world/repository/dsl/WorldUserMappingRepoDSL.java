@@ -14,6 +14,12 @@ public interface WorldUserMappingRepoDSL {
     //월드에 참여중인 사용자 조회
     List<UserInWorld> findAllUsersInWorld(long worldId, String suid);
 
+    /**
+     * Description : UserCode가 월드에 존재하는지 확인.
+     * Name        : exsistUserCodeInWorld
+     * Author      : 조 준 희
+     * History     : [2022-04-12] - 조 준 희 - Create
+     */
     Long exsistUserCodeInWorld(String worldinvitationCode, String suid);
     Boolean exsistUserInWorld(Long worldId, String suid);
 }

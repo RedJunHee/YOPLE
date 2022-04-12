@@ -208,7 +208,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
 
         //월드코드를 가진 사용자의 월드 ID가 없는경우.
         if(worldId == null){
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR, "월드 코드를 가진 사용자 월드가 없습니다.");
+            throw new YOPLEServiceException(ApiStatusCode.WORLD_USER_CDOE_VALID_FAILED);
         }
 
 

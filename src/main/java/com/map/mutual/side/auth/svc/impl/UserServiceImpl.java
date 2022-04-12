@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * fileName       : UserServiceImpl
@@ -146,9 +147,11 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 월드에 참여하기.
+     *  - 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED
+     *  - 사용자 이미 월드에 가입되어있으면 ALREADY_WORLD_MEMEBER
      * Name        : inviteJoinWorld
      * Author      : 조 준 희
-     * Description : 월드에 참여하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -160,6 +163,7 @@ public class UserServiceImpl implements UserService {
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
         // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
+        // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
         Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
 
         if (inviteWorldId == null) {

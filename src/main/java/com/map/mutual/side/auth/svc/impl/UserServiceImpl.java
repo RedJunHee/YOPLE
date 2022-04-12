@@ -72,9 +72,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 회원가입.
      * Name        : signUp
      * Author      : 조 준 희
-     * Description : 회원가입.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -103,9 +103,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 사용자 검색(찾기).
      * Name        : findUser
      * Author      : 조 준 희
-     * Description : 사용자 검색(찾기).
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -194,9 +194,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 유저 상세정보 조회하기.
      * Name        : userDetails
      * Author      : 조 준 희
-     * Description : 유저 상세정보 조회하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -220,9 +220,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 가장 최근 입장한 월드 ID 조회
      * Name        : getRecentAccessWorldID
      * Author      : 조 준 희
-     * Description : 가장 최근 입장한 월드 ID 조회
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     public Long getRecentAccessWorldID(String suid)
@@ -239,9 +239,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 사용자 정보 수정.
      * Name        : userInfoUpdate
      * Author      : 조 준 희
-     * Description : 사용자 정보 수정.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -274,9 +274,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 로그아웃
      * Name        : userLogout
      * Author      : 조 준 희
-     * Description : 로그아웃
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -290,12 +290,12 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Name        : userWorldInviting
-     * Author      : 조 준 희
      * Description :  사용자 월드 초대하기.
      *                  - 초대자가 월드에 참여중이 아닌경우 FORBIDDEN Exception
      *                  - 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
      *                  - 초대 수락 대기 중인 경우 ALREADY_WORLD_INVITING_STATUS
+     * Name        : userWorldInviting
+     * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -328,10 +328,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 월드 참여자 조회하기.
      * Name        : worldUsers
      * Author      : 조 준 희
-     * Description : 월드 참여자 조회하기.
-     * // TODO: 2022/04/10  월드 참여자 조회 권한이 있는지 확인하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override

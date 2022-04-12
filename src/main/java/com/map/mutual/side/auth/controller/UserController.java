@@ -341,10 +341,9 @@ public class UserController {
      * Description : 월드에 사용자 초대하기. PUSH성
      * - 초대자가 월드에 참여중이 아닌 경우 YOPLEServiceException(FORBIDDEN) Throw
      * - 이미 월드에 참여 중인 경우 YOPLEServiceException(ALREADY_WORLD_MEMEBER) Throw
+     * - 사용자가 이미 초대 대기 중인 경우 YOPLEServiceException() Throw
      * Name        : userWorldInviting
      * Author      : 조 준 희
-     * todo 사용자가 이미 초대 대기 중인 경우 개발 필요.
-     * - 사용자가 이미 초대 대기 중인 경우 YOPLEServiceException() Throw
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/user/world")

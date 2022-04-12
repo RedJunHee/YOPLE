@@ -164,7 +164,7 @@ public class AuthServiceImpl implements AuthService {
             if (smslog == null) {
                 throw new YOPLEServiceException(ApiStatusCode.AUTH_META_NOT_MATCH);
             }
-            // TODO: 2022-04-11  duid 불일치 체크 안하고있음. 
+
             // 인증 코드 확인
             if(smslog.getRequestAuthNum().equals(smsAuthResponseDTO.getResponseAuthNum()))
             {

@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Null;
+import javax.validation.constraints.Size;
+
 /**
  * Class       : WorldDto
  * Author      : 조 준 희
@@ -16,8 +19,12 @@ import lombok.NoArgsConstructor;
 public class WorldDto {
 
     private Long worldId;
+
+    @Size(min = 1, max =25)
     private String worldName;
+    @Size(min = 0, max = 80)
     private String worldDesc;
+
     private String isMyworld;
     private Long worldUserCnt;
     private String worldUserCode;

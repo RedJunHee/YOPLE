@@ -109,12 +109,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET,"/world/code-validation/**").permitAll() // 월드 초대 코드 유효성 체크.
 
                 // review
-                .antMatchers(HttpMethod.POST,"/review/**").authenticated()
-                .antMatchers(HttpMethod.GET,"/review/**").authenticated()
-                .antMatchers(HttpMethod.PUT,"/review/**").authenticated()
-                .antMatchers(HttpMethod.DELETE,"/review/**").authenticated()
+                .antMatchers(HttpMethod.POST,"/review/review/**").authenticated() // 리뷰 작성하기.
+                .antMatchers(HttpMethod.PUT,"/review/review/**").authenticated() // 리뷰 수정하기.
+                .antMatchers(HttpMethod.DELETE,"/review/review/**").authenticated() // 리뷰 삭제하기.
+                .antMatchers(HttpMethod.GET,"/review/review/**").authenticated() // 리뷰 조회하기.
+                .antMatchers(HttpMethod.GET,"/review/myReviews/**").authenticated() // 내가 쓴 리뷰 조회하기.
+                .antMatchers(HttpMethod.GET,"/review/worldPin/placeInRange/**").authenticated() // 지도 범위 핀 조회하기.
+                .antMatchers(HttpMethod.GET,"/review/placeDetail/**").authenticated() // 장소에 등록된 리뷰 조회하기.
 
-                .anyRequest().authenticated()       // 그 외 나머지 리소스들은 무조건 인증을 완료해야 접근 가능
+                .anyRequest().authenticated() // 그 외 나머지 리소스들은 무조건 인증을 완료해야 접근 가능
                 .and()
                 //AuthenticationFilterChain- UsernamePasswordAuthenticationFilter 전에 실행될 커스텀 필터 등록
                 .addFilterBefore(new AuthorizationCheckFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);

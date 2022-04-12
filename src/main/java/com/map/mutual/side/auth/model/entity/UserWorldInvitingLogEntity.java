@@ -5,6 +5,7 @@ import com.map.mutual.side.auth.model.keys.UserWorldInvitingLogKeys;
 import com.map.mutual.side.common.repository.config.CreateDtEntity;
 import com.map.mutual.side.common.repository.config.TimeEntity;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 
@@ -18,8 +19,8 @@ import javax.persistence.*;
 public class UserWorldInvitingLogEntity extends TimeEntity {
 
     @Id
-    @Column(name = "WORLD_INVITATION_CODE", nullable = false, updatable = false, columnDefinition = "CHAR(6)")
-    private String worldinvitationCode;
+    @Column(name = "WORLD_ID", nullable = false, updatable = false, columnDefinition = "BIGINT")
+    private Long worldId;
 
     @Id
     @Column(name = "USER_SUID", nullable = false, updatable = false, columnDefinition = "VARCHAR(18)")
@@ -29,4 +30,7 @@ public class UserWorldInvitingLogEntity extends TimeEntity {
     @Column(name = "TARGET_SUID", nullable = false, updatable = false, columnDefinition = "VARCHAR(18)")
     private String targetSuid;
 
+    @Column(name = "INVITING_STATUS",nullable = false, columnDefinition = "CHAR(1)" )
+    @ColumnDefault("'-'")
+    private String invitingStatus;
 }

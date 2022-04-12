@@ -157,7 +157,7 @@ public class AuthServiceImpl implements AuthService {
 
         try {
             SMSRequestLogEntity smslog = smsLogRepo
-                    .findTop1ByPhoneAndCreateTimeBetweenOrderByCreateTime(
+                    .findTop1ByPhoneAndCreateTimeBetweenOrderByCreateTimeDesc(
                             smsAuthResponseDTO.getPhone(),
                             LocalDateTime.now().minusMinutes(5),
                             LocalDateTime.now());

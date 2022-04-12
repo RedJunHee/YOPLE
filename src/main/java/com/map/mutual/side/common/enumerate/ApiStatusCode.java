@@ -31,6 +31,7 @@ public enum ApiStatusCode {
     ,NOT_USABLE_EMOJI(421, "Emoji type isn`t usable", "해당 이모지는 비활성화 상태입니다.", true)
     ,ALREADY_EMOJI_ADDED(422, "Emoji status already added", "이미 추가한 이모지입니다.", true)
     ,ALREADY_WORLD_MEMEBER(431,"Already a member of the world.","이미 월드소속 입니다.",true)
+    ,ALREADY_WORLD_INVITING_STATUS(433,"초대 수락 대기중.","이미 초대 수락 대기중입니다.",true)
     ,WORLD_USER_CDOE_VALID_FAILED (432, "WorldUserCode is not valid.", "월드 초대 코드 유효성 실패.", true)
     ,USER_TOS_INFO_VALID_FAILED (490, "TOS 정보 체크 실패.", "TOS 정보 체크 실패.",true)
     ,SYSTEM_ERROR(599,"System Error.", "시스템오류.",true)

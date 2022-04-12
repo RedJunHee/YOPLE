@@ -61,9 +61,9 @@ public class UserController {
     }
 
     /**
+     * Description : 사용자 회원가입.
      * Name        : smsSignUp
      * Author      : 조 준 희
-     * Description : 사용자 회원가입.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/signup")
@@ -116,9 +116,9 @@ public class UserController {
     }
 
     /**
+     * Description : 월드에 참여하기. (월드-유저 매핑 )
      * Name        : inviteJoinWorld
      * Author      : 조 준 희
-     * Description : 월드에 참여하기. (월드-유저 매핑 )
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world/user")
@@ -139,9 +139,9 @@ public class UserController {
     }
 
     /**
+     * Description : 유저 ID 중복체크
      * Name        : checkUserId
      * Author      : 조 준 희
-     * Description : 유저 ID 중복체크
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/check-userid")
@@ -163,9 +163,9 @@ public class UserController {
     }
 
     /**
+     * Description : 월드 초대하기 전 사용자 검색에 사용되는 API
      * Name        : findUserByIdOrPhone
      * Author      : 조 준 희
-     * Description : 월드 초대하기 전 사용자 검색에 사용되는 API
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/find-user")
@@ -197,9 +197,9 @@ public class UserController {
     }
 
     /**
+     * Description : 월드에서 참여자 리스트 화면에 사용되는 API
      * Name        :  worldUsers
      * Author      : 조 준 희
-     * Description : 월드에서 참여자 리스트 화면에 사용되는 API
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/world/users")
@@ -232,9 +232,9 @@ public class UserController {
     }
 
     /**
+     * Description : 사용자 상세정보 조회
      * Name        : userDetails
      * Author      : 조 준 희
-     * Description : 사용자 상세정보 조회
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/user")
@@ -273,9 +273,9 @@ public class UserController {
     }
 
     /**
+     * Description : 사용자 상세정보 수정.
      * Name        :  userInfoUpdate
      * Author      : 조 준 희
-     * Description : 사용자 상세정보 수정.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PatchMapping("/user")
@@ -308,9 +308,9 @@ public class UserController {
     }
 
     /**
+     * Description : 사용자 로그아웃 - 리프레시 토큰 삭제처리
      * Name        :  userLogout
      * Author      : 조 준 희
-     * Description : 사용자 로그아웃 - 리프레시 토큰 삭제처리
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @DeleteMapping("/user")
@@ -338,11 +338,11 @@ public class UserController {
 
     
     /**
-     * Name        : userWorldInviting
-     * Author      : 조 준 희
      * Description : 월드에 사용자 초대하기. PUSH성
      * - 초대자가 월드에 참여중이 아닌 경우 YOPLEServiceException(FORBIDDEN) Throw
      * - 이미 월드에 참여 중인 경우 YOPLEServiceException(ALREADY_WORLD_MEMEBER) Throw
+     * Name        : userWorldInviting
+     * Author      : 조 준 희
      * todo 사용자가 이미 초대 대기 중인 경우 개발 필요.
      * - 사용자가 이미 초대 대기 중인 경우 YOPLEServiceException() Throw
      * History     : [2022-04-06] - 조 준 희 - Create

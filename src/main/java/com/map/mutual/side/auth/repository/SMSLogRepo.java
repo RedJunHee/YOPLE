@@ -8,5 +8,5 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface SMSLogRepo extends JpaRepository<SMSRequestLogEntity, Long> {
-    SMSRequestLogEntity findTop1ByPhoneAndCreateTimeBetweenOrderByCreateTime(String phone, LocalDateTime start, LocalDateTime end);
+    SMSRequestLogEntity findTop1ByPhoneAndCreateTimeBetweenOrderByCreateTimeDesc(String phone, LocalDateTime start, LocalDateTime end);
 }

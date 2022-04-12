@@ -297,22 +297,24 @@ public class UserServiceImpl implements UserService {
     public void userWorldInviting(String suid, String targetSuid, Long worldId) throws YOPLEServiceException {
 
         // 1. 초대자가 월드에 참여중이 아닌경우 FORBIDDEN Exception
-        WorldUserMappingEntity suidWorldMapping = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid)
+        WorldUserMappingEntity suidWorldMapping = worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,suid)
                 .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
 
-        // 2. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
-        if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,suid).isPresent() == true )
+        // 2. 사용자가 이미 초대를 받은 경우.
+        if(userWorldInvitingLogRepo.findOneByUserSuidAndTargetSuidAndWorldIdAndInvitingStatus(suid,targetSuid,worldId,"-").isPresent())
+            throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_INVITING_STATUS);
+
+
+        // 3. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
+        if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,targetSuid).isPresent() == true )
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
-
-
-        // 초대받은 초대 코드.
-        String worldinvitationCode = suidWorldMapping.getWorldUserCode();
 
         // 월드 참여 매핑 설정
         UserWorldInvitingLogEntity userWorldInvitingLogEntity = UserWorldInvitingLogEntity.builder()
                 .targetSuid(targetSuid)
                 .userSuid(suid)
-                .worldinvitationCode(worldinvitationCode)
+                .worldId(worldId)
+                .invitingStatus("-")
                 .build();
 
         // 월드에 참여.

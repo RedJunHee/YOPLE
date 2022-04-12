@@ -62,6 +62,12 @@ public class AuthController {
         this.modelMapper = modelMapper;
     }
 
+    /**
+     * Description : SMS 인증번호 요청하기.
+     * Name        : smsAuthenticationRequest
+     * Author      : 조 준 희
+     * History     : [2022/04/12] - 조 준 희 - Create
+     */
     @PostMapping("/sms-authentication-request")
     public ResponseEntity<ResponseJsonObject> smsAuthenticationRequest( @RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws MethodArgumentNotValidException, NoSuchAlgorithmException, KeyStoreException, IOException, InvalidKeyException, KeyManagementException {
 
@@ -84,6 +90,12 @@ public class AuthController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
+    /**
+     * Description : SMS 인증번호 확인 요청하기.
+     * Name        : smsAuthenticationResponse
+     * Author      : 조 준 희
+     * History     : [2022/04/12] - 조 준 희 - Create
+     */
     @PostMapping("/sms-authentication-response")
     public ResponseEntity<ResponseJsonObject> smsAuthenticationResponse(@RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -125,7 +137,12 @@ public class AuthController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), httpHeaders,HttpStatus.OK);
     }
 
-    // 액세스 토큰 갱신
+    /**
+     * Description : 액세스 토큰 갱신하기.
+     * Name        : jwtAccessRefresh
+     * Author      : 조 준 희
+     * History     : [2022/04/12] - 조 준 희 - Create
+     */
     @PostMapping("/access-refresh")
     public ResponseEntity<ResponseJsonObject> jwtAccessRefresh(@RequestHeader(value = AuthorizationCheckFilter.REFRESH_TOKEN, required = false) @Valid @NotBlank(message = "리프레시 토큰이 널이거나 빈값입니다.") String refreshToken) throws Exception {
         try{
@@ -147,7 +164,12 @@ public class AuthController {
         }
     }
 
-    // 리프레시 토큰 갱신
+    /**
+     * Description : 리프레시 토큰 갱신
+     * Name        : jwtRefreshRefresh
+     * Author      : 조 준 희
+     * History     : [2022/04/12] - 조 준 희 - Create
+     */
     @PostMapping("/refresh-refresh")
     public ResponseEntity<ResponseJsonObject> jwtRefreshRefresh() throws Exception {
 

@@ -34,9 +34,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드 생성하기.
      * Name        : createWorld
      * Author      : 조 준 희
-     * Description : 월드 생성하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world")
@@ -64,9 +64,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드 수정하기.
      * Name        : updateWorld
      * Author      : 조 준 희
-     * Description : 월드 수정하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PatchMapping(value = "/world")
@@ -96,9 +96,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드 상세정보 조회.
      * Name        : worldDetail
      * Author      : 조 준 희
-     * Description : 월드 상세정보 조회.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/world")
@@ -130,11 +130,10 @@ public class WorldController {
         }
     }
 
-    //참여 중인 월드 리스트 조회
     /**
+     * Description : 참여 중인 월드 리스트 조회. isDetails로 세부정보 조회 가능.
      * Name        : activityWorlds
      * Author      : 조 준 희
-     * Description : 참여 중인 월드 리스트 조회. isDetails로 세부정보 조회 가능.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/user/worlds")
@@ -173,9 +172,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드에 입장이 가능한지 권한 체크.
      * Name        : worldAuthCheck
      * Author      : 조 준 희
-     * Description : 월드에 입장이 가능한지 권한 체크.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/user/auth-check")
@@ -207,9 +206,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 리뷰가 등록된 월드 리스트 조회 - 월드 이름만 나옴
      * Name        : getWorldOfReivew
      * Author      : 조 준 희
-     * Description : 리뷰가 등록된 월드 리스트 조회 - 월드 이름만 나옴
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/review/worlds")
@@ -242,9 +241,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드 초대 코드 유효성 체크 - 월드 초대 코드가 유효한 코드인지 확인.
      * Name        : worldUserCodeValid
      * Author      : 조 준 희
-     * Description : 월드 초대 코드 유효성 체크 - 월드 초대 코드가 유효한 코드인지 확인.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/code-validation")

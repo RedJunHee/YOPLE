@@ -48,9 +48,9 @@ public class WorldServiceImpl implements WorldService {
 
 
     /**
+     * Description : 월드 생성하기.
      * Name        : createWolrd
      * Author      : 조 준 희
-     * Description : 월드 생성하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -98,9 +98,9 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
+     * Description : 월드 수정하기.
      * Name        : updateWorld
      * Author      : 조 준 희
-     * Description : 월드 수정하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -145,9 +145,9 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
+     * Description : 참여 중인 월드 리스트 조회
      * Name        : getWorldList
      * Author      : 조 준 희
-     * Description : 참여 중인 월드 리스트 조회
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -167,9 +167,9 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
+     * Description : 월드에 입장 권한이 있는지 확인.
      * Name        : authCheck
      * Author      : 조 준 희
-     * Description : 월드에 입장 권한이 있는지 확인.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -193,9 +193,9 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
+     * Description : 리뷰가 등록된 월드 리스트 조회하기.
      * Name        : getWorldOfReivew
      * Author      : 조 준 희
-     * Description : 리뷰가 등록된 월드 리스트 조회하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -210,9 +210,9 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
+     * Description : 월드 코드 유효성 체크.
      * Name        : worldUserCodeValid
      * Author      : 조 준 희
-     * Description : 월드 코드 유효성 체크.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override

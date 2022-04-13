@@ -155,13 +155,13 @@ public class ReviewController {
      * @return
      */
     @GetMapping("/review")
-    public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId) {
-        ResponseJsonObject responseJsonObject = new ResponseJsonObject();
+    public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId, @RequestParam Long worldId) {
+        ResponseJsonObject responseJsonObject;
 
         try {
-            ReviewDto reviewDto = reviewService.getReview(reviewId);
+            ReviewDto.ReviewWithInviterDto result = reviewService.getReview(reviewId, worldId);
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            responseJsonObject.setData(reviewDto);
+            responseJsonObject.setData(result);
 
         } catch (YOPLEServiceException e) {
             throw e;

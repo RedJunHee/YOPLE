@@ -1,5 +1,9 @@
 package com.map.mutual.side.review.model.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.common.repository.config.TimeEntity;
 import lombok.*;
@@ -26,6 +30,8 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@JsonSerialize(using = LocalDateTimeSerializer.class)
+@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 public class ReviewEntity extends TimeEntity implements Persistable<Long> {
     @Id
     @Column(name="REVIEW_ID", nullable = false, insertable = false, updatable = false, columnDefinition = "BIGINT")

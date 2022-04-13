@@ -172,16 +172,10 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDto getReview(Long reviewId) {
-        ReviewEntity reviewEntity;
-        ReviewDto reviewDto;
+    public ReviewDto.ReviewWithInviterDto getReview(Long reviewId, Long worldId) {
+        ReviewDto.ReviewWithInviterDto reviewDto;
         try {
-            reviewEntity = reviewRepo.findById(reviewId).orElseThrow(NullPointerException::new);
-            reviewDto = ReviewDto.builder()
-                    .userSuid(reviewEntity.getUserEntity().getSuid())
-                    .content(reviewEntity.getContent())
-//                    .imageUrls(Arrays.stream(reviewEntity.getImageUrl().split(",")).collect(Collectors.toList()))
-                    .build();
+            reviewDto = reviewRepo.findByReviewWithInviter(reviewId, worldId);
         } catch (YOPLEServiceException e) {
             throw e;
         }

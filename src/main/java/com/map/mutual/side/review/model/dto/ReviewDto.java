@@ -6,6 +6,7 @@ import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -57,5 +58,34 @@ public class ReviewDto {
             this.imageUrls = new String[0];
         }
         this.reviewId = reviewId;
+    }
+
+    @NoArgsConstructor
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class ReviewWithInviterDto {
+        private Long reviewId;
+        private String userid;
+        private String inviterUserId;
+        private String content;
+        private String[] imageUrls;
+        private String createDt;
+
+        @QueryProjection
+        public ReviewWithInviterDto(Long reviewId, String content, String imageUrls , String userid, String inviterUserId, LocalDateTime createDt) {
+            this.reviewId = reviewId;
+            this.userid = userid;
+            this.inviterUserId = inviterUserId;
+            this.content = content;
+            if(imageUrls != null) {
+                this.imageUrls = imageUrls.split(",");
+            } else {
+                this.imageUrls = new String[0];
+            }
+            this.createDt = LocalDateTime.of(createDt.getYear(),
+                    createDt.getMonth(), createDt.getDayOfMonth(), createDt.getHour(), 0, 0).toString();
+        }
     }
 }

@@ -19,7 +19,7 @@ public interface ReviewService {
     ReviewDto createReview(ReviewPlaceDto dto) throws Exception;
     ReviewDto updateReview(ReviewDto reviewDto);
     void deleteReview(Long reviewId);
-    ReviewDto getReview(Long reviewDto);
+    ReviewDto.ReviewWithInviterDto getReview(Long reviewId, Long worldId);
     List<ReviewDto> myReviews();
     List<PlaceDto.PlaceSimpleDto> worldPinPlaceInRange(PlaceRangeDto placeRangeDto);
     PlaceDetailDto placeDetail(String placeId, Long worldId);

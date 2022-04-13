@@ -373,4 +373,32 @@ public class UserController {
         }
     }
 
+
+
+
+    /**
+     * Description : 알림 메시지 조회
+     * Name        :
+     * Author      : 조 준 희
+     * History     : [2022-04-13] - 조 준 희 - Create
+     */
+    @GetMapping("/notification")
+    public ResponseEntity<ResponseJsonObject> notification(){
+        try{
+
+
+            userService.notificationList("YO2022040312441238");
+
+
+
+            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        }catch(YOPLEServiceException e)
+        {
+            throw e;
+        }
+    }
+
 }

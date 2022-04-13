@@ -1,6 +1,7 @@
 package com.map.mutual.side.auth.controller;
 
 
+import com.map.mutual.side.auth.model.dto.JwtTokenDto;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.dto.UserWorldInvitionDto;
@@ -14,6 +15,7 @@ import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.filter.AuthorizationCheckFilter;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
+import io.jsonwebtoken.Jwt;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +71,6 @@ public class UserController {
     @PostMapping("/signup")
     @Transactional
     public ResponseEntity<ResponseJsonObject> smsSignUp(@RequestBody @Valid UserInfoDto userInfoDto) throws Exception {
-        HttpHeaders httpHeaders = new HttpHeaders();
         try {
 
             if ( userInfoDto.getUserTOSDto().getUserInfoYn().equals("Y") == false
@@ -104,15 +105,16 @@ public class UserController {
 
             authService.saveJwtLog(log);
 
-            httpHeaders.add(AuthorizationCheckFilter.ACCESS_TOKEN, accessJwt);
-            httpHeaders.add(AuthorizationCheckFilter.REFRESH_TOKEN, refreshJwt);
+            JwtTokenDto jwtTokenDto = JwtTokenDto.builder().accessToken(accessJwt).refreshToken(refreshJwt).build();
+
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtTokenDto), HttpStatus.OK);
+
 
         }catch(YOPLEServiceException e){
             throw e;
         }catch (Exception e) {
             throw e;
         }
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK),httpHeaders, HttpStatus.OK);
     }
 
     /**

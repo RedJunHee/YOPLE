@@ -1,0 +1,34 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create
+      naming:
+        physical-strategy: com.map.mutual.side.common.config.JPANamingConfig
+    open-in-view: true
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    database: SQL_SERVER
+  datasource:
+    driverclassname: org.h2.Driver
+    url: jdbc:h2:tcp://localhost/~/test
+    username: SA
+    password:
+  
+
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+  output:
+    ansi:
+      enabled: always
+      
+server:
+  port: 3333
+
+#fcm:
+#  message:
+#    api: https://fcm.googleapis.com/v1/projects/yople-42384/messages:send

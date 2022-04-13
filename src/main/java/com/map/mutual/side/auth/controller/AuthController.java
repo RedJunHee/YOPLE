@@ -1,5 +1,6 @@
 package com.map.mutual.side.auth.controller;
 
+import com.map.mutual.side.auth.model.dto.JwtTokenDto;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
@@ -23,6 +24,7 @@ import org.springframework.messaging.handler.annotation.support.MethodArgumentNo
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
@@ -79,7 +81,7 @@ public class AuthController {
             String smsAuthNum = YOPLEUtils.getSMSAuth();
 
             // 2. 핸드폰 번호 인증 요청
-            //authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+            authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);
@@ -98,7 +100,6 @@ public class AuthController {
      */
     @PostMapping("/sms-authentication-response")
     public ResponseEntity<ResponseJsonObject> smsAuthenticationResponse(@RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws Exception {
-        HttpHeaders httpHeaders = new HttpHeaders();
         try {
             // 응답 확인
             authService.smsAuthNumResponse(smsAuthReqeustDTO);
@@ -123,9 +124,9 @@ public class AuthController {
 
             authService.saveJwtLog(log);
 
-            httpHeaders.add(AuthorizationCheckFilter.ACCESS_TOKEN, accessJwt);
-            httpHeaders.add(AuthorizationCheckFilter.REFRESH_TOKEN, refreshJwt);
+            JwtTokenDto jwtToken = JwtTokenDto.builder().accessToken(accessJwt).refreshToken(refreshJwt).build();
 
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtToken),HttpStatus.OK);
 
         }catch(YOPLEServiceException yopleServiceException)
         {
@@ -134,7 +135,6 @@ public class AuthController {
         catch(Exception e){
             throw e;
         }
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), httpHeaders,HttpStatus.OK);
     }
 
     /**
@@ -147,13 +147,21 @@ public class AuthController {
     public ResponseEntity<ResponseJsonObject> jwtAccessRefresh(@RequestHeader(value = AuthorizationCheckFilter.REFRESH_TOKEN, required = false) @Valid @NotBlank(message = "리프레시 토큰이 널이거나 빈값입니다.") String refreshToken) throws Exception {
         try{
             String jwt ;
-            HttpHeaders headers = new HttpHeaders();
+
+            // 1. 토큰 유효성 체크.
+            if (StringUtils.hasText(refreshToken) && refreshToken.startsWith("Bearer ")) {     // JWT 토큰이 존재하는지 확인
+                refreshToken = refreshToken.substring(7);           // "Bearer"를 제거한 accessToken 반환
+            }
+            else{
+                refreshToken = null;
+            }
 
             jwt = authService.JWTAccessRefresh(refreshToken);
 
-            headers.add(AuthorizationCheckFilter.ACCESS_TOKEN,jwt);
+            JwtTokenDto jwtToken = JwtTokenDto.builder().accessToken(jwt).build();
 
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK),headers,HttpStatus.OK );
+
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtToken),HttpStatus.OK );
 
         }catch(YOPLEServiceException e)
         {
@@ -174,7 +182,6 @@ public class AuthController {
     public ResponseEntity<ResponseJsonObject> jwtRefreshRefresh() throws Exception {
 
         try{
-            HttpHeaders headers = new HttpHeaders();
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userDetails = (UserInfoDto)authentication.getPrincipal();
 
@@ -186,9 +193,9 @@ public class AuthController {
 
             authService.saveJwtLog(log);
 
-            headers.add(AuthorizationCheckFilter.REFRESH_TOKEN,refreshToken);
+            JwtTokenDto jwtToken = JwtTokenDto.builder().refreshToken(refreshToken).build();
 
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK),headers,HttpStatus.OK );
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtToken),HttpStatus.OK );
 
         }catch(YOPLEServiceException e)
         {

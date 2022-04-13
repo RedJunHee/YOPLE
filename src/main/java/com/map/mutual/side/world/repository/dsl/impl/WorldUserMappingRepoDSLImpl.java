@@ -15,9 +15,8 @@ import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import javafx.util.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -37,6 +36,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
     public WorldUserMappingRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
     }
@@ -121,7 +121,12 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         return world;
     }
 
-    //월드에 참여중인 사용자 조회
+    /**
+     * Name        : findAllUsersInWorld
+     * Author      : 조 준 희
+     * Description : 월드에 참여 중인 사용자 조회하기.
+     * History     : [2022/04/10] - 조 준 희 - Create
+     */
     @Override
     public List<UserInWorld> findAllUsersInWorld(long worldId, String suid) {
 
@@ -180,11 +185,11 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                                         else if(user.getIsHost().equals("Y")) // 월드 host 인 경우 2번째 우선순위
                                                             reviewCount= 9998l;
 
-                                                        return new Pair<UserInWorld, Long>(user, reviewCount);
+                                                        return tuple(user, reviewCount);
                                                     })
                                     )
-                                .sorted( Comparator.comparingLong( v -> Long.parseLong(v.getValue().toString()))).reverse() // order by
-                                .map(v -> v.getKey()) //select
+                                .sorted( Comparator.comparingLong( v -> Long.parseLong(v.v2.toString()))).reverse() // order by
+                                .map(v -> v.v1) //select
                                 .collect(Collectors.toList());
 
         return list;
@@ -203,7 +208,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
 
         //월드코드를 가진 사용자의 월드 ID가 없는경우.
         if(worldId == null){
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR, "월드 코드를 가진 사용자 월드가 없습니다.");
+            throw new YOPLEServiceException(ApiStatusCode.WORLD_USER_CDOE_VALID_FAILED);
         }
 
 

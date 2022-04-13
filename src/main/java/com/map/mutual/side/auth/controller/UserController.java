@@ -25,6 +25,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -40,6 +46,7 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/user")
+@Validated
 public class UserController {
     private final Logger logger = LogManager.getLogger(UserController.class);
     private AuthService authService;
@@ -54,14 +61,14 @@ public class UserController {
     }
 
     /**
+     * Description : 사용자 회원가입.
      * Name        : smsSignUp
      * Author      : 조 준 희
-     * Description : 사용자 회원가입.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/signup")
     @Transactional
-    public ResponseEntity<ResponseJsonObject> smsSignUp(@Validated @RequestBody UserInfoDto userInfoDto) throws Exception {
+    public ResponseEntity<ResponseJsonObject> smsSignUp(@RequestBody @Valid UserInfoDto userInfoDto) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         try {
 
@@ -109,13 +116,13 @@ public class UserController {
     }
 
     /**
+     * Description : 월드에 참여하기. (월드-유저 매핑 )
      * Name        : inviteJoinWorld
      * Author      : 조 준 희
-     * Description : 월드에 참여하기. (월드-유저 매핑 )
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world/user")
-    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") String worldinvitationCode){
+    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6,message = "인증 코드는 6자리 입니다.") String worldinvitationCode){
         try{
 
             WorldDto joinedWorld = userService.inviteJoinWorld( worldinvitationCode);
@@ -132,13 +139,14 @@ public class UserController {
     }
 
     /**
+     * Description : 유저 ID 중복체크
      * Name        : checkUserId
      * Author      : 조 준 희
-     * Description : 유저 ID 중복체크
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/check-userid")
-    public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") String userId) {
+    public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") @Valid
+                                                              @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}", message = "ID가 올바르지 않습니다.") String userId) {
         ResponseJsonObject response;
         try{
             if(userInfoRepo.findByUserId(userId) == null) {
@@ -155,16 +163,21 @@ public class UserController {
     }
 
     /**
+     * Description : 월드 초대하기 전 사용자 검색에 사용되는 API
      * Name        : findUserByIdOrPhone
      * Author      : 조 준 희
-     * Description : 월드 초대하기 전 사용자 검색에 사용되는 API
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/find-user")
-    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam String userId,
-                                                                  @RequestParam String phone) {
+    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam  String userId,
+                                                                  @RequestParam  String phone) {
         ResponseJsonObject response;
         try{
+
+            // 1. 둘 중에 하나도 안들어오면 파라미터 체크 에러.
+            if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(phone))
+                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED,"사용자 ID 또는 핸드폰 번호 중에 한 정보 이상 요청해야합니다.");
+
             UserInfoDto userInfoDto;
 
             userInfoDto = userService.findUser(userId, phone);
@@ -172,21 +185,25 @@ public class UserController {
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);
         }catch (YOPLEServiceException e) {
+            logger.debug(e.getMessage());
+            throw e;
+        }catch(Exception e){
             logger.error(e.getMessage());
             throw e;
         }
+
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
+     * Description : 월드에서 참여자 리스트 화면에 사용되는 API
      * Name        :  worldUsers
      * Author      : 조 준 희
-     * Description : 월드에서 참여자 리스트 화면에 사용되는 API
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/world/users")
-    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam long worldId) {
+    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam @Valid @NotNull long worldId) {
         ResponseJsonObject response;
         try{
 
@@ -215,9 +232,9 @@ public class UserController {
     }
 
     /**
+     * Description : 사용자 상세정보 조회
      * Name        : userDetails
      * Author      : 조 준 희
-     * Description : 사용자 상세정보 조회
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/user")
@@ -256,9 +273,9 @@ public class UserController {
     }
 
     /**
+     * Description : 사용자 상세정보 수정.
      * Name        :  userInfoUpdate
      * Author      : 조 준 희
-     * Description : 사용자 상세정보 수정.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PatchMapping("/user")
@@ -291,9 +308,9 @@ public class UserController {
     }
 
     /**
+     * Description : 사용자 로그아웃 - 리프레시 토큰 삭제처리
      * Name        :  userLogout
      * Author      : 조 준 희
-     * Description : 사용자 로그아웃 - 리프레시 토큰 삭제처리
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @DeleteMapping("/user")
@@ -321,9 +338,12 @@ public class UserController {
 
     
     /**
+     * Description : 월드에 사용자 초대하기. PUSH성
+     * - 초대자가 월드에 참여중이 아닌 경우 YOPLEServiceException(FORBIDDEN) Throw
+     * - 이미 월드에 참여 중인 경우 YOPLEServiceException(ALREADY_WORLD_MEMEBER) Throw
+     * - 사용자가 이미 초대 대기 중인 경우 YOPLEServiceException() Throw
      * Name        : userWorldInviting
      * Author      : 조 준 희
-     * Description : 월드에 사용자 초대하기. PUSH성
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/user/world")

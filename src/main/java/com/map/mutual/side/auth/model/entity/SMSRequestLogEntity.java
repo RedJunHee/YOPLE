@@ -41,10 +41,10 @@ public class SMSRequestLogEntity extends TimeEntity {
     @Column(name="PHONE", nullable = false, columnDefinition = "VARCHAR(15)")
     private String phone;
 
-    @Column(name = "REQUEST_AUTH_NUM", nullable = false, columnDefinition = "VARCHAR(6)")
+    @Column(name = "REQUEST_AUTH_NUM", nullable = false, columnDefinition = "CHAR(4)")
     private String requestAuthNum;
 
-    @Column(name = "RESPONSE_AUTH_NUM", columnDefinition = "VARCHAR(6)")
+    @Column(name = "RESPONSE_AUTH_NUM", columnDefinition = "CHAR(4)")
     private String responseAuthNum;
 
     @Column(name = "DUID", nullable = false, columnDefinition = "VARCHAR(50)")

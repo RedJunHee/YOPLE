@@ -7,6 +7,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 /**
  * fileName       : WorldEntity
@@ -33,15 +34,15 @@ public class WorldEntity extends TimeEntity implements Persistable<Long> {
     @Column(name="WORLD_ID",nullable = false, updatable = false, columnDefinition = "BIGINT")
     private Long worldId;
 
-    @Column(name = "WORLD_OWNER", updatable = false, columnDefinition = "VARCHAR(18)")
+    @Column(name = "WORLD_OWNER", nullable = false, updatable = false, columnDefinition = "VARCHAR(18)")
     private String worldOwner;
 
     //월드 명
-    @Column(name = "NAME", nullable = false, columnDefinition = "VARCHAR(60)")
+    @Column(name = "NAME", nullable = false, columnDefinition = "VARCHAR(50)")
     private String worldName;
 
     //월드 내용
-    @Column(name = "DESCRIPTION", nullable = false, columnDefinition = "VARCHAR(800)")
+    @Column(name = "DESCRIPTION", nullable = false, columnDefinition = "VARCHAR(160)")
     private String worldDesc;
 
     public void updateWorldName(String worldName) {

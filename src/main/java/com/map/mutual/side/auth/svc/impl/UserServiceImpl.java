@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * fileName       : UserServiceImpl
@@ -71,9 +72,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 회원가입.
      * Name        : signUp
      * Author      : 조 준 희
-     * Description : 회원가입.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -102,9 +103,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 사용자 검색(찾기).
      * Name        : findUser
      * Author      : 조 준 희
-     * Description : 사용자 검색(찾기).
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -113,24 +114,44 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
 
-        if(StringUtil.isNullOrEmpty(id) == true)
+        //폰으로 검색.
+        if(StringUtil.isNullOrEmpty(id) == true) {
             userEntity = userInfoRepo.findOneByPhone(phone);
-        else
+        }
+        else { // 유저 ID로 검색.
             userEntity = userInfoRepo.findByUserId(id);
+        }
+
 
         if(userEntity == null)
             throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
 
-        userInfoDto = modelMapper.map(userEntity, UserInfoDto.class);
+        //폰으로 검색.
+        if(StringUtil.isNullOrEmpty(id) == true) {
+            userInfoDto = UserInfoDto.builder()
+                    .suid(userEntity.getSuid())
+                    .build();
+
+        }
+        else { // 유저 ID로 검색.
+            userInfoDto = UserInfoDto.builder()
+                    .suid(userEntity.getSuid())
+                    .userId(userEntity.getUserId())
+                    .name(userEntity.getName())
+                    .profileUrl(userEntity.getProfileUrl())
+                    .build();
+        }
+
 
         return userInfoDto;
-
     }
 
     /**
+     * Description : 월드에 참여하기.
+     *  - 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED
+     *  - 사용자 이미 월드에 가입되어있으면 ALREADY_WORLD_MEMEBER
      * Name        : inviteJoinWorld
      * Author      : 조 준 희
-     * Description : 월드에 참여하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -142,6 +163,7 @@ public class UserServiceImpl implements UserService {
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
         // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
+        // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
         Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
 
         if (inviteWorldId == null) {
@@ -172,9 +194,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 유저 상세정보 조회하기.
      * Name        : userDetails
      * Author      : 조 준 희
-     * Description : 유저 상세정보 조회하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -198,9 +220,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 가장 최근 입장한 월드 ID 조회
      * Name        : getRecentAccessWorldID
      * Author      : 조 준 희
-     * Description : 가장 최근 입장한 월드 ID 조회
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     public Long getRecentAccessWorldID(String suid)
@@ -217,9 +239,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 사용자 정보 수정.
      * Name        : userInfoUpdate
      * Author      : 조 준 희
-     * Description : 사용자 정보 수정.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -252,9 +274,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 로그아웃
      * Name        : userLogout
      * Author      : 조 준 희
-     * Description : 로그아웃
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
@@ -268,33 +290,36 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Name        : userWorldInviting
-     * Author      : 조 준 희
      * Description :  사용자 월드 초대하기.
      *                  - 초대자가 월드에 참여중이 아닌경우 FORBIDDEN Exception
      *                  - 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
+     *                  - 초대 수락 대기 중인 경우 ALREADY_WORLD_INVITING_STATUS
+     * Name        : userWorldInviting
+     * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
     public void userWorldInviting(String suid, String targetSuid, Long worldId) throws YOPLEServiceException {
 
         // 1. 초대자가 월드에 참여중이 아닌경우 FORBIDDEN Exception
-        WorldUserMappingEntity suidWorldMapping = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId,suid)
+        WorldUserMappingEntity suidWorldMapping = worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,suid)
                 .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
 
-        // 2. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
-        if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,suid).isPresent() == true )
+        // 2. 사용자가 이미 초대를 받은 경우.
+        if(userWorldInvitingLogRepo.findOneByUserSuidAndTargetSuidAndWorldIdAndInvitingStatus(suid,targetSuid,worldId,"-").isPresent())
+            throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_INVITING_STATUS);
+
+
+        // 3. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
+        if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,targetSuid).isPresent() == true )
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
-
-
-        // 초대받은 초대 코드.
-        String worldinvitationCode = suidWorldMapping.getWorldUserCode();
 
         // 월드 참여 매핑 설정
         UserWorldInvitingLogEntity userWorldInvitingLogEntity = UserWorldInvitingLogEntity.builder()
                 .targetSuid(targetSuid)
                 .userSuid(suid)
-                .worldinvitationCode(worldinvitationCode)
+                .worldId(worldId)
+                .invitingStatus("-")
                 .build();
 
         // 월드에 참여.
@@ -303,9 +328,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Description : 월드 참여자 조회하기.
      * Name        : worldUsers
      * Author      : 조 준 희
-     * Description : 월드 참여자 조회하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override

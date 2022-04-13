@@ -24,14 +24,14 @@ public class UserEntity {
     @Column(name="SUID", nullable = false, updatable = false, columnDefinition = "VARCHAR(18)")
     private String suid;
 
-    @Column(name="USER_ID",  unique = true, columnDefinition = "VARCHAR(20)")
+    @Column(name="USER_ID", nullable = false, columnDefinition = "VARCHAR(20)")
     private String userId;//닉네임
 
     // 한글 10자
     @Column(name="NAME", nullable = false, columnDefinition = "VARCHAR(10)")
     private String name;
 
-    @Column(name="PHONE", nullable = false, unique = true, columnDefinition = "VARCHAR(15)")
+    @Column(name="PHONE", nullable = false, columnDefinition = "VARCHAR(15)")
     private String phone;
 
     @Column(name="PROFILE_URL", columnDefinition = "VARCHAR(100)")

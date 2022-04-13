@@ -22,10 +22,10 @@ import java.time.LocalDateTime;
 @Getter
 public class TimeEntity {
     @CreatedDate
-    @Column(name = "CREATE_DT", updatable = false)
+    @Column(name = "CREATE_DT", nullable = false, updatable = false, columnDefinition = "DATETIME")
     private LocalDateTime createTime;
 
     @LastModifiedDate
-    @Column(name = "UPDATE_DT", updatable = true)
+    @Column(name = "UPDATE_DT",nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime updateTime;
 }

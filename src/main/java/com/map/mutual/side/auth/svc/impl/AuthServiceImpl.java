@@ -153,16 +153,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO) throws RuntimeException{
+    public void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO) throws YOPLEServiceException{
 
         try {
             SMSRequestLogEntity smslog = smsLogRepo
-                    .findTop1ByPhoneAndCreateTimeBetweenOrderByCreateTime(
+                    .findTop1ByPhoneAndCreateTimeBetweenOrderByCreateTimeDesc(
                             smsAuthResponseDTO.getPhone(),
                             LocalDateTime.now().minusMinutes(5),
                             LocalDateTime.now());
             if (smslog == null) {
-                throw new RuntimeException();
+                throw new YOPLEServiceException(ApiStatusCode.AUTH_META_NOT_MATCH);
             }
 
             // 인증 코드 확인
@@ -179,9 +179,9 @@ public class AuthServiceImpl implements AuthService {
                 throw new YOPLEServiceException(ApiStatusCode.AUTH_META_NOT_MATCH);
             }
 
-        }catch(RuntimeException e)
+        }catch(YOPLEServiceException e)
         {
-            log.error("smsAuthNumber Response Failed : %s",e.getMessage());
+            log.error("smsAuthNumber Response Failed : " + e.getMessage());
             throw e;
         }
 

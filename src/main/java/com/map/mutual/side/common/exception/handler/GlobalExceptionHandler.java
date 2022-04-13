@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import javax.validation.ConstraintDefinitionException;
 import javax.validation.ConstraintViolationException;
+import java.util.stream.Collectors;
 
 /**
  * controller 전역적인 예외처리
@@ -44,9 +45,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ResponseJsonObject> handleConstraintViolationException(ConstraintViolationException ex) {
         logger.debug("파라미터 유효성 체크 실패. : " + ex.getMessage());
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED), HttpStatus.OK);
-    }
+        ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
 
+        if(ex.getConstraintViolations().isEmpty() == false)
+        {
+            String exceptionMsg = ex.getConstraintViolations().stream()
+                    .map(v1 -> v1.getMessage())
+                    .collect(Collectors.joining(","));
+            response.getMeta().setMsg(exceptionMsg);
+        }
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     // @RequestBody 유효성 실패.
     @Override
@@ -56,7 +66,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
             // "유효성 검사 실패 : " + ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
         logger.debug("파라미터 유효성 체크 실패. : " + ex.getMessage());
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED), HttpStatus.OK);
+        ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
+
+        if(ex.getBindingResult().hasErrors())
+            response.getMeta().setMsg(ex.getBindingResult().getFieldError().getDefaultMessage());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // 사용자 정의 예외

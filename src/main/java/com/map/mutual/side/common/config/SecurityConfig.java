@@ -83,31 +83,41 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 
                 // auth
-                .antMatchers(HttpMethod.POST,"/auth/**").permitAll()
-                .antMatchers(HttpMethod.POST,"/auth/refresh-refresh/**").authenticated()
-
+                .antMatchers(HttpMethod.POST,"/auth/sms-authentication-request/**").permitAll() // SMS 인증번호 요청하기.
+                .antMatchers(HttpMethod.POST,"/auth/sms-authentication-response/**").permitAll() // SMS 인증번호 확인 요청하기.
+                .antMatchers(HttpMethod.POST,"/auth/access-refresh/**").permitAll()  // 액세스 토큰 갱신하기.
+                .antMatchers(HttpMethod.POST,"/auth/refresh-refresh/**").authenticated() // 리프레시 토큰 갱신.
 
                 // user
-                .antMatchers(HttpMethod.POST,"/user/signUp/**").permitAll()  // 회원 가입
-                .antMatchers(HttpMethod.POST,"/user/**").authenticated()
-                .antMatchers(HttpMethod.DELETE,"/user/**").authenticated()
-                .antMatchers(HttpMethod.PATCH,"/user/**").authenticated()
+                .antMatchers(HttpMethod.POST,"/user/signup/**").permitAll()  // 사용자 회원가입
+                .antMatchers(HttpMethod.POST,"/user/world/user/**").authenticated() //월드에 참여하기
+                .antMatchers(HttpMethod.GET,"/user/check-userid/**").permitAll()  // 유저 ID 중복체크
+                .antMatchers(HttpMethod.GET,"/user/find-user/**").authenticated()  // 사용자 검색하기.
+                .antMatchers(HttpMethod.GET,"/user/world/users/**").authenticated()  // 월드 참여자 조회
+                .antMatchers(HttpMethod.GET,"/user/user/**").authenticated()  // 사용자 상세정보 조회
+                .antMatchers(HttpMethod.PATCH,"/user/user/**").authenticated()  // 사용자 상세정보 수정
+                .antMatchers(HttpMethod.DELETE,"/user/user/**").authenticated()  // 사용자 로그아웃
+                .antMatchers(HttpMethod.POST,"/user/user/world/**").authenticated()  // 월드에 사용자 초대하기.
 
                 // world
-                .antMatchers(HttpMethod.GET,"/world/code-validation/**").permitAll()
-                .antMatchers(HttpMethod.POST,"/world/**").authenticated()
-                .antMatchers(HttpMethod.GET,"/world/**").authenticated()
-                .antMatchers(HttpMethod.PATCH,"/world/**").authenticated()
+                .antMatchers(HttpMethod.POST,"/world/world/**").authenticated() // 월드 생성하기.
+                .antMatchers(HttpMethod.PATCH,"/world/world/**").authenticated() // 월드 수정하기
+                .antMatchers(HttpMethod.GET,"/world/world/**").authenticated() // 월드 상세정보 조회
+                .antMatchers(HttpMethod.GET,"/world/user/worlds/**").authenticated() // 참여 중인 월드 리스트 조회
+                .antMatchers(HttpMethod.GET,"/world/user/auth-check/**").authenticated() // 월드 입장 권한 체크
+                .antMatchers(HttpMethod.GET,"/world/review/worlds/**").authenticated() // 리뷰가 등록된 월드 리스트 조회
+                .antMatchers(HttpMethod.GET,"/world/code-validation/**").permitAll() // 월드 초대 코드 유효성 체크.
 
                 // review
-                .antMatchers(HttpMethod.POST,"/review/**").authenticated()
-                .antMatchers(HttpMethod.GET,"/review/**").authenticated()
-                .antMatchers(HttpMethod.PUT,"/review/**").authenticated()
-                .antMatchers(HttpMethod.DELETE,"/review/**").authenticated()
+                .antMatchers(HttpMethod.POST,"/review/review/**").authenticated() // 리뷰 작성하기.
+                .antMatchers(HttpMethod.PUT,"/review/review/**").authenticated() // 리뷰 수정하기.
+                .antMatchers(HttpMethod.DELETE,"/review/review/**").authenticated() // 리뷰 삭제하기.
+                .antMatchers(HttpMethod.GET,"/review/review/**").authenticated() // 리뷰 조회하기.
+                .antMatchers(HttpMethod.GET,"/review/myReviews/**").authenticated() // 내가 쓴 리뷰 조회하기.
+                .antMatchers(HttpMethod.GET,"/review/worldPin/placeInRange/**").authenticated() // 지도 범위 핀 조회하기.
+                .antMatchers(HttpMethod.GET,"/review/placeDetail/**").authenticated() // 장소에 등록된 리뷰 조회하기.
 
-
-
-                .anyRequest().authenticated()       // 그 외 나머지 리소스들은 무조건 인증을 완료해야 접근 가능
+                .anyRequest().authenticated() // 그 외 나머지 리소스들은 무조건 인증을 완료해야 접근 가능
                 .and()
                 //AuthenticationFilterChain- UsernamePasswordAuthenticationFilter 전에 실행될 커스텀 필터 등록
                 .addFilterBefore(new AuthorizationCheckFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);

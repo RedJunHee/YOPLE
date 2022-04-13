@@ -16,14 +16,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/world")
+@Validated
 public class WorldController {
     private final Logger logger = LogManager.getLogger(WorldController.class);
     private WorldService worldService;
@@ -34,9 +39,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드 생성하기.
      * Name        : createWorld
      * Author      : 조 준 희
-     * Description : 월드 생성하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world")
@@ -64,9 +69,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드 수정하기.
      * Name        : updateWorld
      * Author      : 조 준 희
-     * Description : 월드 수정하기.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PatchMapping(value = "/world")
@@ -96,9 +101,10 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드 상세정보 조회.
+     * - 존재하지 않는 월드 조회 시 권한 없음 403 에러
      * Name        : worldDetail
      * Author      : 조 준 희
-     * Description : 월드 상세정보 조회.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/world")
@@ -130,27 +136,24 @@ public class WorldController {
         }
     }
 
-    //참여 중인 월드 리스트 조회
     /**
+     * Description : 참여 중인 월드 리스트 조회. isDetails로 세부정보 조회 가능.
      * Name        : activityWorlds
      * Author      : 조 준 희
-     * Description : 참여 중인 월드 리스트 조회. isDetails로 세부정보 조회 가능.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
+    // TODO: 2022/04/12  정규식 확인.
     @GetMapping(value = "/user/worlds")
-    public ResponseEntity<ResponseJsonObject> activityWorlds(@RequestParam("isDetails") String isDetails){
+    public ResponseEntity<ResponseJsonObject> activityWorlds(@RequestParam(value = "isDetails", required = false, defaultValue = "N") @Valid @Pattern(regexp = "Y|N") String isDetails){
         try{
             WorldDetailResponseDto worldDetail ;
-
-            // 1. isDetails 기본 값 설정.
-            String deatilsYN = StringUtil.isNullOrEmpty(isDetails)? "N": isDetails;
 
             // 2. 사용자 SUID 가져오기.
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
             // 3. 참여 중인 월드 리스트 조회하기.
-            List<WorldDto> activityWorldDtoList = worldService.getWorldList(userInfoDto.getSuid(), deatilsYN);
+            List<WorldDto> activityWorldDtoList = worldService.getWorldList(userInfoDto.getSuid(), isDetails);
 
 
             // 4. 응답 객체 생성.
@@ -173,9 +176,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드에 입장이 가능한지 권한 체크.
      * Name        : worldAuthCheck
      * Author      : 조 준 희
-     * Description : 월드에 입장이 가능한지 권한 체크.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/user/auth-check")
@@ -207,9 +210,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 리뷰가 등록된 월드 리스트 조회 - 월드 이름만 나옴
      * Name        : getWorldOfReivew
      * Author      : 조 준 희
-     * Description : 리뷰가 등록된 월드 리스트 조회 - 월드 이름만 나옴
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/review/worlds")
@@ -242,9 +245,9 @@ public class WorldController {
     }
 
     /**
+     * Description : 월드 초대 코드 유효성 체크 - 월드 초대 코드가 유효한 코드인지 확인.
      * Name        : worldUserCodeValid
      * Author      : 조 준 희
-     * Description : 월드 초대 코드 유효성 체크 - 월드 초대 코드가 유효한 코드인지 확인.
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/code-validation")

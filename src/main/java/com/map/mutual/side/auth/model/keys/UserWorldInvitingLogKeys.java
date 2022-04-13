@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @EqualsAndHashCode
 public class UserWorldInvitingLogKeys implements Serializable {
-    private String worldinvitationCode;
+    private Long worldId;
     private String userSuid;
     private String targetSuid;
 }

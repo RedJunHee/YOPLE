@@ -5,9 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 
 @Getter
 @NoArgsConstructor
@@ -17,9 +15,11 @@ public class SMSAuthReqeustDto {
     @Pattern(regexp = "^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$",
     message = "휴대폰 번호가 올바르지 않습니다.")
     private String phone;
-    @NotNull(message = "duid가 없습니다.")
-    @NotEmpty
+
+    @NotBlank(message = "디바이스값이 널 이거나 빈값입니다.")
     private String duid;
+
+    @Size(min = 4,max = 4)
     private String responseAuthNum;
 
 }

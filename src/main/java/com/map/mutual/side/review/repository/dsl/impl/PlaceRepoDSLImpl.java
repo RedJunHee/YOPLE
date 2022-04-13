@@ -6,6 +6,7 @@ import com.map.mutual.side.review.model.dto.QPlaceDetailDto_TempReview;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.repository.dsl.PlaceRepoDSL;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.List;
 @Repository
 public class PlaceRepoDSLImpl implements PlaceRepoDSL {
     private final JPAQueryFactory jpaQueryFactory;
-
+    @Autowired
     public PlaceRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
     }

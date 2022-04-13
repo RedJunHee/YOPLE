@@ -29,7 +29,7 @@ public class YOPLEUtils {
      */
     public static String getSMSAuth()
     {
-        return Integer.toString(RandomUtils.nextInt(10000, 100000));
+        return Integer.toString(RandomUtils.nextInt(1000, 10000));
     }
 
     /**

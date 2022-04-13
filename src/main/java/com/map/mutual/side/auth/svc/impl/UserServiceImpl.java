@@ -2,6 +2,7 @@ package com.map.mutual.side.auth.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.model.entity.UserTOSEntity;
@@ -342,5 +343,20 @@ public class UserServiceImpl implements UserService {
         return userInfoEntities;
     }
 
+    /**
+     * Description : 알림 메시지 리스트 조회
+     * Name        : notificationList
+     * Author      : 조 준 희
+     * History     : [2022-04-13] - 조 준 희 - Create
+     */
+    @Override
+    public List<notificationDto> notificationList(String suid) {
 
+
+        userWorldInvitingLogRepo.InvitedNotiList(suid);
+
+
+
+        return null;
+    }
 }

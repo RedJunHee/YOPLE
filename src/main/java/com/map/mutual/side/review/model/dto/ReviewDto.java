@@ -6,6 +6,7 @@ import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Size;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -84,8 +85,8 @@ public class ReviewDto {
             } else {
                 this.imageUrls = new String[0];
             }
-            this.createDt = LocalDateTime.of(createDt.getYear(),
-                    createDt.getMonth(), createDt.getDayOfMonth(), createDt.getHour(), 0, 0).toString();
+            this.createDt = LocalDate.of(createDt.getYear(), createDt.getMonth(), createDt.getDayOfMonth()).toString();
+
         }
     }
 }

@@ -91,10 +91,10 @@ public class UserServiceImpl implements UserService {
         UserTOSEntity userTOSEntity = UserTOSEntity.builder()
                 .suid(user.getSuid())
                 .serviceTosYN(user.getUserTOSDto().getServiceTosYN())
-                .ageCollectionYn(user.getUserTOSDto().getAgeCollectionYn())
-                .locationInfoYn(user.getUserTOSDto().getLocationInfoYn())
-                .marketingYn(user.getUserTOSDto().getMarketingYn())
-                .userInfoYn(user.getUserTOSDto().getUserInfoYn())
+                .ageCollectionYn(user.getUserTOSDto().getAgeCollectionYN())
+                .locationInfoYn(user.getUserTOSDto().getLocationInfoYN())
+                .marketingYn(user.getUserTOSDto().getMarketingYN())
+                .userInfoYn(user.getUserTOSDto().getUserInfoYN())
                 .build();
 
 

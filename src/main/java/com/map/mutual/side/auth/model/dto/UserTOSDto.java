@@ -1,9 +1,12 @@
 package com.map.mutual.side.auth.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Null;
+import javax.validation.constraints.Pattern;
 
 /**
  * Class       : UserTOSEntity
@@ -16,18 +19,23 @@ import javax.validation.constraints.NotEmpty;
 public class UserTOSDto {
 
     @NotEmpty
+    @Pattern(regexp = "Y|N")
     private String serviceTosYN;
 
     @NotEmpty
-    private String userInfoYn;
+    @Pattern(regexp = "Y|N")
+    private String userInfoYN;
 
     @NotEmpty
-    private String locationInfoYn;
+    @Pattern(regexp = "Y|N")
+    private String locationInfoYN;
 
     @NotEmpty
-    private String ageCollectionYn;
+    @Pattern(regexp = "Y|N")
+    private String ageCollectionYN;
 
-    private String marketingYn;
+    @Pattern(regexp = "Y|N")
+    private String marketingYN="N";
 
 
 }

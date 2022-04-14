@@ -24,7 +24,7 @@ public class ApiLog extends CreateDtEntity {
     private Long seq;
 
     // TODO: 2022-04-14  suid null 허용 안함으로 변경해야함.
-    @Column(name="SUID", nullable = true, length = 18, columnDefinition = "VARCHAR(18)")
+    @Column(name="SUID", nullable = false, length = 18, columnDefinition = "VARCHAR(18)")
     private String suid;
 
     @Column(name="API_NAME", nullable = false, length = 100, columnDefinition = "VARCHAR(100)")

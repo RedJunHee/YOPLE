@@ -29,6 +29,13 @@ spring:
 server:
   port: 3333
 
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
 #fcm:
 #  message:
 #    api: https://fcm.googleapis.com/v1/projects/yople-42384/messages:send

@@ -148,7 +148,8 @@ public class RequestAroundLogAop {
 
             //API_LOG담을 객체 생성 ( "SUID",  2022-01-14T12:55:22, "save", 'Y', [INPUT] [메서드 input] [OUTPUT] [메서드 output] , 3.0
             ApiLog data = ApiLog.builder()
-                            .apiName(methodName)
+                    .suid(suid)
+                    .apiName(methodName)
                     .apiDesc(apiDesc)
                     .apiStatus(apiStatus)
                     .processTime((float) (elapsedTime*0.001))

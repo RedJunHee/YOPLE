@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class UserWorldInvitingLogEntity extends TimeEntity {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SEQ", nullable = false, updatable = false, columnDefinition = "BIGINT")
     private Long seq;
 

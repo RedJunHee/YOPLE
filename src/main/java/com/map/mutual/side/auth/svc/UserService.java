@@ -2,6 +2,7 @@ package com.map.mutual.side.auth.svc;
 
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -33,7 +34,7 @@ public interface UserService {
     void userWorldInviting(String suid, String targetSuid, Long worldId)  throws YOPLEServiceException;
     Long getRecentAccessWorldID(String suid);
 
-    List<notificationDto> notificationList(String suid);
+    NotiDto notificationList(String suid);
 
 
 }

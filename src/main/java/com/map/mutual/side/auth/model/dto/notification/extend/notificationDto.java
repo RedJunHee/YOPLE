@@ -25,7 +25,7 @@ public class notificationDto {
     }
 
     @Getter
-    private static class Header {
+    protected static class Header {
         private String pushType;
         private LocalDateTime pushDate;
 

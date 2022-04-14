@@ -5,6 +5,7 @@ import com.map.mutual.side.auth.model.dto.JwtTokenDto;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.dto.UserWorldInvitionDto;
+import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.svc.AuthService;
@@ -381,7 +382,7 @@ public class UserController {
 
     /**
      * Description : 알림 메시지 조회
-     * Name        :
+     * Name        : notification
      * Author      : 조 준 희
      * History     : [2022-04-13] - 조 준 희 - Create
      */
@@ -389,19 +390,25 @@ public class UserController {
     public ResponseEntity<ResponseJsonObject> notification(){
         try{
 
+            // 1. 토큰에서 사용자 SUID 정보 조회
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
-            userService.notificationList("YO2022040312441238");
+            NotiDto notis = userService.notificationList(userToken.getSuid());
 
-
-
-            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(notis);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e)
         {
             throw e;
+        }catch(Exception e)
+        {
+            logger.error(e.getMessage());
+            throw e;
         }
+
     }
 
 }

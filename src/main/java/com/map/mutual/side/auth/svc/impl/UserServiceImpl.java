@@ -2,7 +2,10 @@ package com.map.mutual.side.auth.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
+import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
+import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.model.entity.UserTOSEntity;
@@ -34,7 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * fileName       : UserServiceImpl
@@ -350,13 +354,17 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-13] - 조 준 희 - Create
      */
     @Override
-    public List<notificationDto> notificationList(String suid) {
+    public NotiDto notificationList(String suid) {
 
 
-        userWorldInvitingLogRepo.InvitedNotiList(suid);
+        List<InvitedNotiDto> invitedNotiList =   userWorldInvitingLogRepo.InvitedNotiList(suid);
+        List<WorldEntryNotiDto> worldEntryNotiList =  worldUserMappingRepo.WorldEntryNotiList(suid);
 
 
+        NotiDto notis = NotiDto.builder().topNoti(invitedNotiList.stream().collect(Collectors.toList()))
+                        .middleNoti(worldEntryNotiList.stream().collect(Collectors.toList())).
+                build();
 
-        return null;
+        return notis;
     }
 }

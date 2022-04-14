@@ -2,6 +2,7 @@ package com.map.mutual.side.common.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +13,8 @@ import org.springframework.web.multipart.MultipartResolver;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Class       : BeanConfig
@@ -29,8 +32,12 @@ public class BeanConfig {
     @Bean
     public ObjectMapper objectMapper()
     {
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addSerializer(LocalDateTime.class, new CustomLocalDateTimeSerializer());
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);   // Java 객체를 JSON으로 Serialize할 때 null값은 제외
+        objectMapper.registerModule(simpleModule);
         return  objectMapper;
     }
 

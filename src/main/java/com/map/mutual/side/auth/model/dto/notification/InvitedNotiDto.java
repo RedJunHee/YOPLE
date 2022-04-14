@@ -4,6 +4,8 @@ import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 /**
  * Class       : InvitationNotiDto
  * Author      : 조 준 희
@@ -13,9 +15,9 @@ import lombok.Getter;
 public class InvitedNotiDto extends notificationDto {
 
     @QueryProjection
-    public InvitedNotiDto( String userId, String userProfileUrl, String worldName, String userSuid, String worldUserCode ) {
+    public InvitedNotiDto(LocalDateTime notiDate,  String userId, String userProfileUrl, String worldName, String userSuid, String worldUserCode ) {
         super("A"); // A 타입 알림.
-
+        header.SetNotiDate(notiDate);
         payload = new Payload(userId,userProfileUrl,worldName);
         data = new Data(userSuid,worldUserCode);
     }

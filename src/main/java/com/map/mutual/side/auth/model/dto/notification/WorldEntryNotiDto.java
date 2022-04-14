@@ -1,7 +1,10 @@
 package com.map.mutual.side.auth.model.dto.notification;
 
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
+import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 /**
  * Description : 월드에 입장 noti DTO
@@ -11,9 +14,10 @@ import lombok.Getter;
  */
 public class WorldEntryNotiDto extends notificationDto {
 
-    public WorldEntryNotiDto(String userId, String userProfileUrl, String worldName) {
+    @Builder
+    public WorldEntryNotiDto(LocalDateTime notiDate, String userId, String userProfileUrl, String worldName) {
         super("B"); // B 타입 알림.
-
+        header.SetNotiDate(notiDate);
         payload = new Payload(userId,userProfileUrl,worldName);
     }
 

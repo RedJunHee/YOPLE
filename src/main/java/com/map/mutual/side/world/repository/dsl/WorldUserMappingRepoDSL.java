@@ -1,6 +1,7 @@
 package com.map.mutual.side.world.repository.dsl;
 
 import com.map.mutual.side.auth.model.dto.UserInWorld;
+import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.world.model.dto.WorldDto;
 
@@ -22,4 +23,12 @@ public interface WorldUserMappingRepoDSL {
      */
     Long exsistUserCodeInWorld(String worldinvitationCode, String suid);
     Boolean exsistUserInWorld(Long worldId, String suid);
+
+    /**
+     * Description : 월드 입장 알림 리스트 조회
+     * Name        : WorldEntryNotiList
+     * Author      : 조 준 희
+     * History     : [2022-04-14] - 조 준 희 - Create
+     */
+    List<WorldEntryNotiDto> WorldEntryNotiList(String suid);
 }

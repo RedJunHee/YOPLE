@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 /**
@@ -79,5 +82,20 @@ public class YOPLEUtils {
 
         return code;
     }
+
+    public static LocalDateTime String2LocalDateTime (String str)
+    {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            LocalDateTime dateTime = LocalDateTime.parse(str, formatter);
+            return dateTime;
+
+        }catch(DateTimeParseException e)
+        {
+            return null;
+        }
+
+    }
+
 
 }

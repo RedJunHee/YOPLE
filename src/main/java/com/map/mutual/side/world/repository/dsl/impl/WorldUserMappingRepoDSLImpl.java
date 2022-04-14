@@ -2,7 +2,9 @@ package com.map.mutual.side.world.repository.dsl.impl;
 
 import com.map.mutual.side.auth.model.dto.QUserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
+import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
+import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
 import com.map.mutual.side.world.repository.dsl.WorldUserMappingRepoDSL;
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -41,8 +45,13 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         this.jpaQueryFactory = jpaQueryFactory;
     }
 
-    //참여 중인 월드 리스트 조회 ( 상세정보 조회 )
-    // 상세정보 : 자신의 월드인지, 참여자 수 등.
+    /**
+     * Description : 참여 중인 월드 리스트 조회 ( 상세정보 조회 )
+     * - 상세정보 : 자신의 월드인지, 참여자 수 등.
+     * Name        : findBySuidWithWorldDetails
+     * Author      : 조 준 희
+     * History     : [2022-04-14] - 조 준 희 - Create
+     */
     @Override
     public List<WorldDto> findBySuidWithWorldDetails(String suid) {
 
@@ -246,5 +255,81 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
 
     }
 
+    /**
+     * Description : 월드에 입장하였습니다 알림 조회
+     *
+     * -- 사용자가 입장되어있는 월드
+     * CREATE TABLE #MY_WORLD(
+     * WORLD_ID BIGINT
+     * ,ENTRY_DATE DATETIME
+     * )
+     *
+     * -- 사용자가 입장되어있는 월드 저장
+     * INSERT INTO #MY_WORLD
+     * SELECT WORLD_ID, CREATE_DT
+     *   FROM WORLD_USER_MAPPING
+     *  WHERE USER_SUID = 'YO2022032927090787'
+     *
+     * SELECT u.[USER_ID],u.PROFILE_URL,w.NAME, other.CREATE_DT
+     *   FROM #MY_WORLD as my
+     *  INNER JOIN WORLD_USER_MAPPING as other
+     *     ON other.CREATE_DT > my.ENTRY_DATE AND my.WORLD_ID = other.WORLD_ID
+     *   LEFT JOIN USER_INFO as u
+     *     ON other.USER_SUID = u.SUID
+     *   LEFT JOIN WORLD w
+     *     ON my.WORLD_ID = w.WORLD_ID
+     *  ORDER BY other.CREATE_DT DESC
+     *
+     *   DROP TABLE #MY_WORLD
+     * Name        : WorldEntryNotiList
+     * Author      : 조 준 희
+     * History     : [2022-04-14] - 조 준 희 - Create
+     */
+    @Override
+    public List<WorldEntryNotiDto> WorldEntryNotiList(String suid) {
 
+        // 1. 참여중인 월드만 조회가 되어야함.
+        // 2. 월드별로 참여 중인 사용자 카운트를 알아야함.
+        // 3. 한번에 조회가 되어야함.
+        List<WorldEntryNotiDto> notis = new ArrayList<>();
+
+        String sql = "CREATE TABLE #MY_WORLD ( \n" +
+                "WORLD_ID BIGINT , \n" +
+                "ENTRY_DATE DATETIME \n" +
+                ") \n" +
+
+                // 사용자가 참여하고있는 월드와 참여 날짜를 가져옴.
+                "INSERT INTO #MY_WORLD \n"+
+                "SELECT WORLD_ID, CREATE_DT \n" +
+                "    FROM WORLD_USER_MAPPING  \n" +
+                "  WHERE USER_SUID = ? \n" +
+
+                "SELECT u.[USER_ID],u.PROFILE_URL,w.NAME, other.CREATE_DT \n" +
+                "  FROM #MY_WORLD as my \n" +
+                " INNER JOIN WORLD_USER_MAPPING as other \n" +
+                "    ON other.CREATE_DT > my.ENTRY_DATE " +
+                "   AND my.WORLD_ID = other.WORLD_ID \n" +
+                "  LEFT JOIN USER_INFO as u \n" +
+                "    ON other.USER_SUID = u.SUID \n" +
+                "  LEFT JOIN WORLD w \n" +
+                "    ON my.WORLD_ID = w.WORLD_ID \n" +
+                " ORDER BY other.CREATE_DT DESC \n" +
+
+                " DROP TABLE #MY_WORLD ";
+
+        Query nativeQuery  = entityManager.createNativeQuery(sql).setParameter(1,suid);
+
+        List<Object[]> result =  nativeQuery.getResultList();
+
+        for(Object[] obj : result){
+            notis.add(WorldEntryNotiDto.builder().userId( obj[0].toString())
+                    .userProfileUrl(obj[1].toString())
+                    .worldName(obj[2].toString())
+                    // TODO: 2022-04-14  날짜 형식 캐스팅 실패 시 날짜 null로 넣어주고있음.
+                    .notiDate(YOPLEUtils.String2LocalDateTime(obj[3].toString()))
+                    .build());
+        }
+
+        return notis;
+    }
 }

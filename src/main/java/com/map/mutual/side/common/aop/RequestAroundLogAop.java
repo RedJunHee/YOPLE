@@ -17,13 +17,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /** Class       : RqeustAroundLogAop (AOP)
  *  Author      : 조 준 희
@@ -87,6 +90,35 @@ public class RequestAroundLogAop {
             if(ex.getResponseJsonObject().getMeta().getErrorType() != null)
                 apiStatus = 'N';
             outputMessage = om.writeValueAsString(ex.getResponseJsonObject());
+            throw ex;
+        }
+        catch(ConstraintViolationException ex){
+            // 에러가 아닌 경우
+            apiStatus = 'N';
+
+            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
+
+            if(ex.getConstraintViolations().isEmpty() == false)
+            {
+                String exceptionMsg = ex.getConstraintViolations().stream()
+                        .map(v1 -> v1.getMessage())
+                        .collect(Collectors.joining(","));
+                response.getMeta().setMsg(exceptionMsg);
+            }
+
+            outputMessage = om.writeValueAsString(response);
+            throw ex;
+        }
+        catch(MethodArgumentNotValidException ex){
+
+            apiStatus = 'N';
+
+            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
+
+            if(ex.getBindingResult().hasErrors())
+                response.getMeta().setMsg(ex.getBindingResult().getFieldError().getDefaultMessage());
+
+            outputMessage = om.writeValueAsString(response);
             throw ex;
         }
         catch(Exception ex) {

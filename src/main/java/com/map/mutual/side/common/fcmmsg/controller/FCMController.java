@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * fileName       : FCMController
@@ -36,6 +37,10 @@ public class FCMController {
     @Autowired
     private FCMService fcmService;
 
+    @PostMapping("/generateToken")
+    public ResponseEntity<ResponseJsonObject> generateToken(@RequestParam String token) {
+        return fcmService.generateToken(token);
+    }
 
     @PostMapping("/test")
     public ResponseEntity<ResponseJsonObject> tests(@RequestParam String token,
@@ -58,16 +63,13 @@ public class FCMController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-    @PostMapping("/generateToken")
-    public void generateToken(@RequestParam String token) {
-        fcmService.generateToken(token);
-    }
 
     @PostMapping("/sendNotification")
     public void testTopic(@RequestParam String title,
                           @RequestParam String body,
-                          @RequestParam String topic) {
-        fcmService.sendNotificationTopic(title, body, topic);
+                          @RequestParam String topic,
+                          @RequestParam Map<String, String> data) {
+        fcmService.sendNotificationTopic(title, body, data, topic);
     }
 //
 //

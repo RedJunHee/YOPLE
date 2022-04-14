@@ -19,7 +19,6 @@ public enum ApiStatusCode {
     //COMMON CODE
     NONE (0,"","",true)
     ,OK (200,"OK","성공.", false)
-    ,CREATED (201,"Created","리소스 생성 완료.", false)
     ,CONTENT_NOT_FOUND (204,"Content Not Found", "컨텐츠 없음.", false)
     ,AUTH_META_NOT_MATCH(211, "Auth Meta Not Match", "인증 메타 정보 불일치.",true)
     ,USER_NOT_FOUND (214,"User Not Found", "사용자 찾을 수 없음.", false)
@@ -33,6 +32,9 @@ public enum ApiStatusCode {
     ,ALREADY_WORLD_MEMEBER(431,"Already a member of the world.","이미 월드소속 입니다.",true)
     ,ALREADY_WORLD_INVITING_STATUS(433,"초대 수락 대기중.","이미 초대 수락 대기중입니다.",true)
     ,WORLD_USER_CDOE_VALID_FAILED (432, "WorldUserCode is not valid.", "월드 초대 코드 유효성 실패.", true)
+    ,REGISTRY_FCM_TOPIC_FAIL (440, "Topic 추가를 실패했습니다.", "Topic 추가를 실패했습니다.", true)
+    ,UNSUBSCRIPTION_FCM_TOPIC_FAIL (441, "Topic 제거를  실패했습니다.", "Topic 제거를 실패했습니다.", true)
+    ,SEND_FCM_NOTIFICATION_FAIL (442, "FCM 알림 전송을 실패했습니다.", "FCM 알림 전송을 실패했습니다.", true)
     ,USER_TOS_INFO_VALID_FAILED (490, "TOS 정보 체크 실패.", "TOS 정보 체크 실패.",true)
     ,SYSTEM_ERROR(599,"System Error.", "시스템오류.",true)
     ;

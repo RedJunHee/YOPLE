@@ -283,8 +283,9 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PatchMapping("/user")
-    public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam String userId,
-                                                             @RequestParam String profileUrl){
+    public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam(required = false) @Valid @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}",
+                                                                        message = "ID가 올바르지 않습니다.") String userId,
+                                                             @RequestParam(required = false) String profileUrl){
 
         ResponseJsonObject responseJsonObject ;
 

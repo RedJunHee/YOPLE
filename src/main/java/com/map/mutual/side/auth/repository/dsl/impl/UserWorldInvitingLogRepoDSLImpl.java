@@ -49,7 +49,7 @@ public class UserWorldInvitingLogRepoDSLImpl implements UserWorldInvitingLogRepo
                         QUserEntity.userEntity.profileUrl,
                         QWorldEntity.worldEntity.worldName,
                         log.userSuid,
-                    QWorldUserMappingEntity.worldUserMappingEntity.worldUserCode
+                       QWorldUserMappingEntity.worldUserMappingEntity.worldUserCode.nullif("------")
                         ))
                 .from(log)
                 .leftJoin(QUserEntity.userEntity)

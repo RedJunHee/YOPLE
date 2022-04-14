@@ -5,6 +5,7 @@ import com.google.firebase.messaging.*;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.fcmmsg.FCMConstant;
@@ -13,7 +14,10 @@ import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * fileName       : FCMService
@@ -31,90 +36,76 @@ import java.util.List;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2022/03/20        kimjaejung       최초 생성
- *
  */
 @Component
 @Log4j2
 public class FCMService {
     @Autowired
     private FcmTopicRepository fcmTopicRepository;
-
     @Autowired
     private WorldUserMappingRepo worldUserMappingRepo;
-
     @Autowired
     private UserInfoRepo userInfoRepo;
 
-
-
-
-    public void generateToken(String token) {
+    public ResponseEntity<ResponseJsonObject> generateToken(String token) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-        try {
-            UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
-
-            if (userEntity.getFcmToken().equals(token)) {
-                return;
-            } else if (userEntity.getFcmToken() == null) {
-                userEntity.setFcmToken(token);
-                userInfoRepo.save(userEntity);
-            } else if (userEntity.getFcmToken().equals(FCMConstant.EXPIRED)){
-                registryFcmToken(userEntity, token);
-            }
-        } catch (Exception e) {
-            throw e;
+        UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+        if (userEntity.getFcmToken() == null) {
+            userEntity.setFcmToken(token);
+            userInfoRepo.save(userEntity);
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+        } else if (userEntity.getFcmToken().equals(token)) {
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+        } else if (userEntity.getFcmToken().equals(FCMConstant.EXPIRED)) {
+            registryFcmToken(userEntity, token);
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+        } else if (!userEntity.getFcmToken().equals(token)){
+            List<FcmTopicEntity> fcmTopicEntity = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
+            fcmTopicRepository.deleteAll(fcmTopicEntity);
+            registryFcmToken(userEntity, token);
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
         }
-
+        else
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-
-
-    public void registryFcmToken(UserEntity userEntity, String token)  {
-
+    public void registryFcmToken(@NotNull UserEntity userEntity, String token) {
+        List<FcmTopicEntity> fcmTopicEntities = new ArrayList<>();
         try {
+
             userEntity.setFcmToken(token);
+            userInfoRepo.save(userEntity);
 
-            if (userEntity.getFcmToken() == null) {
-                userInfoRepo.save(userEntity);
-            } else if (!userEntity.getFcmToken().equals(token)) {
-                List<FcmTopicEntity> fcmTopicEntities = new ArrayList<>();
-
-                List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(userEntity.getSuid());
-                if(!worldUserMappingEntities.isEmpty()) {
-                    worldUserMappingEntities.forEach(data -> {
-                        try {
-                            TopicManagementResponse response = FirebaseMessaging.getInstance().subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
-                            log.info(response);
-                        } catch (FirebaseMessagingException e) {
-                            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-                        }
-                        FcmTopicEntity fcmTopicEntity = FcmTopicEntity.builder().fcmToken(token).worldId(data.getWorldId()).build();
-                        fcmTopicEntities.add(fcmTopicEntity);
-                    });
-                    fcmTopicRepository.saveAll(fcmTopicEntities);
-                }
-                userInfoRepo.save(userEntity);
+            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(userEntity.getSuid());
+            if (!worldUserMappingEntities.isEmpty()) {
+                worldUserMappingEntities.forEach(data -> {
+                    try {
+                        TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
+                        log.info(response);
+                    } catch (FirebaseMessagingException e) {
+                        throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);
+                    }
+                    FcmTopicEntity fcmTopicEntity = FcmTopicEntity.builder().fcmToken(token).worldId(data.getWorldId()).build();
+                    fcmTopicEntities.add(fcmTopicEntity);
+                });
+                fcmTopicRepository.saveAll(fcmTopicEntities);
             }
-
-
-            log.info("Success To Registry Token");
         } catch (YOPLEServiceException e) {
             throw e;
         }
     }
 
+    public void deleteFcmToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        List<FcmTopicEntity> fcmTopicEntities;
 
-    public void deleteFcmToken()  {
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-
             UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
 
-            List<FcmTopicEntity> fcmTopicEntities;
-            if(userEntity.getFcmToken() != null) {
+            if (userEntity.getFcmToken() != null) {
                 userEntity.setFcmToken(FCMConstant.EXPIRED);
                 fcmTopicEntities = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
 
@@ -122,74 +113,53 @@ public class FCMService {
                     try {
                         FirebaseMessaging.getInstance().unsubscribeFromTopic(Collections.singletonList(data.getFcmToken()), String.valueOf(data.getWorldId()));
                     } catch (FirebaseMessagingException e) {
-                        throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+                        throw new YOPLEServiceException(ApiStatusCode.UNSUBSCRIPTION_FCM_TOPIC_FAIL);
                     }
                 });
                 fcmTopicRepository.deleteAll(fcmTopicEntities);
                 userInfoRepo.save(userEntity);
             }
-
-
-            log.info("Deleted Fcm Token");
-
         } catch (YOPLEServiceException e) {
             throw e;
         }
     }
 
     @Async
-    public void sendNotificationToken(String title, String body) {
+    public void sendNotificationToken(String title, String body, Map<String, String> data) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+        Notification notification = Notification.builder().setTitle(title).setBody(body).build();
+
+        String token = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
+
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-
-
-
-            Notification notification = Notification.builder().setTitle(title).setBody(body).build();
-
-            String token = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
-
-
             Message message = Message.builder()
                     .setToken(token)
                     .setNotification(notification)
+                    .putAllData(data)
                     .build();
-            String response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
-            log.info("Successfully sent : {}", response);
+            FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
         } catch (FirebaseMessagingException e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            throw new YOPLEServiceException(ApiStatusCode.SEND_FCM_NOTIFICATION_FAIL);
         }
     }
 
     @Async
-    public void sendNotificationTopic(String title, String body, String topic) {
+    public void sendNotificationTopic(String title, String body, Map<String, String> data, String topic) {
         try {
             Notification notification = Notification.builder().setTitle(title).setBody(body).build();
 
             Message message = Message.builder()
                     .setTopic(topic)
                     .setNotification(notification)
-                    .putData("worldId", topic)
+                    .putAllData(data)
                     .build();
             String response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
-            log.info("Successfully sent : {}", response);
         } catch (FirebaseMessagingException e) {
-            log.error("Error : {}", e.getMessagingErrorCode());
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            throw new YOPLEServiceException(ApiStatusCode.SEND_FCM_NOTIFICATION_FAIL);
         }
     }
-
-    public void subscribeToTopic(String token, String topic) {
-        try {
-            TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), topic);
-            log.info("Success To Subscribe : {}", response);
-        } catch (FirebaseMessagingException e) {
-            log.error("Error : {}", e.getMessagingErrorCode());
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-        }
-    }
-
-
 
 //    private void updateFcmToken(String userSuid, String newToken)  {
 //        try {

@@ -73,9 +73,9 @@ public class UserController {
     public ResponseEntity<ResponseJsonObject> smsSignUp(@RequestBody @Valid UserInfoDto userInfoDto) throws Exception {
         try {
 
-            if ( userInfoDto.getUserTOSDto().getUserInfoYn().equals("Y") == false
-                || userInfoDto.getUserTOSDto().getLocationInfoYn().equals("Y") == false
-                || userInfoDto.getUserTOSDto().getAgeCollectionYn().equals("Y") == false
+            if ( userInfoDto.getUserTOSDto().getUserInfoYN().equals("Y") == false
+                || userInfoDto.getUserTOSDto().getLocationInfoYN().equals("Y") == false
+                || userInfoDto.getUserTOSDto().getAgeCollectionYN().equals("Y") == false
                 || userInfoDto.getUserTOSDto().getServiceTosYN().equals("Y") == false
             ){
                 throw new YOPLEServiceException(ApiStatusCode.USER_TOS_INFO_VALID_FAILED);
@@ -171,8 +171,10 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/find-user")
-    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam  String userId,
-                                                                  @RequestParam  String phone) {
+    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam(required = false) @Valid     @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}",
+                                                                            message = "ID가 올바르지 않습니다.")  String userId,
+                                                                  @RequestParam(required = false) @Valid @Pattern(regexp = "^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$",
+                                                                          message = "핸드폰 번호가 올바르지 않습니다.") String phone) {
         ResponseJsonObject response;
         try{
 

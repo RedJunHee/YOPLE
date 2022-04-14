@@ -3,6 +3,7 @@ package com.map.mutual.side.auth.model.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
 @Getter
@@ -28,6 +29,7 @@ public class UserInfoDto {
     private String profileUrl;
 
     @JsonProperty(value = "tos")
+    @Valid
     private UserTOSDto userTOSDto;
 
 

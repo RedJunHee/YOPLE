@@ -13,6 +13,7 @@ import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.auth.model.dto.SMSAuthReqeustDto;
 import com.map.mutual.side.auth.svc.AuthService;
+import org.jetbrains.annotations.TestOnly;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +82,7 @@ public class AuthController {
             String smsAuthNum = YOPLEUtils.getSMSAuth();
 
             // 2. 핸드폰 번호 인증 요청
+
             authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
             // 3. 로그 저장

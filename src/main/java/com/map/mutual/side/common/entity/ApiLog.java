@@ -23,7 +23,6 @@ public class ApiLog extends CreateDtEntity {
     @Column(name="SEQ", columnDefinition = "BIGINT")
     private Long seq;
 
-    // TODO: 2022-04-14  suid null 허용 안함으로 변경해야함.
     @Column(name="SUID", nullable = false, length = 18, columnDefinition = "VARCHAR(18)")
     private String suid;
 

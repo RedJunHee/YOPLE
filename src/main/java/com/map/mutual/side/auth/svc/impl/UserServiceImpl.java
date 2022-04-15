@@ -314,7 +314,7 @@ public class UserServiceImpl implements UserService {
         if(userWorldInvitingLogRepo.findOneByUserSuidAndTargetSuidAndWorldIdAndInvitingStatus(suid,targetSuid,worldId,"-").isPresent())
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_INVITING_STATUS);
 
-
+        // TODO: 2022-04-15  PUSH 알림 보내기 개발 되어야함. 
         // 3. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
         if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,targetSuid).isPresent() == true )
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);

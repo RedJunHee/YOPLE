@@ -112,6 +112,7 @@ public class UserController {
 
 
         }catch(YOPLEServiceException e){
+            logger.error("사용자 회원가입 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch (Exception e) {
             throw e;
@@ -134,6 +135,9 @@ public class UserController {
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        }catch(YOPLEServiceException e) {
+            logger.error("월드에 참여하기 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
+            throw e;
         }catch(Exception e)
         {
             logger.error("WorldController inviteJoinWorld Failed.!! : " + e.getMessage());
@@ -158,7 +162,7 @@ public class UserController {
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.USER_ID_OVERLAPS);
             }
         }catch (YOPLEServiceException e) {
-            logger.debug(e.getMessage());
+            logger.error("유저 ID 중복체크 실패 . : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }
 
@@ -190,7 +194,6 @@ public class UserController {
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);
         }catch (YOPLEServiceException e) {
-            logger.debug(e.getMessage());
             throw e;
         }catch(Exception e){
             logger.error(e.getMessage());
@@ -230,7 +233,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch (YOPLEServiceException e) {
-            logger.error(e.getMessage());
+            logger.error("월드 참여자 조회 실패 :" + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }
 
@@ -271,6 +274,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
+            logger.error("사용자 상세정보 조회 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
             throw e;
@@ -307,6 +311,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
+            logger.error("사용자 상세정보 수정 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
             throw e;
@@ -336,6 +341,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
+            logger.error("사용자 로그아웃 실패. : "+ e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
             throw e;
@@ -370,7 +376,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 사용자 초대하기 실패. : " + e.getMessage());
+            logger.error("월드 사용자 초대하기 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
             throw e;
@@ -402,6 +408,7 @@ public class UserController {
 
         }catch(YOPLEServiceException e)
         {
+            logger.error("사용자 알림 메시지 조회 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e)
         {

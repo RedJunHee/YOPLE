@@ -1,5 +1,6 @@
 package com.map.mutual.side.common.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -20,12 +21,13 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class AsyncConfig extends AsyncConfigurerSupport {
     @Override
+    @Bean(name = "FCMExecutor")
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(30);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("YOPLE-ASYNC-");
+        executor.setQueueCapacity(300);
+        executor.setThreadNamePrefix("FCM-ASYNC-");
         executor.initialize();
         return executor;
     }

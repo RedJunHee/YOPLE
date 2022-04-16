@@ -3,22 +3,28 @@ package com.map.mutual.side.common.fcmmsg.controller;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
-import com.map.mutual.side.common.fcmmsg.FCMConstant;
+import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * fileName       : FCMController
@@ -36,6 +42,9 @@ import java.util.Map;
 public class FCMController {
     @Autowired
     private FCMService fcmService;
+
+    @Autowired
+    private UserInfoRepo userInfoRepo;
 
     @PostMapping("/generateToken")
     public ResponseEntity<ResponseJsonObject> generateToken(@RequestParam String token) {
@@ -64,12 +73,35 @@ public class FCMController {
     }
 
 
-    @PostMapping("/sendNotification")
-    public void testTopic(@RequestParam String title,
-                          @RequestParam String body,
+    @PostMapping("/sendNotification/topic")
+    public void testTopic(@RequestParam FCMConstant.MSGType msgType,
                           @RequestParam String topic,
-                          @RequestParam Map<String, String> data) {
-        fcmService.sendNotificationTopic(title, body, data, topic);
+                          @RequestParam String userId,
+                          @RequestParam String worldName) {
+        Map<String, String> dumpdate = new HashMap<>();
+        dumpdate.put("dump", "dump");
+        fcmService.sendNotificationTopic(msgType, topic, userId, worldName, dumpdate);
+    }
+
+    @PostMapping("/sendNotification/token")
+    public void testToken(@RequestParam FCMConstant.MSGType msgType,
+                          @RequestParam String userId,
+                          @RequestParam String worldName) throws InterruptedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        String token = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
+        token = "d-fw6-17tkDokesl9fmT6q:APA91bGQUn4OT1b3reXhqEcdzb4UCRFdUkCadoxdWtsCTz9YOhMdlelQoss_Vnrl1GKEsuMB-AOPm9y_padkMaa8duVvKERddBfn_mDdP29VlV9sWUO27XvUkPX3636m7DBjQi-ynyEV";
+        Map<String, String> dumpdate = new HashMap<>();
+        dumpdate.put("dump", "dump");
+
+        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationToken(token, msgType, userId, worldName, dumpdate);
+        response.thenAccept(d -> {
+            if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
+                log.info(d.getDesc());
+            } else {
+                log.error(d.getDesc());
+            }
+        });
     }
 //
 //

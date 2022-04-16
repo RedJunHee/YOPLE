@@ -8,7 +8,7 @@ import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
-import com.map.mutual.side.common.fcmmsg.FCMConstant;
+import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
 import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
@@ -23,10 +23,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * fileName       : FCMService
@@ -61,13 +59,12 @@ public class FCMService {
         } else if (userEntity.getFcmToken().equals(FCMConstant.EXPIRED)) {
             registryFcmToken(userEntity, token);
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-        } else if (!userEntity.getFcmToken().equals(token)){
+        } else if (!userEntity.getFcmToken().equals(token)) {
             List<FcmTopicEntity> fcmTopicEntity = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
             fcmTopicRepository.deleteAll(fcmTopicEntity);
             registryFcmToken(userEntity, token);
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-        }
-        else
+        } else
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -124,38 +121,73 @@ public class FCMService {
         }
     }
 
-    @Async
-    public void sendNotificationToken(String title, String body, Map<String, String> data) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+    @Async(value = "FCMExecutor")
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String fcmToken, FCMConstant.MSGType msgType, String userId, String worldName, Map<String, String> msgData) {
+        String body = "";
+        switch (msgType) {
+            case A:
+                body = userId
+                        + "님이 "
+                        + worldName
+                        + "에 회원님을 초대하였습니다.";
+                break;
+            case C:
+                body = worldName
+                        + "에서"
+                        + userId
+                        + " 님이 내 리뷰에 반응을 남겼습니다.";
+                break;
+            default:
+                log.error("[FCM]잘못된 알림 타입 입니다.");
+                return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+        }
 
-        Notification notification = Notification.builder().setTitle(title).setBody(body).build();
+        Notification notification = Notification.builder()
+                .setTitle(FCMConstant.YOPLE)
+                .setBody(body)
+                .build();
 
-        String token = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
-
+        Message message = Message.builder()
+                .setToken(fcmToken)
+                .setNotification(notification)
+                .putAllData(msgData)
+                .build();
         try {
-            Message message = Message.builder()
-                    .setToken(token)
-                    .setNotification(notification)
-                    .putAllData(data)
-                    .build();
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
         } catch (FirebaseMessagingException e) {
-            throw new YOPLEServiceException(ApiStatusCode.SEND_FCM_NOTIFICATION_FAIL);
+            return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
         }
+        return CompletableFuture.completedFuture(FCMConstant.ResultType.SUCCESS);
     }
 
     @Async
-    public void sendNotificationTopic(String title, String body, Map<String, String> data, String topic) {
-        try {
-            Notification notification = Notification.builder().setTitle(title).setBody(body).build();
+    public void sendNotificationTopic(FCMConstant.MSGType msgType, String topic, String userId, String worldName, Map<String, String> msgData) {
+        String body;
+        switch (msgType) {
+            case B:
+                body = worldName
+                        + "에 "
+                        + userId
+                        + "님이 초대되었습니다.";
+                break;
+            default:
+                throw new YOPLEServiceException(ApiStatusCode.FCM_NOTIFICATION_TYPE_INVALID, "[FCM]잘못된 메세지 타입입니다.");
+        }
 
-            Message message = Message.builder()
-                    .setTopic(topic)
-                    .setNotification(notification)
-                    .putAllData(data)
-                    .build();
-            String response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
+        Notification notification = Notification.builder()
+                .setTitle(FCMConstant.YOPLE)
+                .setBody(body)
+                .build();
+
+        Message message = Message.builder()
+                .setTopic(topic)
+                .setNotification(notification)
+                .putAllData(msgData)
+                .build();
+
+        try {
+            FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
+
         } catch (FirebaseMessagingException e) {
             throw new YOPLEServiceException(ApiStatusCode.SEND_FCM_NOTIFICATION_FAIL);
         }

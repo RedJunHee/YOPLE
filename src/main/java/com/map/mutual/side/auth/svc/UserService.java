@@ -2,6 +2,7 @@ package com.map.mutual.side.auth.svc;
 
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
@@ -25,8 +26,8 @@ public interface UserService {
     UserInfoDto findUser(String id, String phone);
     List<UserInWorld> worldUsers(long worldId, String suid);
 
-    //2. 월드 초대 수락하기.
-    WorldDto inviteJoinWorld( String worldinvitationCode);
+    //2. 월드에 참여하기.
+    WorldDto JoinWorld( String worldinvitationCode);
     UserInfoDto userDetails(String suid);
     UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl);
     void userLogout(String suid);
@@ -35,6 +36,8 @@ public interface UserService {
     Long getRecentAccessWorldID(String suid);
 
     NotiDto notificationList(String suid);
+    
+    WorldDto inviteJoinWorld(WorldInviteAccept invited);
 
 
 }

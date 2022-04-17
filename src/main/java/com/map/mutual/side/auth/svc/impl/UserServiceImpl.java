@@ -2,6 +2,7 @@ package com.map.mutual.side.auth.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
@@ -37,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -161,7 +163,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public WorldDto inviteJoinWorld( String worldInvitationCode) throws YOPLEServiceException {
+    public WorldDto JoinWorld( String worldInvitationCode) throws YOPLEServiceException {
 
         // 1. 사용자 SUID 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -366,5 +368,44 @@ public class UserServiceImpl implements UserService {
                 build();
 
         return notis;
+    }
+
+    /**
+     * Description : 월드 초대에 응답하기.
+     * isAccept 여부에 따라 수락하기, 거절하기.
+     * Name        : inviteJoinWorld
+     * Author      : 조 준 희
+     * History     : [2022/04/17] - 조 준 희 - Create
+     */
+    @Override
+    public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) {
+
+        // 초대하기인지 수락하기인지 분기
+
+        Optional<UserWorldInvitingLogEntity> inviteLog = userWorldInvitingLogRepo.findById(invited.getInviteNumber());
+
+        //초대장이 존재하지 않는 경우.
+        inviteLog.orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.INVITE_NOT_VALID));
+        if(inviteLog.get().getSeq().equals(invited.getInviteNumber()) == false      //초대장 번호 유효성 체크
+         || inviteLog.get().getTargetSuid().equals(suid) == false                   // 초대대상 SUID 비교.
+         || inviteLog.get().getUserSuid().equals(invited.getUserSuid()) == false)   // 초대자 SUID 비교
+            throw new YOPLEServiceException(ApiStatusCode.INVITE_NOT_VALID);
+
+        //수락
+        // 1. 초대장 조회하기, 유효성 체크,
+        // 2. 월드 입장 처리
+        if(invited.getIsAccept().equals("Y")){
+
+
+
+        }else {
+        //거절
+        // 1. 초대장 거절처리.
+
+
+        }
+
+
+        return null;
     }
 }

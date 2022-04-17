@@ -32,6 +32,7 @@ public enum ApiStatusCode {
     ,ALREADY_WORLD_MEMEBER(431,"Already a member of the world.","이미 월드소속 입니다.",true)
     ,ALREADY_WORLD_INVITING_STATUS(433,"초대 수락 대기중.","이미 초대 수락 대기중입니다.",true)
     ,WORLD_USER_CDOE_VALID_FAILED (432, "WorldUserCode is not valid.", "월드 초대 코드 유효성 실패.", true)
+    ,INVITE_NOT_VALID(434,"Invite Not Valid.", "초대장이 유효하지 않습니다.", true)
     ,REGISTRY_FCM_TOPIC_FAIL (440, "Topic 추가를 실패했습니다.", "Topic 추가를 실패했습니다.", true)
     ,UNSUBSCRIPTION_FCM_TOPIC_FAIL (441, "Topic 제거를  실패했습니다.", "Topic 제거를 실패했습니다.", true)
     ,SEND_FCM_NOTIFICATION_FAIL (442, "FCM 알림 전송을 실패했습니다.", "FCM 알림 전송을 실패했습니다.", true)

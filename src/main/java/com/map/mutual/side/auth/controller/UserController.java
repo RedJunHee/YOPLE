@@ -1,10 +1,7 @@
 package com.map.mutual.side.auth.controller;
 
 
-import com.map.mutual.side.auth.model.dto.JwtTokenDto;
-import com.map.mutual.side.auth.model.dto.UserInWorld;
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.auth.model.dto.UserWorldInvitionDto;
+import com.map.mutual.side.auth.model.dto.*;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
@@ -129,7 +126,7 @@ public class UserController {
     public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6,message = "인증 코드는 6자리 입니다.") String worldinvitationCode){
         try{
 
-            WorldDto joinedWorld = userService.inviteJoinWorld( worldinvitationCode);
+            WorldDto joinedWorld = userService.JoinWorld( worldinvitationCode);
 
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinedWorld);
 
@@ -426,7 +423,24 @@ public class UserController {
      * History     : [2022/04/17] - 조 준 희 - Create
      */
     @PostMapping("/invite")
-    public ResponseEntity<ResponseJsonObject> inviteAccept(){
+    public ResponseEntity<ResponseJsonObject> inviteAccept(@RequestBody  @Valid WorldInviteAccept invited){
+
+        try {
+
+            // 1. 토큰에서 사용자 SUID 정보 조회
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto) authentication.getPrincipal();
+
+
+
+
+
+        }catch(YOPLEServiceException e) {
+            logger.error("월드 초대 응답하기 실패.! : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }
+
+
         return null;
     }
 

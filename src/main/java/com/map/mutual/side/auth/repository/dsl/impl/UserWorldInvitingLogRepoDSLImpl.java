@@ -48,8 +48,9 @@ public class UserWorldInvitingLogRepoDSLImpl implements UserWorldInvitingLogRepo
                         log.userSuid,
                         QUserEntity.userEntity.profileUrl,
                         QWorldEntity.worldEntity.worldName,
+                        log.seq,
                         log.userSuid,
-                       QWorldUserMappingEntity.worldUserMappingEntity.worldUserCode.nullif("------")
+                       QWorldUserMappingEntity.worldUserMappingEntity.worldUserCode.coalesce("------")
                         ))
                 .from(log)
                 .leftJoin(QUserEntity.userEntity)

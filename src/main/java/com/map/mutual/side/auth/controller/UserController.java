@@ -418,4 +418,16 @@ public class UserController {
 
     }
 
+
+    /**
+     * Description : 월드 초대 응답하기. isAccept여부에 따라 수락하는지 거절하는지 판단.
+     * Name        :
+     * Author      : 조 준 희
+     * History     : [2022/04/17] - 조 준 희 - Create
+     */
+    @PostMapping("/invite")
+    public ResponseEntity<ResponseJsonObject> inviteAccept(){
+        return null;
+    }
+
 }

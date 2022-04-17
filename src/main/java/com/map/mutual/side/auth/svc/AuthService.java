@@ -22,7 +22,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 public interface AuthService {
-    void sendMessageTest(String sendPhoneNum, String smsAuthNum) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, InvalidKeyException;
     void smsAuthNumSave(SMSAuthReqeustDto smsAuthReqeustDTO, String smsAuthNum);
     void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO);
     String makeAccessJWT(UserInfoDto user) throws Exception ;

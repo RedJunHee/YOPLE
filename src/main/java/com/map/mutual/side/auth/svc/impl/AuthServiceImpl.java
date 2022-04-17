@@ -1,6 +1,7 @@
 package com.map.mutual.side.auth.svc.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.map.mutual.side.auth.constant.SMSService;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
@@ -9,32 +10,20 @@ import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.JwtTokenProvider;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
-import com.map.mutual.side.auth.constant.SmsConstant;
 import com.map.mutual.side.auth.model.entity.SMSRequestLogEntity;
 import com.map.mutual.side.auth.model.dto.SMSAuthReqeustDto;
-//import com.map.mutual.side.auth.model.dto.MessageInfoDto;
-import com.map.mutual.side.auth.model.dto.SmsDto;
 import com.map.mutual.side.auth.repository.SMSLogRepo;
 import com.map.mutual.side.auth.svc.AuthService;
-import com.map.mutual.side.auth.utils.HttpSensClient;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
 
 /**
  * Class       : SmsServiceImpl
@@ -65,68 +54,10 @@ public class AuthServiceImpl implements AuthService {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.userInfoRepo = userInfoRepo;
         this.jwtRepo = jwtRepo;
-        this.modelMapper = modelMapper;
+        this.modelMapper = modelMapper;;
     }
 
 
-    public void sendMessageTest(String sendPhoneNum, String smsAuthNum) throws IOException {
-        int resultCode = 0;
-
-        String hostNameUrl = SmsConstant.SENS_HOST_URL;
-        String requestUrl= SmsConstant.SENS_REQUEST_URL;
-        String requestUrlType = SmsConstant.SENS_REQUEST_TYPE;
-        String sensAccessKey = SmsConstant.SENS_ACCESSKEY;
-        String serviceId = SmsConstant.SENS_SVC_ID;
-
-        String sensApiUrl = requestUrl + serviceId + requestUrlType;
-        String timeStamp = Long.toString(System.currentTimeMillis());
-        String apiUrl = hostNameUrl + sensApiUrl;
-
-        SmsDto smsDto  = SmsDto.builder()
-                .type(SmsConstant.SENS_MESSAGE_TYPE_SMS)
-                .contentType(SmsConstant.SENS_MESSAGE_CONTENTTPYE_COMM)
-                .countryCode(SmsConstant.SENS_MESSAGE_COUNTRYCODE_DEFAULT)
-                .from("01055967356")
-//                .subject("SMS")
-                .content("[인증]")
-//                .content("기본 콘텐츠" + Integer.toString(RandomUtils.nextInt(10000, 100000)))
-                .messages(Collections
-                        .singletonList(SmsDto.MessageInfoDto.builder()
-                                .to(sendPhoneNum)
-                                .content("인증번호를 입력하세요 [" + smsAuthNum + "]")
-                                .build()))
-                .build();
-
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        String jsonStr = mapper.writeValueAsString(smsDto);
-
-
-
-        StringEntity stringEntity = new StringEntity(jsonStr, "UTF-8");
-
-        try{
-            HttpClient httpClient = HttpSensClient.getHttpClientInsecure();
-            HttpPost httpPost = new HttpPost(apiUrl);
-            httpPost.setHeader("Accept", "application/json");
-            httpPost.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpPost.addHeader("Connection", "keep-alive");
-            httpPost.addHeader("x-ncp-apigw-timestamp", timeStamp);
-            httpPost.addHeader("x-ncp-iam-access-key", sensAccessKey);
-            httpPost.addHeader("x-ncp-apigw-signature-v2", HttpSensClient.makeSignature(timeStamp, sensApiUrl));
-
-
-            httpPost.setEntity(stringEntity);
-
-            HttpResponse httpResponse = httpClient.execute(httpPost);
-            resultCode = httpResponse.getStatusLine().getStatusCode();
-
-        } catch (Exception e) {
-            log.error("Error : {}", e.getMessage());
-        }
-        log.info(resultCode);
-    }
 
     @Override
     public void smsAuthNumSave(SMSAuthReqeustDto smsAuthReqeustDTO, String smsAuthNum) {

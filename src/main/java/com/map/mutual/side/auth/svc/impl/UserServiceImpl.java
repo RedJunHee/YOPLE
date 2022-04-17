@@ -1,5 +1,7 @@
 package com.map.mutual.side.auth.svc.impl;
 
+import com.google.protobuf.Api;
+import com.map.mutual.side.auth.constant.SMSService;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
@@ -36,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -63,12 +66,14 @@ public class UserServiceImpl implements UserService {
     private JWTRepo jwtRepo;
     private UserWorldInvitingLogRepo userWorldInvitingLogRepo;
     private UserTOSRepo userTOSRepo;
+    private SMSService smsService;
 
     @Autowired
     public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo
             , ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo
             , UserWorldInvitingLogRepo userWorldInvitingLogRepo
-            , UserTOSRepo userTOSRepo) {
+            , UserTOSRepo userTOSRepo
+    ,SMSService smsService) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
@@ -76,6 +81,7 @@ public class UserServiceImpl implements UserService {
         this.jwtRepo = jwtRepo;
         this.userWorldInvitingLogRepo = userWorldInvitingLogRepo;
         this.userTOSRepo = userTOSRepo;
+        this.smsService = smsService;
     }
 
     /**
@@ -331,6 +337,35 @@ public class UserServiceImpl implements UserService {
 
         // 월드에 참여.
         userWorldInvitingLogRepo.save(userWorldInvitingLogEntity);
+
+    }
+
+    /**
+     * Description : 미 가입 사용자 YOPLE 월드 초대하기 문자.
+     * - 월드에 가입되어있지 않은 유저가 월드 초대 시 권한 없음.
+     * Name        : unSignedUserWorldInviting
+     * Author      : 조 준 희
+     * History     : [2022/04/17] - 조 준 희 - Create
+     */
+    @Override
+    public void unSignedUserWorldInviting(String suid, String targetPhone, Long worldId) throws YOPLEServiceException {
+
+
+        /// 초대자 정보 가져오기.
+        Optional<WorldUserMappingEntity> worldMapping = worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,suid);
+
+        //월드에 가입되어있지 않은 유저인 경우 권한 없음.
+        worldMapping.orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
+
+        String userID = worldMapping.get().getUserEntity().getUserId();
+        String phone = worldMapping.get().getUserEntity().getPhone();
+        String worldUserCode = worldMapping.get().getWorldUserCode();
+
+        try {
+            smsService.inviteSendMessage(targetPhone, phone, worldUserCode);
+        }catch(IOException e){
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR,"SMS 서비스가 원활하지 않습니다.");
+        }
 
     }
 

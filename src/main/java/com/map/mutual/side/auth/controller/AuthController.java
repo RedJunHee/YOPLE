@@ -1,5 +1,6 @@
 package com.map.mutual.side.auth.controller;
 
+import com.map.mutual.side.auth.constant.SMSService;
 import com.map.mutual.side.auth.model.dto.JwtTokenDto;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
@@ -55,14 +56,20 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private CryptUtils cryptUtils;
     private ModelMapper modelMapper;
+    private SMSService smsService;
 
     @Autowired
-    public AuthController(AuthService authService, JwtTokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, CryptUtils cryptUtils, ModelMapper modelMapper) {
+    public AuthController(AuthService authService,
+                          JwtTokenProvider tokenProvider,
+                          AuthenticationManagerBuilder authenticationManagerBuilder,
+                          CryptUtils cryptUtils, ModelMapper modelMapper,
+                          SMSService smsService) {
         this.authService = authService;
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.cryptUtils = cryptUtils;
         this.modelMapper = modelMapper;
+        this.smsService = smsService;
     }
 
     /**
@@ -83,7 +90,7 @@ public class AuthController {
 
             // 2. 핸드폰 번호 인증 요청
 
-            authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+            smsService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);

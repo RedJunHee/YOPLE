@@ -7,6 +7,7 @@ import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.svc.AuthService;
 import com.map.mutual.side.auth.svc.UserService;
+import com.map.mutual.side.common.config.BeanConfig;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -150,7 +151,7 @@ public class UserController {
      */
     @GetMapping("/check-userid")
     public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") @Valid
-                                                              @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}", message = "ID가 올바르지 않습니다.") String userId) {
+                                                              @Pattern(regexp = BeanConfig.userIdRegexp, message = "ID가 올바르지 않습니다.") String userId) {
         ResponseJsonObject response;
         try{
             if(userInfoRepo.findByUserId(userId) == null) {
@@ -173,9 +174,9 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/find-user")
-    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam(required = false) @Valid     @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}",
+    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam(required = false) @Valid     @Pattern(regexp = BeanConfig.userIdRegexp,
                                                                             message = "ID가 올바르지 않습니다.")  String userId,
-                                                                  @RequestParam(required = false) @Valid @Pattern(regexp = "^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$",
+                                                                  @RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.phoneRegexp,
                                                                           message = "핸드폰 번호가 올바르지 않습니다.") String phone) {
         ResponseJsonObject response;
         try{
@@ -285,7 +286,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PatchMapping("/user")
-    public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam(required = false) @Valid @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}",
+    public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.userIdRegexp,
                                                                         message = "ID가 올바르지 않습니다.") String userId,
                                                              @RequestParam(required = false) String profileUrl){
 
@@ -356,7 +357,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/user/world")
-    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody UserWorldInvitionDto userWorldInvitionDto) {
+    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody @Valid UserWorldInvitionDto userWorldInvitionDto) {
 
         ResponseJsonObject responseJsonObject;
 
@@ -366,7 +367,17 @@ public class UserController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
-            userService.userWorldInviting(userToken.getSuid(),userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
+            // SUID로 초대하기 요청 온 경우. => 회원 유저임.
+            if( StringUtil.isNullOrEmpty( userWorldInvitionDto.getTargetSuid()) == false )
+                userService.userWorldInviting(userToken.getSuid(),userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
+
+            else if(StringUtil.isNullOrEmpty(userWorldInvitionDto.getPhone()) == false ){
+                // TODO: 2022/04/17   유저의 핸드폰 번호 or ID 핸드폰 번호로 일단 개발진행
+                userService.unSignedUserWorldInviting(userToken.getSuid(),userWorldInvitionDto.getPhone(),userWorldInvitionDto.getWorldId());
+            }else{
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR,"월드 초대 실패.");
+
+            }
 
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 

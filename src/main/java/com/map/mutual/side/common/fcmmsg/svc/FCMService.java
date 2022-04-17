@@ -160,7 +160,7 @@ public class FCMService {
         return CompletableFuture.completedFuture(FCMConstant.ResultType.SUCCESS);
     }
 
-    @Async
+    @Async(value = "FCMExecutor")
     public void sendNotificationTopic(FCMConstant.MSGType msgType, String topic, String userId, String worldName, Map<String, String> msgData) {
         String body;
         switch (msgType) {

@@ -24,6 +24,10 @@ import java.time.format.DateTimeFormatter;
  */
 @Configuration
 public class BeanConfig {
+
+    public static final String phoneRegexp = "^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$";
+    public static final String userIdRegexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}";
+
     @Bean  // 어떤 암호화방식 사용할 것인지 빈 등록
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(); // 기본은  BCryptPasswordEncoder 방식

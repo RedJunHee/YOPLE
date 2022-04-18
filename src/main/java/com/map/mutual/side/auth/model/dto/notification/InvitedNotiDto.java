@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 public class InvitedNotiDto extends notificationDto {
 
     @QueryProjection
-    public InvitedNotiDto(LocalDateTime notiDate,  String userId, String userProfileUrl, String worldName, String userSuid, String worldUserCode ) {
+    public InvitedNotiDto(LocalDateTime notiDate,  String userId, String userProfileUrl, String worldName, Long inviteNumber, String userSuid, String worldUserCode ) {
         super("A"); // A 타입 알림.
         header.SetNotiDate(notiDate);
         payload = new Payload(userId,userProfileUrl,worldName);
-        data = new Data(userSuid,worldUserCode);
+        data = new Data(inviteNumber,userSuid,worldUserCode);
     }
 
     @Getter
@@ -37,10 +37,12 @@ public class InvitedNotiDto extends notificationDto {
 
     @Getter
     private static class Data{
+        private Long inviteNumber;
         private String userSuid;
         private String worldUserCode;
 
-        public Data(String userSuid, String worldUserCode) {
+        public Data(Long inviteNumber, String userSuid, String worldUserCode) {
+            this.inviteNumber = inviteNumber;
             this.userSuid = userSuid;
             this.worldUserCode = worldUserCode;
         }

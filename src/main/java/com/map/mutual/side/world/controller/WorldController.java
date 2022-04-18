@@ -142,7 +142,6 @@ public class WorldController {
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
      */
-    // TODO: 2022/04/12  정규식 확인.
     @GetMapping(value = "/user/worlds")
     public ResponseEntity<ResponseJsonObject> activityWorlds(@RequestParam(value = "isDetails", required = false, defaultValue = "N") @Valid @Pattern(regexp = "Y|N") String isDetails){
         try{

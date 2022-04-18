@@ -1,15 +1,13 @@
 package com.map.mutual.side.auth.controller;
 
 
-import com.map.mutual.side.auth.model.dto.JwtTokenDto;
-import com.map.mutual.side.auth.model.dto.UserInWorld;
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.auth.model.dto.UserWorldInvitionDto;
+import com.map.mutual.side.auth.model.dto.*;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.svc.AuthService;
 import com.map.mutual.side.auth.svc.UserService;
+import com.map.mutual.side.common.config.BeanConfig;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -112,6 +110,7 @@ public class UserController {
 
 
         }catch(YOPLEServiceException e){
+            logger.error("사용자 회원가입 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch (Exception e) {
             throw e;
@@ -128,12 +127,15 @@ public class UserController {
     public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6,message = "인증 코드는 6자리 입니다.") String worldinvitationCode){
         try{
 
-            WorldDto joinedWorld = userService.inviteJoinWorld( worldinvitationCode);
+            WorldDto joinedWorld = userService.JoinWorld( worldinvitationCode);
 
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinedWorld);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        }catch(YOPLEServiceException e) {
+            logger.error("월드에 참여하기 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
+            throw e;
         }catch(Exception e)
         {
             logger.error("WorldController inviteJoinWorld Failed.!! : " + e.getMessage());
@@ -149,7 +151,7 @@ public class UserController {
      */
     @GetMapping("/check-userid")
     public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") @Valid
-                                                              @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}", message = "ID가 올바르지 않습니다.") String userId) {
+                                                              @Pattern(regexp = BeanConfig.userIdRegexp, message = "ID가 올바르지 않습니다.") String userId) {
         ResponseJsonObject response;
         try{
             if(userInfoRepo.findByUserId(userId) == null) {
@@ -158,7 +160,7 @@ public class UserController {
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.USER_ID_OVERLAPS);
             }
         }catch (YOPLEServiceException e) {
-            logger.debug(e.getMessage());
+            logger.error("유저 ID 중복체크 실패 . : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }
 
@@ -172,9 +174,9 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/find-user")
-    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam(required = false) @Valid     @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}",
+    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam(required = false) @Valid     @Pattern(regexp = BeanConfig.userIdRegexp,
                                                                             message = "ID가 올바르지 않습니다.")  String userId,
-                                                                  @RequestParam(required = false) @Valid @Pattern(regexp = "^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$",
+                                                                  @RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.phoneRegexp,
                                                                           message = "핸드폰 번호가 올바르지 않습니다.") String phone) {
         ResponseJsonObject response;
         try{
@@ -190,7 +192,6 @@ public class UserController {
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);
         }catch (YOPLEServiceException e) {
-            logger.debug(e.getMessage());
             throw e;
         }catch(Exception e){
             logger.error(e.getMessage());
@@ -230,7 +231,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch (YOPLEServiceException e) {
-            logger.error(e.getMessage());
+            logger.error("월드 참여자 조회 실패 :" + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }
 
@@ -271,6 +272,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
+            logger.error("사용자 상세정보 조회 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
             throw e;
@@ -284,7 +286,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PatchMapping("/user")
-    public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam(required = false) @Valid @Pattern(regexp = "(?=.*[-_A-Za-z0-9])(?=.*[^-_]).{4,20}",
+    public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.userIdRegexp,
                                                                         message = "ID가 올바르지 않습니다.") String userId,
                                                              @RequestParam(required = false) String profileUrl){
 
@@ -307,6 +309,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
+            logger.error("사용자 상세정보 수정 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
             throw e;
@@ -336,6 +339,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
+            logger.error("사용자 로그아웃 실패. : "+ e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
             throw e;
@@ -353,7 +357,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/user/world")
-    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody UserWorldInvitionDto userWorldInvitionDto) {
+    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody @Valid UserWorldInvitionDto userWorldInvitionDto) {
 
         ResponseJsonObject responseJsonObject;
 
@@ -363,14 +367,24 @@ public class UserController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
-            userService.userWorldInviting(userToken.getSuid(),userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
+            // SUID로 초대하기 요청 온 경우. => 회원 유저임.
+            if( StringUtil.isNullOrEmpty( userWorldInvitionDto.getTargetSuid()) == false )
+                userService.userWorldInviting(userToken.getSuid(),userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
+
+            else if(StringUtil.isNullOrEmpty(userWorldInvitionDto.getPhone()) == false ){
+                // TODO: 2022/04/17   유저의 핸드폰 번호 or ID 핸드폰 번호로 일단 개발진행
+                userService.unSignedUserWorldInviting(userToken.getSuid(),userWorldInvitionDto.getPhone(),userWorldInvitionDto.getWorldId());
+            }else{
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR,"월드 초대 실패.");
+
+            }
 
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 사용자 초대하기 실패. : " + e.getMessage());
+            logger.error("월드 사용자 초대하기 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
             throw e;
@@ -402,6 +416,7 @@ public class UserController {
 
         }catch(YOPLEServiceException e)
         {
+            logger.error("사용자 알림 메시지 조회 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e)
         {
@@ -409,6 +424,35 @@ public class UserController {
             throw e;
         }
 
+    }
+
+
+    /**
+     * Description : 월드 초대 응답하기. isAccept여부에 따라 수락하는지 거절하는지 판단.
+     * Name        :
+     * Author      : 조 준 희
+     * History     : [2022/04/17] - 조 준 희 - Create
+     */
+    @PostMapping("/invite")
+    public ResponseEntity<ResponseJsonObject> inviteAccept(@RequestBody  @Valid WorldInviteAccept invited){
+
+        try {
+
+            // 1. 토큰에서 사용자 SUID 정보 조회
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto) authentication.getPrincipal();
+
+
+
+
+
+        }catch(YOPLEServiceException e) {
+            logger.error("월드 초대 응답하기 실패.! : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }
+
+
+        return null;
     }
 
 }

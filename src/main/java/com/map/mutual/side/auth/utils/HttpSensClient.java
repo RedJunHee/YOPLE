@@ -13,7 +13,7 @@ package com.map.mutual.side.auth.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.map.mutual.side.auth.constant.SmsConstant;
+import com.map.mutual.side.auth.constant.SMSService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -46,9 +46,9 @@ public class HttpSensClient {
         String space = " ";
         String newLine = "\n";
         String method = "POST";
-        String serviceId = SmsConstant.SENS_SVC_ID;
-        String sensAccessKey = SmsConstant.SENS_ACCESSKEY;
-        String sensSecretKey = SmsConstant.SENS_SECRETKEY;
+        String serviceId = SMSService.SENS_SVC_ID;
+        String sensAccessKey = SMSService.SENS_ACCESSKEY;
+        String sensSecretKey = SMSService.SENS_SECRETKEY;
 
         String message = new StringBuilder()
                 .append(method)

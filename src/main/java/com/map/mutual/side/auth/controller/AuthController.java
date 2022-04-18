@@ -1,5 +1,6 @@
 package com.map.mutual.side.auth.controller;
 
+import com.map.mutual.side.auth.constant.SMSService;
 import com.map.mutual.side.auth.model.dto.JwtTokenDto;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
@@ -13,6 +14,7 @@ import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.auth.model.dto.SMSAuthReqeustDto;
 import com.map.mutual.side.auth.svc.AuthService;
+import org.jetbrains.annotations.TestOnly;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,14 +56,20 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private CryptUtils cryptUtils;
     private ModelMapper modelMapper;
+    private SMSService smsService;
 
     @Autowired
-    public AuthController(AuthService authService, JwtTokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, CryptUtils cryptUtils, ModelMapper modelMapper) {
+    public AuthController(AuthService authService,
+                          JwtTokenProvider tokenProvider,
+                          AuthenticationManagerBuilder authenticationManagerBuilder,
+                          CryptUtils cryptUtils, ModelMapper modelMapper,
+                          SMSService smsService) {
         this.authService = authService;
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.cryptUtils = cryptUtils;
         this.modelMapper = modelMapper;
+        this.smsService = smsService;
     }
 
     /**
@@ -81,7 +89,8 @@ public class AuthController {
             String smsAuthNum = YOPLEUtils.getSMSAuth();
 
             // 2. 핸드폰 번호 인증 요청
-            authService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+
+            smsService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);

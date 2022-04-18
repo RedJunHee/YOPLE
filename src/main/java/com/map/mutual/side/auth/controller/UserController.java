@@ -444,8 +444,6 @@ public class UserController {
 
 
 
-
-
         }catch(YOPLEServiceException e) {
             logger.error("월드 초대 응답하기 실패.! : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;

@@ -30,4 +30,7 @@ public class UserWorldInvitingLogEntity extends TimeEntity {
     @Column(name = "INVITING_STATUS",nullable = false, columnDefinition = "CHAR(1)" )
     @ColumnDefault("'-'")
     private String invitingStatus;
+
+    @Column(name = "WORLD_USER_CODE", nullable = false, columnDefinition = "CHAR(6)")
+    private String worldUserCode;
 }

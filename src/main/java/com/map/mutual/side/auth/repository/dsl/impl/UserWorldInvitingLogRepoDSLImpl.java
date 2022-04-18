@@ -45,21 +45,18 @@ public class UserWorldInvitingLogRepoDSLImpl implements UserWorldInvitingLogRepo
         QUserWorldInvitingLogEntity log = new QUserWorldInvitingLogEntity("log");
 
         List<InvitedNotiDto> notis = jpaQueryFactory.select( new QInvitedNotiDto(log.createTime,
-                        log.userSuid,
+                        QUserEntity.userEntity.userId,
                         QUserEntity.userEntity.profileUrl,
                         QWorldEntity.worldEntity.worldName,
                         log.seq,
                         log.userSuid,
-                       QWorldUserMappingEntity.worldUserMappingEntity.worldUserCode.coalesce("------")
+                        log.worldUserCode
                         ))
                 .from(log)
                 .leftJoin(QUserEntity.userEntity)
                 .on(log.userSuid.eq(QUserEntity.userEntity.suid))
                 .leftJoin(QWorldEntity.worldEntity)
                 .on(log.worldId.eq(QWorldEntity.worldEntity.worldId))
-                .leftJoin(QWorldUserMappingEntity.worldUserMappingEntity)
-                .on(QWorldUserMappingEntity.worldUserMappingEntity.userSuid.eq(log.userSuid)
-                        .and(QWorldUserMappingEntity.worldUserMappingEntity.worldId.eq(log.worldId)))
                 .where(log.createTime.between(LocalDateTime.now().minusWeeks(7), LocalDateTime.now())
                         .and(log.targetSuid.eq(suid)).and(log.targetSuid.eq(suid)).and(log.invitingStatus.eq("-")))
                 .orderBy(log.createTime.desc())

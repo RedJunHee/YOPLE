@@ -333,6 +333,7 @@ public class UserServiceImpl implements UserService {
                 .userSuid(suid)
                 .worldId(worldId)
                 .invitingStatus("-")
+                .worldUserCode(suidWorldMapping.getWorldUserCode())
                 .build();
 
         // 월드에 참여.

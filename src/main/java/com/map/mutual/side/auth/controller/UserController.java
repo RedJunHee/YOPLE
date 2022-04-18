@@ -435,7 +435,7 @@ public class UserController {
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
-    @PostMapping("/inviteAccept")
+    @PostMapping("/invite-accept")
     public ResponseEntity<ResponseJsonObject> inviteAccept(@RequestBody  @Valid WorldInviteAccept invited){
         try {
 

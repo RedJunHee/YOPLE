@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class AuthControllerTest extends AbstractControllerTest {
+public static final Boolean isTest = true;
 
     @Autowired
     public AuthController authController;
@@ -28,6 +29,7 @@ class AuthControllerTest extends AbstractControllerTest {
 
         String body = "{\"phone\":\"010123412834\",\"duid\":\"test_duid\" }";
 
+        if(isTest == false)
             mockMvc.perform(post("/auth/sms-authentication-request")
                             .content(body).contentType(this.contentType))
                     .andExpect(status().isOk())
@@ -42,10 +44,11 @@ class AuthControllerTest extends AbstractControllerTest {
 
         String body = "{\"phone\":\"010123834\",\"duid\":\"test_duid\" }";
 
-        mockMvc.perform(post("/auth/sms-authentication-request")
-                        .content(body).contentType(this.contentType))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.meta.code",is(400)));
+        if(isTest == false)
+            mockMvc.perform(post("/auth/sms-authentication-request")
+                            .content(body).contentType(this.contentType))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.meta.code",is(400)));
 
     }
 
@@ -55,7 +58,7 @@ class AuthControllerTest extends AbstractControllerTest {
     public void sms인증번호요청_폰번호_문자포함() throws Exception {
 
         String body = "{\"phone\":\"010ㅁㅇㅉㄸ1234\",\"duid\":\"test_duid\" }";
-
+        if(isTest == false)
         mockMvc.perform(post("/auth/sms-authentication-request")
                         .content(body).contentType(this.contentType))
                 .andExpect(status().isOk())
@@ -69,7 +72,7 @@ class AuthControllerTest extends AbstractControllerTest {
     public void sms인증번호요청_폰번호_010시작안함() throws Exception {
 
         String body = "{\"phone\":\"01312341283\",\"duid\":\"test_duid\" }";
-
+        if(isTest == false)
         mockMvc.perform(post("/auth/sms-authentication-request")
                         .content(body).contentType(this.contentType))
                 .andExpect(status().isOk())
@@ -83,7 +86,7 @@ class AuthControllerTest extends AbstractControllerTest {
     public void sms인증번호요청_정상() throws Exception {
 
         String body = "{\"phone\":\"01027090787\",\"duid\":\"test_duid\" }";
-
+        if(isTest == false)
         mockMvc.perform(post("/auth/sms-authentication-request")
                         .content(body).contentType(this.contentType))
                 .andExpect(status().isOk())

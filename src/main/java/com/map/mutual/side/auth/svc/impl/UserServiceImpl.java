@@ -409,11 +409,16 @@ public class UserServiceImpl implements UserService {
     /**
      * Description : 월드 초대에 응답하기.
      * isAccept 여부에 따라 수락하기, 거절하기.
+     * 수락하기 인 경우 입장 월드 정보 리턴.
+     * 거절하기 인 경우 월드 ID 0 리턴.
+     *      *  - 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED
+     *      *  - 사용자 이미 월드에 가입되어있으면 ALREADY_WORLD_MEMEBER
      * Name        : inviteJoinWorld
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
     @Override
+    @Transactional
     public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) {
 
         // 초대하기인지 수락하기인지 분기
@@ -422,26 +427,31 @@ public class UserServiceImpl implements UserService {
 
         //초대장이 존재하지 않는 경우.
         inviteLog.orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.INVITE_NOT_VALID));
-        if(inviteLog.get().getSeq().equals(invited.getInviteNumber()) == false      //초대장 번호 유효성 체크
+
+        if(inviteLog.get().getSeq().equals(invited.getInviteNumber()) == false      // 초대장 번호 유효성 체크
          || inviteLog.get().getTargetSuid().equals(suid) == false                   // 초대대상 SUID 비교.
-         || inviteLog.get().getUserSuid().equals(invited.getUserSuid()) == false)   // 초대자 SUID 비교
+         || inviteLog.get().getUserSuid().equals(invited.getUserSuid()) == false // 초대자 SUID 비교
+                || inviteLog.get().getWorldUserCode().equals(invited.getWorldUserCode()) == false) {  // 월드 초대 코드 비교.
             throw new YOPLEServiceException(ApiStatusCode.INVITE_NOT_VALID);
+        }
 
         //수락
         // 1. 초대장 조회하기, 유효성 체크,
         // 2. 월드 입장 처리
         if(invited.getIsAccept().equals("Y")){
+            inviteLog.get().inviteAccept();
+            userWorldInvitingLogRepo.save(inviteLog.get());
 
-
+            //월드에 참여하기 서비스 사용
+            return JoinWorld(invited.getWorldUserCode());
 
         }else {
         //거절
         // 1. 초대장 거절처리.
-
-
+            inviteLog.get().inviteReject();
+            userWorldInvitingLogRepo.save(inviteLog.get());
+            return WorldDto.builder().worldId(0L).build();
         }
 
-
-        return null;
     }
 }

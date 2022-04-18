@@ -429,20 +429,39 @@ public class UserController {
 
     /**
      * Description : 월드 초대 응답하기. isAccept여부에 따라 수락하는지 거절하는지 판단.
-     * Name        :
+     *      *      *  - 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED
+     *      *      *  - 사용자 이미 월드에 가입되어있으면 ALREADY_WORLD_MEMEBER
+     * Name        : inviteAccept
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
-    @PostMapping("/invite")
+    @PostMapping("/inviteAccept")
     public ResponseEntity<ResponseJsonObject> inviteAccept(@RequestBody  @Valid WorldInviteAccept invited){
-
         try {
 
             // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto) authentication.getPrincipal();
 
+            // 2. 월드 초대 응답하기 서비스
+            WorldDto joinWorld = userService.inviteJoinWorld(invited, userToken.getSuid());
 
+            // 3. 리턴 객체 생성
+            ResponseJsonObject response;
+
+            //거절하기 성공인 경우
+            if(joinWorld.getWorldId().equals(0L))
+            {
+                response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            }else if(joinWorld != null)
+            {
+                // 월드 수락하기 성공인 경우
+                response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinWorld);
+            }else{
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR, "월드 초대 응답하기 실패.!");
+            }
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e) {
             logger.error("월드 초대 응답하기 실패.! : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
@@ -450,7 +469,6 @@ public class UserController {
         }
 
 
-        return null;
     }
 
 }

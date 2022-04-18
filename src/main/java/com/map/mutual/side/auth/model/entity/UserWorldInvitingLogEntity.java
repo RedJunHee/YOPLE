@@ -33,4 +33,14 @@ public class UserWorldInvitingLogEntity extends TimeEntity {
 
     @Column(name = "WORLD_USER_CODE", nullable = false, columnDefinition = "CHAR(6)")
     private String worldUserCode;
+
+    public void inviteAccept()
+    {
+        invitingStatus = "Y";
+    }
+
+    public void inviteReject()
+    {
+        invitingStatus = "N";
+    }
 }

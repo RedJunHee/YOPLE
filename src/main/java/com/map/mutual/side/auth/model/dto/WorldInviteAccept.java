@@ -1,15 +1,11 @@
 package com.map.mutual.side.auth.model.dto;
 
 
-import com.sun.tracing.dtrace.ArgsAttributes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 /**
  * Description : 월드 초대 응답하기.
@@ -23,8 +19,8 @@ import javax.validation.constraints.Size;
 @Builder
 public class WorldInviteAccept {
     //초대장 고유 번호.
-    @NotBlank
-    @Size(min = 1)
+    @NotNull
+    @Min(value = 1)
     private Long inviteNumber;
 
     @NotBlank

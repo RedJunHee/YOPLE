@@ -99,6 +99,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE,"/user/user/**").authenticated()  // 사용자 로그아웃
                 .antMatchers(HttpMethod.POST,"/user/user/world/**").authenticated()  // 월드에 사용자 초대하기.
                 .antMatchers(HttpMethod.GET,"/user/notification/**").authenticated()  // 사용자 알림 조회하기.
+                .antMatchers(HttpMethod.GET,"/user/inviteAccept/**").authenticated()  // 월드 초대 응답하기.
 
                 // world
                 .antMatchers(HttpMethod.POST,"/world/world/**").authenticated() // 월드 생성하기.

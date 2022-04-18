@@ -431,11 +431,11 @@ public class UserController {
      * Description : 월드 초대 응답하기. isAccept여부에 따라 수락하는지 거절하는지 판단.
      *      *      *  - 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED
      *      *      *  - 사용자 이미 월드에 가입되어있으면 ALREADY_WORLD_MEMEBER
-     * Name        : inviteAccept
+     * Name        : invite-response
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
-    @PostMapping("/invite-accept")
+    @PostMapping("/invite-response")
     public ResponseEntity<ResponseJsonObject> inviteAccept(@RequestBody  @Valid WorldInviteAccept invited){
         try {
 

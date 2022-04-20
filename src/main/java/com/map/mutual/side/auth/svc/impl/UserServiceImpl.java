@@ -17,6 +17,8 @@ import com.map.mutual.side.auth.repository.JWTRepo;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.repository.UserTOSRepo;
 import com.map.mutual.side.auth.repository.UserWorldInvitingLogRepo;
+import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
+import com.map.mutual.side.world.repository.WorldJoinLogRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
@@ -63,6 +65,7 @@ public class UserServiceImpl implements UserService {
     private UserInfoRepo userInfoRepo;
     private ModelMapper modelMapper;
     private WorldRepo worldRepo;
+    private WorldJoinLogRepo worldJoinLogRepo;
     private JWTRepo jwtRepo;
     private UserWorldInvitingLogRepo userWorldInvitingLogRepo;
     private UserTOSRepo userTOSRepo;
@@ -73,7 +76,7 @@ public class UserServiceImpl implements UserService {
             , ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo
             , UserWorldInvitingLogRepo userWorldInvitingLogRepo
             , UserTOSRepo userTOSRepo
-    ,SMSService smsService) {
+    ,SMSService smsService, WorldJoinLogRepo worldJoinLogRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
@@ -82,6 +85,7 @@ public class UserServiceImpl implements UserService {
         this.userWorldInvitingLogRepo = userWorldInvitingLogRepo;
         this.userTOSRepo = userTOSRepo;
         this.smsService = smsService;
+        this.worldJoinLogRepo = worldJoinLogRepo;
     }
 
     /**
@@ -168,16 +172,16 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public WorldDto JoinWorld( String worldInvitationCode) throws YOPLEServiceException {
+        @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+        public WorldDto JoinWorld( String worldInvitationCode) throws YOPLEServiceException {
 
-        // 1. 사용자 SUID 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+            // 1. 사용자 SUID 가져오기
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-        // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
-        // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
-        Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
+            // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
+            // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
+            Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
 
         if (inviteWorldId == null) {
             logger.error("해당 사용자가 이미 월드에 속해있습니다.");
@@ -193,7 +197,12 @@ public class UserServiceImpl implements UserService {
                 .accessTime(LocalDateTime.now())
                 .build();
 
+        WorldJoinLogEntity worldJoinLog = WorldJoinLogEntity.builder().worldId(inviteWorldId)
+                        .userSuid(userInfoDto.getSuid())
+                                .build();
+
         worldUserMappingRepo.save(worldUserMappingEntity);
+        worldJoinLogRepo.save(worldJoinLog);
 
         // 4. 참여한 월드 정보 조회
         WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
@@ -428,8 +437,7 @@ public class UserServiceImpl implements UserService {
         //초대장이 존재하지 않는 경우.
         inviteLog.orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.INVITE_NOT_VALID));
 
-        if(inviteLog.get().getSeq().equals(invited.getInviteNumber()) == false      // 초대장 번호 유효성 체크
-         || inviteLog.get().getTargetSuid().equals(suid) == false                   // 초대대상 SUID 비교.
+        if(inviteLog.get().getTargetSuid().equals(suid) == false                   // 초대대상 SUID 비교.
          || inviteLog.get().getUserSuid().equals(invited.getUserSuid()) == false // 초대자 SUID 비교
                 || inviteLog.get().getWorldUserCode().equals(invited.getWorldUserCode()) == false) {  // 월드 초대 코드 비교.
             throw new YOPLEServiceException(ApiStatusCode.INVITE_NOT_VALID);

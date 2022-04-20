@@ -301,12 +301,12 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 // 사용자가 참여하고있는 월드와 참여 날짜를 가져옴.
                 "INSERT INTO #MY_WORLD \n"+
                 "SELECT WORLD_ID, CREATE_DT \n" +
-                "    FROM WORLD_USER_MAPPING  \n" +
+                "    FROM WORLD_JOIN_LOG  \n" +
                 "  WHERE USER_SUID = ? \n" +
 
                 "SELECT u.[USER_ID],u.PROFILE_URL,w.NAME, other.CREATE_DT \n" +
                 "  FROM #MY_WORLD as my \n" +
-                " INNER JOIN WORLD_USER_MAPPING as other \n" +
+                " INNER JOIN WORLD_JOIN_LOG as other \n" +
                 "    ON other.CREATE_DT > my.ENTRY_DATE " +
                 "   AND my.WORLD_ID = other.WORLD_ID \n" +
                 "  LEFT JOIN USER_INFO as u \n" +

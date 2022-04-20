@@ -8,7 +8,7 @@
  * 2022/03/12        kimjaejung       최초 생성
  *
  */
-package com.map.mutual.side.auth.constant;
+package com.map.mutual.side.auth.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.map.mutual.side.auth.model.dto.SmsDto;
@@ -20,13 +20,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.Async;
 
 import java.io.IOException;
 import java.util.Collections;
 
 @Configuration
-public class SMSService {
-    private final Logger logger = LogManager.getLogger(SMSService.class);
+public class SmsSender {
+    private final Logger logger = LogManager.getLogger(SmsSender.class);
     public static final String SENS_HOST_URL = "https://sens.apigw.ntruss.com";
     public static final String SENS_REQUEST_URL = "/sms/v2/services/";
     public static final String SENS_REQUEST_TYPE = "/messages";
@@ -42,7 +43,8 @@ public class SMSService {
     public static final String SENS_SECRETKEY = "XouxuOyjVhekRsLBqCEuocX9ghAugujpI4gvUlXD";
 
 
-    public void sendMessageTest(String sendPhoneNum, String smsAuthNum) throws IOException {
+    @Async(value = "YOPLE-Executor")
+    public void sendAuthMessage(String sendPhoneNum, String smsAuthNum) throws IOException {
         int resultCode = 0;
 
 
@@ -104,6 +106,7 @@ public class SMSService {
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
+    @Async(value = "YOPLE-Executor")
     public void inviteSendMessage(String sendPhoneNum, String userPhone, String worldUserCode) throws IOException {
         int resultCode = 0;
 

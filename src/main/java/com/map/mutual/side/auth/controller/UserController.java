@@ -11,14 +11,12 @@ import com.map.mutual.side.common.config.BeanConfig;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
-import com.map.mutual.side.common.filter.AuthorizationCheckFilter;
+import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
-import io.jsonwebtoken.Jwt;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,12 +26,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * fileName       : UserController
@@ -53,12 +52,14 @@ public class UserController {
     private AuthService authService;
     private UserService userService;
     private UserInfoRepo userInfoRepo;
+    private FCMService fcmService;
 
     @Autowired
-    public UserController(AuthService authService, UserService userService, UserInfoRepo userInfoRepo) {
+    public UserController(AuthService authService, UserService userService, UserInfoRepo userInfoRepo, FCMService fcmService) {
         this.authService = authService;
         this.userService = userService;
         this.userInfoRepo = userInfoRepo;
+        this.fcmService = fcmService;
     }
 
     /**
@@ -330,9 +331,12 @@ public class UserController {
         try{
             // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
+            UserInfoDto userInfoDto = (UserInfoDto)authentication.getPrincipal();
 
-            userService.userLogout(userToken.getSuid());
+            userService.userLogout(userInfoDto.getSuid());
+
+            //2. fcm 유저 토큰 / 토픽 제거
+            fcmService.deleteFcmToken(userInfoDto);
 
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
@@ -346,7 +350,7 @@ public class UserController {
         }
     }
 
-    
+
     /**
      * Description : 월드에 사용자 초대하기. PUSH성
      * - 초대자가 월드에 참여중이 아닌 경우 YOPLEServiceException(FORBIDDEN) Throw

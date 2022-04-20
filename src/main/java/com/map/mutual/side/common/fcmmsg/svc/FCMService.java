@@ -14,7 +14,6 @@ import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import lombok.extern.log4j.Log4j2;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +22,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -68,7 +70,7 @@ public class FCMService {
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public void registryFcmToken(@NotNull UserEntity userEntity, String token) {
+    private void registryFcmToken(UserEntity userEntity, String token) {
         List<FcmTopicEntity> fcmTopicEntities = new ArrayList<>();
         try {
 
@@ -94,9 +96,9 @@ public class FCMService {
         }
     }
 
-    public void deleteFcmToken() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+    public void deleteFcmToken(UserInfoDto userInfoDto) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         List<FcmTopicEntity> fcmTopicEntities;
 
         try {
@@ -121,8 +123,8 @@ public class FCMService {
         }
     }
 
-    @Async(value = "FCMExecutor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String fcmToken, FCMConstant.MSGType msgType, String userId, String worldName, Map<String, String> msgData) {
+    @Async(value = "YOPLE-Executor")
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String fcmToken, FCMConstant.MSGType msgType, String userId, String worldName, Map<String, String> msgData) throws InterruptedException {
         String body = "";
         switch (msgType) {
             case A:
@@ -160,7 +162,7 @@ public class FCMService {
         return CompletableFuture.completedFuture(FCMConstant.ResultType.SUCCESS);
     }
 
-    @Async(value = "FCMExecutor")
+    @Async(value = "YOPLE-Executor")
     public void sendNotificationTopic(FCMConstant.MSGType msgType, String topic, String userId, String worldName, Map<String, String> msgData) {
         String body;
         switch (msgType) {

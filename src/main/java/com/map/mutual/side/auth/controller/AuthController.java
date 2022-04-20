@@ -1,10 +1,12 @@
 package com.map.mutual.side.auth.controller;
 
-import com.map.mutual.side.auth.constant.SMSService;
+import com.map.mutual.side.auth.component.SmsSender;
 import com.map.mutual.side.auth.model.dto.JwtTokenDto;
+import com.map.mutual.side.auth.model.dto.SMSAuthReqeustDto;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.auth.svc.AuthService;
 import com.map.mutual.side.common.JwtTokenProvider;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
@@ -12,14 +14,10 @@ import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.filter.AuthorizationCheckFilter;
 import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.common.utils.YOPLEUtils;
-import com.map.mutual.side.auth.model.dto.SMSAuthReqeustDto;
-import com.map.mutual.side.auth.svc.AuthService;
-import org.jetbrains.annotations.TestOnly;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
@@ -29,9 +27,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
@@ -56,20 +54,20 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private CryptUtils cryptUtils;
     private ModelMapper modelMapper;
-    private SMSService smsService;
+    private SmsSender smsSender;
 
     @Autowired
     public AuthController(AuthService authService,
                           JwtTokenProvider tokenProvider,
                           AuthenticationManagerBuilder authenticationManagerBuilder,
                           CryptUtils cryptUtils, ModelMapper modelMapper,
-                          SMSService smsService) {
+                          SmsSender smsSender) {
         this.authService = authService;
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.cryptUtils = cryptUtils;
         this.modelMapper = modelMapper;
-        this.smsService = smsService;
+        this.smsSender = smsSender;
     }
 
     /**
@@ -90,7 +88,7 @@ public class AuthController {
 
             // 2. 핸드폰 번호 인증 요청
 
-            smsService.sendMessageTest(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+            smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);

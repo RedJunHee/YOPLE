@@ -20,14 +20,13 @@ import java.util.concurrent.Executor;
 @Configuration
 @EnableAsync
 public class AsyncConfig extends AsyncConfigurerSupport {
-    @Override
-    @Bean(name = "FCMExecutor")
+    @Bean(name = "YOPLE-Executor")
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(30);
         executor.setQueueCapacity(300);
-        executor.setThreadNamePrefix("FCM-ASYNC-");
+        executor.setThreadNamePrefix("YOPLE-ASYNC-");
         executor.initialize();
         return executor;
     }

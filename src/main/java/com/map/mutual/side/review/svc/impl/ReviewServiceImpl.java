@@ -4,7 +4,6 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
-import com.map.mutual.side.common.enumerate.BooleanType;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.review.model.dto.*;
 import com.map.mutual.side.review.model.entity.*;
@@ -240,7 +239,6 @@ public class ReviewServiceImpl implements ReviewService {
                     .build();
 
             tempReview = placeRepo.findPlaceDetails(worldId, placeId);
-
             tempReview.sort(new PlaceDetailDto.TempReview.TempReviewComparatorByImageNum());
 
 
@@ -259,7 +257,7 @@ public class ReviewServiceImpl implements ReviewService {
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         try {
             EmojiEntity emojiEntity = emojiRepo.findByEmojiValue(emojiType);
-            if(!emojiEntity.getEmojiStatus().equals(BooleanType.Y)) {
+            if(!emojiEntity.getEmojiStatus().equals(EmojiType.findActiveType(emojiType.getActiveType()))) {
                 throw new YOPLEServiceException(ApiStatusCode.NOT_USABLE_EMOJI);
             }
             if(emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(userInfoDto.getSuid(), worldId, reviewId, emojiEntity)){

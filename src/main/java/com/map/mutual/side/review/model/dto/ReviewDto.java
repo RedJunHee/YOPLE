@@ -74,6 +74,21 @@ public class ReviewDto {
         private String[] imageUrls;
         private String createDt;
 
+        private List<TempEmoji> emoji;
+
+        @AllArgsConstructor
+        @Builder
+        @NoArgsConstructor
+        public static class TempEmoji {
+            private Long typeQuantity;
+            private boolean isChecked;
+            public static class ActiveType {
+                public static final char Y = 'Y';
+                public static final char N = 'N';
+            }
+
+        }
+
         @QueryProjection
         public ReviewWithInviterDto(Long reviewId, String content, String imageUrls , String userid, String inviterUserId, LocalDateTime createDt) {
             this.reviewId = reviewId;

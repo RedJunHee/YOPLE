@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -368,7 +369,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/user/world")
-    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody @Valid UserWorldInvitionDto userWorldInvitionDto) {
+    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody @Valid UserWorldInvitionDto userWorldInvitionDto) throws InterruptedException {
 
         ResponseJsonObject responseJsonObject;
 

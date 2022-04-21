@@ -1,7 +1,5 @@
 package com.map.mutual.side.auth.svc.impl;
 
-import com.map.mutual.side.auth.constant.SMSService;
-import com.map.mutual.side.auth.model.dto.*;
 import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
 import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
 import com.map.mutual.side.auth.component.SmsSender;
@@ -11,7 +9,6 @@ import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
-import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.model.entity.UserTOSEntity;
@@ -37,7 +34,6 @@ import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldRepo;
-import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
@@ -49,10 +45,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -68,7 +62,6 @@ import java.util.stream.Collectors;
  * 2022/03/16        kimjaejung       최초 생성
  */
 @Service
-@Log4j2
 public class UserServiceImpl implements UserService {
     private final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 
@@ -82,7 +75,6 @@ public class UserServiceImpl implements UserService {
     private UserTOSRepo userTOSRepo;
     private SmsSender smsSender;
     private FCMService fcmService;
-    private SMSService smsService;
     private UserBlockLogRepo userBlockLogRepo;
     private UserReportLogRepo userReportLogRepo;
     private ReviewReportLogRepo reviewReportLogRepo;
@@ -90,12 +82,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo
             , ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo
-            , UserWorldInvitingLogRepo userWorldInvitingLogRepo
-            , UserTOSRepo userTOSRepo
-                           , FCMService fcmService
-    , SmsSender smsSender
-    ,SMSService smsService, WorldJoinLogRepo worldJoinLogRepo, UserBlockLogRepo userBlockLogRepo,
-                           UserReportLogRepo userReportLogRepo, ReviewReportLogRepo reviewReportLogRepo) {
+            , UserWorldInvitingLogRepo userWorldInvitingLogRepo , UserTOSRepo userTOSRepo
+            , FCMService fcmService , SmsSender smsSender ,WorldJoinLogRepo worldJoinLogRepo
+            , UserBlockLogRepo userBlockLogRepo, UserReportLogRepo userReportLogRepo
+            , ReviewReportLogRepo reviewReportLogRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
@@ -103,7 +93,12 @@ public class UserServiceImpl implements UserService {
         this.jwtRepo = jwtRepo;
         this.userWorldInvitingLogRepo = userWorldInvitingLogRepo;
         this.userTOSRepo = userTOSRepo;
-        this.smsService = smsService;
+        this.fcmService = fcmService;
+        this.smsSender = smsSender;
+        this.worldJoinLogRepo = worldJoinLogRepo;
+        this.userBlockLogRepo = userBlockLogRepo;
+        this.userReportLogRepo = userReportLogRepo;
+        this.reviewReportLogRepo = reviewReportLogRepo;
     }
 
     /**
@@ -230,9 +225,9 @@ public class UserServiceImpl implements UserService {
         CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid(), null);
         response.thenAccept(d -> {
             if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
-                log.info(d.getDesc());
+                logger.info(d.getDesc());
             } else {
-                log.error(d.getDesc());
+                logger.error(d.getDesc());
             }
         });
 

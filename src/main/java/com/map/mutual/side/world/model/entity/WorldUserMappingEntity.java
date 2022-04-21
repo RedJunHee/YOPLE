@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @IdClass(WorldUserMappingEntityKeys.class)
-public class WorldUserMappingEntity extends CreateDtEntity implements Persistable<WorldUserMappingEntityKeys> {
+public class WorldUserMappingEntity {
     @Id
     @Column(name="USER_SUID", nullable = false, columnDefinition = "VARCHAR(18)")
     private String userSuid;
@@ -47,13 +47,4 @@ public class WorldUserMappingEntity extends CreateDtEntity implements Persistabl
     @Column(name = "ACCESS_TIME")
     private LocalDateTime accessTime;
 
-    @Override
-    public WorldUserMappingEntityKeys getId() {
-        return WorldUserMappingEntityKeys.builder().worldId(worldId).userSuid(userSuid).build();
-    }
-
-    @Override
-    public boolean isNew() {
-        return getCreateTime() == null;
-    }
 }

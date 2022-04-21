@@ -12,6 +12,7 @@ import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
 import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
+import com.map.mutual.side.world.repository.WorldRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ public class FCMService {
     private WorldUserMappingRepo worldUserMappingRepo;
     @Autowired
     private UserInfoRepo userInfoRepo;
+
+    @Autowired
+    private WorldRepo worldRepo;
 
     public ResponseEntity<ResponseJsonObject> generateToken(String token) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -97,8 +101,6 @@ public class FCMService {
     }
 
     public void deleteFcmToken(UserInfoDto userInfoDto) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         List<FcmTopicEntity> fcmTopicEntities;
 
         try {
@@ -124,19 +126,23 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String fcmToken, FCMConstant.MSGType msgType, String userId, String worldName, Map<String, String> msgData) throws InterruptedException {
-        String body = "";
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Map<String, String> msgData) throws InterruptedException {
+        String body;
         switch (msgType) {
             case A:
-                body = userId
+                String aUserId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String aWorldName = worldRepo.findByWorldId(worldId).getWorldName();
+                body = aUserId
                         + "님이 "
-                        + worldName
+                        + aWorldName
                         + "에 회원님을 초대하였습니다.";
                 break;
             case C:
-                body = worldName
+                String cUserId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String cWorldName = worldRepo.findByWorldId(worldId).getWorldName();
+                body = cWorldName
                         + "에서"
-                        + userId
+                        + cUserId
                         + " 님이 내 리뷰에 반응을 남겼습니다.";
                 break;
             default:
@@ -149,11 +155,20 @@ public class FCMService {
                 .setBody(body)
                 .build();
 
-        Message message = Message.builder()
-                .setToken(fcmToken)
-                .setNotification(notification)
-                .putAllData(msgData)
-                .build();
+        Message message;
+
+        if (!(msgData == null)) {
+             message = Message.builder()
+                    .setToken(targetFcmToken)
+                    .setNotification(notification)
+                    .putAllData(msgData)
+                    .build();
+        } else {
+            message = Message.builder()
+                    .setToken(targetFcmToken)
+                    .setNotification(notification)
+                    .build();
+        }
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
         } catch (FirebaseMessagingException e) {
@@ -163,17 +178,20 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public void sendNotificationTopic(FCMConstant.MSGType msgType, String topic, String userId, String worldName, Map<String, String> msgData) {
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid, Map<String, String> msgData) {
         String body;
         switch (msgType) {
             case B:
+                String userId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String worldName  = worldRepo.findByWorldId(worldId).getWorldName();
                 body = worldName
                         + "에 "
                         + userId
                         + "님이 초대되었습니다.";
                 break;
             default:
-                throw new YOPLEServiceException(ApiStatusCode.FCM_NOTIFICATION_TYPE_INVALID, "[FCM]잘못된 메세지 타입입니다.");
+                log.error("[FCM]잘못된 알림 타입 입니다.");
+                return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
         }
 
         Notification notification = Notification.builder()
@@ -181,18 +199,26 @@ public class FCMService {
                 .setBody(body)
                 .build();
 
-        Message message = Message.builder()
-                .setTopic(topic)
-                .setNotification(notification)
-                .putAllData(msgData)
-                .build();
-
+        Message message;
+        if (!(msgData == null)) {
+             message = Message.builder()
+                    .setTopic(String.valueOf(worldId))
+                    .setNotification(notification)
+                    .putAllData(msgData)
+                    .build();
+        } else {
+            message = Message.builder()
+                    .setTopic(String.valueOf(worldId))
+                    .setNotification(notification)
+                    .build();
+        }
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
 
         } catch (FirebaseMessagingException e) {
-            throw new YOPLEServiceException(ApiStatusCode.SEND_FCM_NOTIFICATION_FAIL);
+            return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
         }
+        return CompletableFuture.completedFuture(FCMConstant.ResultType.SUCCESS);
     }
 
 //    private void updateFcmToken(String userSuid, String newToken)  {

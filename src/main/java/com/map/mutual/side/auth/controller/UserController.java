@@ -11,9 +11,11 @@ import com.map.mutual.side.common.config.BeanConfig;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * fileName       : UserController
@@ -47,6 +50,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/user")
 @Validated
+@Log4j2
 public class UserController {
     private final Logger logger = LogManager.getLogger(UserController.class);
     private AuthService authService;
@@ -361,7 +365,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/user/world")
-    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody @Valid UserWorldInvitionDto userWorldInvitionDto) {
+    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody @Valid UserWorldInvitionDto userWorldInvitionDto) throws InterruptedException {
 
         ResponseJsonObject responseJsonObject;
 
@@ -372,9 +376,22 @@ public class UserController {
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
             // SUID로 초대하기 요청 온 경우. => 회원 유저임.
-            if( StringUtil.isNullOrEmpty( userWorldInvitionDto.getTargetSuid()) == false )
-                userService.userWorldInviting(userToken.getSuid(),userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
+            if( StringUtil.isNullOrEmpty( userWorldInvitionDto.getTargetSuid()) == false ) {
+                userService.userWorldInviting(userToken.getSuid(), userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
+                String fcmToken = userInfoRepo.findBySuid(userWorldInvitionDto.getTargetSuid()).getFcmToken();
 
+
+                // TODO: 2022/04/21 msgData에 값(payLoad)이 뭐가 들어갈 지 프론트와 논의.
+                // 알림 전송
+                CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationToken(fcmToken, FCMConstant.MSGType.A, userToken.getSuid(), userWorldInvitionDto.getWorldId(), null);
+                response.thenAccept(d -> {
+                    if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
+                        log.info(d.getDesc());
+                    } else {
+                        log.error(d.getDesc());
+                    }
+                });
+            }
             else if(StringUtil.isNullOrEmpty(userWorldInvitionDto.getPhone()) == false ){
                 // TODO: 2022/04/17   유저의 핸드폰 번호 or ID 핸드폰 번호로 일단 개발진행
                 userService.unSignedUserWorldInviting(userToken.getSuid(),userWorldInvitionDto.getPhone(),userWorldInvitionDto.getWorldId());

@@ -1,22 +1,16 @@
 package com.map.mutual.side.auth.svc.impl;
 
-import com.google.protobuf.Api;
 import com.map.mutual.side.auth.constant.SMSService;
-import com.map.mutual.side.auth.model.dto.UserInWorld;
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
+import com.map.mutual.side.auth.model.dto.*;
+import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
+import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
-import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
-import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
-import com.map.mutual.side.auth.model.entity.UserEntity;
-import com.map.mutual.side.auth.model.entity.UserTOSEntity;
-import com.map.mutual.side.auth.model.entity.UserWorldInvitingLogEntity;
-import com.map.mutual.side.auth.repository.JWTRepo;
-import com.map.mutual.side.auth.repository.UserInfoRepo;
-import com.map.mutual.side.auth.repository.UserTOSRepo;
-import com.map.mutual.side.auth.repository.UserWorldInvitingLogRepo;
+import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
+import com.map.mutual.side.auth.model.dto.report.UserReportDto;
+import com.map.mutual.side.auth.model.entity.*;
+import com.map.mutual.side.auth.repository.*;
 import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
 import com.map.mutual.side.world.repository.WorldJoinLogRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
@@ -42,10 +36,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * fileName       : UserServiceImpl
@@ -70,13 +64,17 @@ public class UserServiceImpl implements UserService {
     private UserWorldInvitingLogRepo userWorldInvitingLogRepo;
     private UserTOSRepo userTOSRepo;
     private SMSService smsService;
+    private UserBlockLogRepo userBlockLogRepo;
+    private UserReportLogRepo userReportLogRepo;
+    private ReviewReportLogRepo reviewReportLogRepo;
 
     @Autowired
     public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo
             , ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo
             , UserWorldInvitingLogRepo userWorldInvitingLogRepo
             , UserTOSRepo userTOSRepo
-    ,SMSService smsService, WorldJoinLogRepo worldJoinLogRepo) {
+    ,SMSService smsService, WorldJoinLogRepo worldJoinLogRepo, UserBlockLogRepo userBlockLogRepo,
+                           UserReportLogRepo userReportLogRepo, ReviewReportLogRepo reviewReportLogRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
@@ -86,6 +84,9 @@ public class UserServiceImpl implements UserService {
         this.userTOSRepo = userTOSRepo;
         this.smsService = smsService;
         this.worldJoinLogRepo = worldJoinLogRepo;
+        this.userBlockLogRepo = userBlockLogRepo;
+        this.userReportLogRepo = userReportLogRepo;
+        this.reviewReportLogRepo = reviewReportLogRepo;
     }
 
     /**
@@ -460,6 +461,108 @@ public class UserServiceImpl implements UserService {
             userWorldInvitingLogRepo.save(inviteLog.get());
             return WorldDto.builder().worldId(0L).build();
         }
+
+    }
+
+
+    /**
+     * Description : 사용자 신고하기.
+     * Name        : report
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @Override
+    public void report(String suid, UserReportDto userReportDto) {
+
+        UserReportLogEntity report = UserReportLogEntity.builder().userSuid(suid)
+                .reportSuid(userReportDto.getReportSuid())
+                .reportTitle(userReportDto.getReportTitle())
+                .reportDesc(userReportDto.getReportDesc())
+                .build();
+
+        userReportLogRepo.save(report);
+
+    }
+
+    /**
+     * Description : 사용자 차단하기.
+     * - 이미 차단된 유저인경우 ALREADY_USER_BLOCKING
+     * Name        : block
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @Override
+    public void block(String suid, UserBlockDto userBlockDto) {
+
+        // 이미 차단된 유저인지 조회.
+        if( userBlockLogRepo.existsByUserSuidAndBlockSuidAndAndIsBlocking(suid, userBlockDto.getBlockSuid(), "Y"))
+            throw new YOPLEServiceException(ApiStatusCode.ALREADY_USER_BLOCKING);
+
+        UserBlockLogEntity block = UserBlockLogEntity.builder()
+                .blockSuid(userBlockDto.getBlockSuid())
+                .isBlocking("Y")
+                .userSuid(suid)
+                .build();
+
+        userBlockLogRepo.save(block);
+
+    }
+
+    /**
+     * Description : 사용자 차단해지하기.
+     * - 없는 차단 이력 요청할 경우 FORBIDDEN
+     * - 사용자 차단 이력 아닌 경우 FORBIDDEN
+     * Name        : blockCancel
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @Override
+    public void blockCancel(String suid, Long blockId) {
+
+        UserBlockLogEntity log = userBlockLogRepo.findById(blockId)
+                                                .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
+
+        // 사용자 차단 이력이 아닌 경우
+        if(log.getUserSuid().equals(suid) == false)
+            throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
+
+        // isBlocking N으로 변경.
+        log.blockCancel();
+
+        userBlockLogRepo.save(log);
+
+    }
+
+    /**
+     * Description : 사용자 차단리스트 조회.
+     * Name        : block
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @Override
+    public List<UserBlockedDto> getBlock(String suid) {
+
+        List<UserBlockedDto> users = userBlockLogRepo.findBlockList(suid);
+        return users;
+    }
+
+    /**
+     * Description : 리뷰 신고하기.
+     * Name        : reviewReport
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @Override
+    public void reviewReport(String suid, ReviewReportDto reviewReportDto) {
+
+        ReviewReportLogEntity report = ReviewReportLogEntity.builder()
+                .reviewId(reviewReportDto.getReviewId())
+                .userSuid(suid)
+                .reportTitle(reviewReportDto.getReportTitle())
+                .reportDesc(reviewReportDto.getReportDesc())
+                .build();
+
+        reviewReportLogRepo.save(report);
 
     }
 }

@@ -2,7 +2,11 @@ package com.map.mutual.side.auth.controller;
 
 
 import com.map.mutual.side.auth.model.dto.*;
+import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
+import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
+import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
+import com.map.mutual.side.auth.model.dto.report.UserReportDto;
 import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.auth.svc.AuthService;
@@ -11,14 +15,11 @@ import com.map.mutual.side.common.config.BeanConfig;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
-import com.map.mutual.side.common.filter.AuthorizationCheckFilter;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
-import io.jsonwebtoken.Jwt;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,10 +29,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -54,12 +52,17 @@ public class UserController {
     private UserService userService;
     private UserInfoRepo userInfoRepo;
 
+
     @Autowired
-    public UserController(AuthService authService, UserService userService, UserInfoRepo userInfoRepo) {
+    public UserController(AuthService authService,
+                          UserService userService,
+                          UserInfoRepo userInfoRepo) {
         this.authService = authService;
         this.userService = userService;
         this.userInfoRepo = userInfoRepo;
     }
+
+
 
     /**
      * Description : 사용자 회원가입.
@@ -470,5 +473,145 @@ public class UserController {
 
 
     }
+
+
+    /**
+     * Description : 사용자 신고하기.
+     * Name        : report
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @PostMapping("/report")
+    public ResponseEntity<ResponseJsonObject> report (@RequestBody @Valid UserReportDto userReportDto){
+        try{
+            ResponseJsonObject response;
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            userService.report(userInfoDto.getSuid(), userReportDto);
+            // 응답 생성.
+            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch(YOPLEServiceException e) {
+            logger.error("유저 신고하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }
+
+    }
+
+    /**
+     * Description : 리뷰 신고하기.
+     * Name        : reviewReport
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @PostMapping("/review/report")
+    public ResponseEntity<ResponseJsonObject> reviewReport (@RequestBody @Valid ReviewReportDto reviewReportDto){
+        try{
+            ResponseJsonObject response;
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            userService.reviewReport(userInfoDto.getSuid(), reviewReportDto);
+
+            // 응답 생성.
+            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch(YOPLEServiceException e) {
+            logger.error("리뷰 신고하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }
+
+    }
+
+    /**
+     * Description : 사용자 차단하기.
+     * - 이미 차단된 유저인경우 ALREADY_USER_BLOCKING
+     * Name        : block
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @PostMapping("/block")
+    public ResponseEntity<ResponseJsonObject> block (@RequestBody @Valid UserBlockDto userBlockDto){
+        try{
+            ResponseJsonObject response;
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            userService.block(userInfoDto.getSuid(), userBlockDto);
+
+            // 응답 생성.
+            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch(YOPLEServiceException e) {
+            logger.error("유저 차단하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }
+
+    }
+
+    /**
+     * Description : 사용자 차단해지하기.
+     * - 없는 차단 이력 요청할 경우 FORBIDDEN
+     * - 사용자 차단 이력 아닌 경우 FORBIDDEN
+     * Name        : blockCancel
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @PatchMapping("/block")
+    public ResponseEntity<ResponseJsonObject> blockCancel (@RequestParam(required = true) @Valid @Positive Long blockId ){
+        try{
+            ResponseJsonObject response;
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            userService.blockCancel(userInfoDto.getSuid(), blockId);
+
+            // 응답 생성.
+            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch(YOPLEServiceException e) {
+            logger.error("유저 차단해지하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }
+
+    }
+
+
+    /**
+     * Description : 사용자 차단리스트 조회
+     * Name        : getBlock
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @GetMapping("/block")
+    public ResponseEntity<ResponseJsonObject> getBlock (){
+        try{
+            ResponseJsonObject response;
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            List<UserBlockedDto> blockUsers = userService.getBlock(userInfoDto.getSuid());
+
+            // 응답 생성.
+            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(blockUsers);
+
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch(YOPLEServiceException e) {
+            logger.error("유저 차단해지하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }
+
+    }
+
 
 }

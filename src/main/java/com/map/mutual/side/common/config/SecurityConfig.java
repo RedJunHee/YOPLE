@@ -89,17 +89,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/auth/refresh-refresh/**").authenticated() // 리프레시 토큰 갱신.
 
                 // user
-                .antMatchers(HttpMethod.POST,"/user/signup/**").permitAll()  // 사용자 회원가입
-                .antMatchers(HttpMethod.POST,"/user/world/user/**").authenticated() //월드에 참여하기
-                .antMatchers(HttpMethod.GET,"/user/check-userid/**").permitAll()  // 유저 ID 중복체크
-                .antMatchers(HttpMethod.GET,"/user/find-user/**").authenticated()  // 사용자 검색하기.
-                .antMatchers(HttpMethod.GET,"/user/world/users/**").authenticated()  // 월드 참여자 조회
-                .antMatchers(HttpMethod.GET,"/user/user/**").authenticated()  // 사용자 상세정보 조회
-                .antMatchers(HttpMethod.PATCH,"/user/user/**").authenticated()  // 사용자 상세정보 수정
-                .antMatchers(HttpMethod.DELETE,"/user/user/**").authenticated()  // 사용자 로그아웃
-                .antMatchers(HttpMethod.POST,"/user/user/world/**").authenticated()  // 월드에 사용자 초대하기.
-                .antMatchers(HttpMethod.GET,"/user/notification/**").authenticated()  // 사용자 알림 조회하기.
-                .antMatchers(HttpMethod.GET,"/user/invite-response/**").authenticated()  // 월드 초대 응답하기.
+                .antMatchers(HttpMethod.POST,"/user/signup/**").permitAll()                 // 사용자 회원가입
+                .antMatchers(HttpMethod.POST,"/user/world/user/**").authenticated()         //월드에 참여하기
+                .antMatchers(HttpMethod.GET,"/user/check-userid/**").permitAll()            // 유저 ID 중복체크
+                .antMatchers(HttpMethod.GET,"/user/find-user/**").authenticated()           // 사용자 검색하기.
+                .antMatchers(HttpMethod.GET,"/user/world/users/**").authenticated()         // 월드 참여자 조회
+                .antMatchers(HttpMethod.GET,"/user/user/**").authenticated()                // 사용자 상세정보 조회
+                .antMatchers(HttpMethod.PATCH,"/user/user/**").authenticated()              // 사용자 상세정보 수정
+                .antMatchers(HttpMethod.DELETE,"/user/user/**").authenticated()             // 사용자 로그아웃
+                .antMatchers(HttpMethod.POST,"/user/user/world/**").authenticated()         // 월드에 사용자 초대하기.
+                .antMatchers(HttpMethod.GET,"/user/notification/**").authenticated()        // 사용자 알림 조회하기.
+                .antMatchers(HttpMethod.GET,"/user/invite-response/**").authenticated()     // 월드 초대 응답하기.
+                .antMatchers(HttpMethod.POST,"/user/report/**").authenticated()              // 사용자 신고하기.
+                .antMatchers(HttpMethod.POST,"/user/block/**").authenticated()               // 사용자 차단하기.
+                .antMatchers(HttpMethod.POST,"/user/review/report/**").authenticated()       // 리뷰 신고하기.
 
                 // world
                 .antMatchers(HttpMethod.POST,"/world/world/**").authenticated() // 월드 생성하기.

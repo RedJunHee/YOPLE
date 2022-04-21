@@ -1,16 +1,15 @@
 package com.map.mutual.side.auth.svc;
 
-import com.map.mutual.side.auth.model.dto.UserInWorld;
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
+import com.map.mutual.side.auth.model.dto.*;
+import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
+import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
-import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
-import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
+import com.map.mutual.side.auth.model.dto.report.UserReportDto;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.world.model.dto.WorldDto;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * fileName       : UserService
@@ -75,5 +74,46 @@ public interface UserService {
      */
     WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid);
 
+    /**
+     * Description : 사용자 신고하기.
+     * Name        : report
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    void report(String suid, UserReportDto userReportDto);
 
+    /**
+     * Description : 사용자 차단하기.
+     * - 이미 차단된 유저인경우 ALREADY_USER_BLOCKING
+     * Name        : block
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    void block(String suid, UserBlockDto userBlockDto);
+    /**
+     * Description : 사용자 차단해지하기.
+     * - 없는 차단 이력 요청할 경우 FORBIDDEN
+     * - 사용자 차단 이력 아닌 경우 FORBIDDEN
+     * Name        : blockCancel
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    void blockCancel(String suid, Long blockId);
+
+    /**
+     * Description : 사용자 차단리스트 조회
+     * Name        : getBlock
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    List<UserBlockedDto> getBlock(String suid);
+
+
+    /**
+     * Description : 리뷰 신고하기.
+     * Name        : reviewReport
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    void reviewReport(String suid, ReviewReportDto reviewReportDto);
 }

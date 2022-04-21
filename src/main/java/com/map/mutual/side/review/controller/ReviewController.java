@@ -2,7 +2,6 @@ package com.map.mutual.side.review.controller;
 
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
-import com.map.mutual.side.common.enumerate.BooleanType;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.review.model.dto.*;
@@ -44,7 +43,6 @@ import java.util.List;
 public class ReviewController {
     @Autowired
     private ReviewService reviewService;
-
     @Autowired
     private PlaceRepo placeRepo;
     @Autowired
@@ -222,7 +220,7 @@ public class ReviewController {
     /**
      *
      * 선택한 월드, 장소값에 따라서
-     * 장소의 리뷰들, 장소의 정보 가져옴.
+     * 장소의 간소화된 리뷰 리스트, 장소의 정보 가져옴.
      * @param placeId
      * @param worldId
      * @return
@@ -281,11 +279,13 @@ public class ReviewController {
     public void emojiAddTest() {
         ResponseJsonObject responseJsonObject;
         try {
-            emojiRepo.save(EmojiEntity.builder()
-                            .emojiStatus(BooleanType.Y)
-                            .emojiImg(null)
+            EmojiEntity emojiEntity = EmojiEntity.builder()
+                            .emojiId(EmojiType.GOOD)
+                            .emojiStatus(EmojiType.GOOD)
+                            .emojiImg(EmojiType.GOOD)
                             .emojiValue(EmojiType.GOOD)
-                    .build());
+                    .build();
+            emojiRepo.save(emojiEntity);
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (Exception e) {

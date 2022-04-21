@@ -15,8 +15,11 @@ import com.map.mutual.side.common.config.BeanConfig;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
+import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +32,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * fileName       : UserController
@@ -51,18 +59,15 @@ public class UserController {
     private AuthService authService;
     private UserService userService;
     private UserInfoRepo userInfoRepo;
-
+    private FCMService fcmService;
 
     @Autowired
-    public UserController(AuthService authService,
-                          UserService userService,
-                          UserInfoRepo userInfoRepo) {
+    public UserController(AuthService authService, UserService userService, UserInfoRepo userInfoRepo, FCMService fcmService) {
         this.authService = authService;
         this.userService = userService;
         this.userInfoRepo = userInfoRepo;
+        this.fcmService = fcmService;
     }
-
-
 
     /**
      * Description : 사용자 회원가입.
@@ -333,9 +338,12 @@ public class UserController {
         try{
             // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
+            UserInfoDto userInfoDto = (UserInfoDto)authentication.getPrincipal();
 
-            userService.userLogout(userToken.getSuid());
+            userService.userLogout(userInfoDto.getSuid());
+
+            //2. fcm 유저 토큰 / 토픽 제거
+            fcmService.deleteFcmToken(userInfoDto);
 
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
@@ -371,9 +379,22 @@ public class UserController {
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
             // SUID로 초대하기 요청 온 경우. => 회원 유저임.
-            if( StringUtil.isNullOrEmpty( userWorldInvitionDto.getTargetSuid()) == false )
-                userService.userWorldInviting(userToken.getSuid(),userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
+            if( StringUtil.isNullOrEmpty( userWorldInvitionDto.getTargetSuid()) == false ) {
+                userService.userWorldInviting(userToken.getSuid(), userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
+                String fcmToken = userInfoRepo.findBySuid(userWorldInvitionDto.getTargetSuid()).getFcmToken();
 
+
+                // TODO: 2022/04/21 msgData에 값(payLoad)이 뭐가 들어갈 지 프론트와 논의.
+                // 알림 전송
+                CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationToken(fcmToken, FCMConstant.MSGType.A, userToken.getSuid(), userWorldInvitionDto.getWorldId(), null);
+                response.thenAccept(d -> {
+                    if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
+                        logger.info(d.getDesc());
+                    } else {
+                        logger.error(d.getDesc());
+                    }
+                });
+            }
             else if(StringUtil.isNullOrEmpty(userWorldInvitionDto.getPhone()) == false ){
                 // TODO: 2022/04/17   유저의 핸드폰 번호 or ID 핸드폰 번호로 일단 개발진행
                 userService.unSignedUserWorldInviting(userToken.getSuid(),userWorldInvitionDto.getPhone(),userWorldInvitionDto.getWorldId());
@@ -612,6 +633,5 @@ public class UserController {
         }
 
     }
-
 
 }

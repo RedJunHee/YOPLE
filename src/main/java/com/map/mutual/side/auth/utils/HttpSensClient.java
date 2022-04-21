@@ -13,7 +13,6 @@ package com.map.mutual.side.auth.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.map.mutual.side.auth.constant.SMSService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -29,46 +28,15 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 @Slf4j
 @Component
 public class HttpSensClient {
-    public static String makeSignature(String timestamp, String sensApiUrl) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
-        String space = " ";
-        String newLine = "\n";
-        String method = "POST";
-        String serviceId = SMSService.SENS_SVC_ID;
-        String sensAccessKey = SMSService.SENS_ACCESSKEY;
-        String sensSecretKey = SMSService.SENS_SECRETKEY;
-
-        String message = new StringBuilder()
-                .append(method)
-                .append(space)
-                .append(sensApiUrl)
-                .append(newLine)
-                .append(timestamp)
-                .append(newLine)
-                .append(sensAccessKey)
-                .toString();
-
-        SecretKeySpec signingKey = new SecretKeySpec(sensSecretKey.getBytes("UTF-8"), "HmacSHA256");
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(signingKey);
-
-        byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
-        String encodeBase64String = Base64.getEncoder().encodeToString(rawHmac);
-
-        return encodeBase64String;
-    }
 
     public String sensHttpGetResponseBody(String url, String token) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, InvalidKeyException {
         HttpClient httpClient = getHttpClientInsecure();

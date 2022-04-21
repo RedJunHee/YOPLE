@@ -8,7 +8,7 @@
  * 2022/03/12        kimjaejung       최초 생성
  *
  */
-package com.map.mutual.side.auth.constant;
+package com.map.mutual.side.auth.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.map.mutual.side.auth.model.dto.SmsDto;
@@ -19,30 +19,38 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Collections;
 
-@Configuration
-public class SMSService {
-    private final Logger logger = LogManager.getLogger(SMSService.class);
-    public static final String SENS_HOST_URL = "https://sens.apigw.ntruss.com";
-    public static final String SENS_REQUEST_URL = "/sms/v2/services/";
-    public static final String SENS_REQUEST_TYPE = "/messages";
-    public static final String SENS_SVC_ID = "ncp:sms:kr:279058593171:sms-service";
+@Component
+public class SmsSender {
+    private final Logger logger = LogManager.getLogger(SmsSender.class);
+    private final String SENS_HOST_URL = "https://sens.apigw.ntruss.com";
+    private final String SENS_REQUEST_URL = "/sms/v2/services/";
+    private final String SENS_REQUEST_TYPE = "/messages";
+    private final String SENS_SVC_ID = "ncp:sms:kr:279058593171:sms-service";
 
 
-    public static final String SENS_MESSAGE_TYPE_SMS = "SMS";
-    public static final String SENS_MESSAGE_CONTENTTPYE_COMM = "COMM";
-    public static final String SENS_MESSAGE_COUNTRYCODE_DEFAULT = "82";
+    private final String SENS_MESSAGE_TYPE_SMS = "SMS";
+    private final String SENS_MESSAGE_CONTENTTPYE_COMM = "COMM";
+    private final String SENS_MESSAGE_COUNTRYCODE_DEFAULT = "82";
 
 
-    public static final String SENS_ACCESSKEY = "kNKPMYVwhTp3uIYbek9i";
-    public static final String SENS_SECRETKEY = "XouxuOyjVhekRsLBqCEuocX9ghAugujpI4gvUlXD";
+    private final String SENS_ACCESSKEY = "kNKPMYVwhTp3uIYbek9i";
+    private final String SENS_SECRETKEY = "XouxuOyjVhekRsLBqCEuocX9ghAugujpI4gvUlXD";
 
 
-    public void sendMessageTest(String sendPhoneNum, String smsAuthNum) throws IOException {
+    @Async(value = "YOPLE-Executor")
+    public void sendAuthMessage(String sendPhoneNum, String smsAuthNum) throws IOException {
         int resultCode = 0;
 
 
@@ -82,7 +90,7 @@ public class SMSService {
             httpPost.addHeader("Connection", "keep-alive");
             httpPost.addHeader("x-ncp-apigw-timestamp", timeStamp);
             httpPost.addHeader("x-ncp-iam-access-key", SENS_ACCESSKEY);
-            httpPost.addHeader("x-ncp-apigw-signature-v2", HttpSensClient.makeSignature(timeStamp, sensApiUrl));
+            httpPost.addHeader("x-ncp-apigw-signature-v2", makeSignature(timeStamp, sensApiUrl));
 
 
             httpPost.setEntity(stringEntity);
@@ -104,6 +112,7 @@ public class SMSService {
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
+    @Async(value = "YOPLE-Executor")
     public void inviteSendMessage(String sendPhoneNum, String userPhone, String worldUserCode) throws IOException {
         int resultCode = 0;
 
@@ -145,7 +154,7 @@ public class SMSService {
             httpPost.addHeader("Connection", "keep-alive");
             httpPost.addHeader("x-ncp-apigw-timestamp", timeStamp);
             httpPost.addHeader("x-ncp-iam-access-key", SENS_ACCESSKEY);
-            httpPost.addHeader("x-ncp-apigw-signature-v2", HttpSensClient.makeSignature(timeStamp, sensApiUrl));
+            httpPost.addHeader("x-ncp-apigw-signature-v2", makeSignature(timeStamp, sensApiUrl));
 
 
             httpPost.setEntity(stringEntity);
@@ -158,4 +167,30 @@ public class SMSService {
         }
         logger.info(resultCode);
     }
+
+    private String makeSignature(String timestamp, String sensApiUrl) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+        String space = " ";
+        String newLine = "\n";
+        String method = "POST";
+
+        String message = new StringBuilder()
+                .append(method)
+                .append(space)
+                .append(sensApiUrl)
+                .append(newLine)
+                .append(timestamp)
+                .append(newLine)
+                .append(SENS_ACCESSKEY)
+                .toString();
+
+        SecretKeySpec signingKey = new SecretKeySpec(SENS_SECRETKEY.getBytes("UTF-8"), "HmacSHA256");
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(signingKey);
+
+        byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
+        String encodeBase64String = Base64.getEncoder().encodeToString(rawHmac);
+
+        return encodeBase64String;
+    }
+
 }

@@ -4,9 +4,22 @@ import com.map.mutual.side.auth.constant.SMSService;
 import com.map.mutual.side.auth.model.dto.*;
 import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
 import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
+import com.map.mutual.side.auth.component.SmsSender;
+import com.map.mutual.side.auth.model.dto.UserInWorld;
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
+import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
+import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
+import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.auth.model.entity.UserTOSEntity;
+import com.map.mutual.side.auth.model.entity.UserWorldInvitingLogEntity;
+import com.map.mutual.side.auth.repository.JWTRepo;
+import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.map.mutual.side.auth.repository.UserTOSRepo;
+import com.map.mutual.side.auth.repository.UserWorldInvitingLogRepo;
 import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
 import com.map.mutual.side.auth.model.dto.report.UserReportDto;
 import com.map.mutual.side.auth.model.entity.*;
@@ -17,11 +30,14 @@ import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
+import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldRepo;
+import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +55,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +80,8 @@ public class UserServiceImpl implements UserService {
     private JWTRepo jwtRepo;
     private UserWorldInvitingLogRepo userWorldInvitingLogRepo;
     private UserTOSRepo userTOSRepo;
+    private SmsSender smsSender;
+    private FCMService fcmService;
     private SMSService smsService;
     private UserBlockLogRepo userBlockLogRepo;
     private UserReportLogRepo userReportLogRepo;
@@ -73,6 +92,8 @@ public class UserServiceImpl implements UserService {
             , ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo
             , UserWorldInvitingLogRepo userWorldInvitingLogRepo
             , UserTOSRepo userTOSRepo
+                           , FCMService fcmService
+    , SmsSender smsSender
     ,SMSService smsService, WorldJoinLogRepo worldJoinLogRepo, UserBlockLogRepo userBlockLogRepo,
                            UserReportLogRepo userReportLogRepo, ReviewReportLogRepo reviewReportLogRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
@@ -83,10 +104,6 @@ public class UserServiceImpl implements UserService {
         this.userWorldInvitingLogRepo = userWorldInvitingLogRepo;
         this.userTOSRepo = userTOSRepo;
         this.smsService = smsService;
-        this.worldJoinLogRepo = worldJoinLogRepo;
-        this.userBlockLogRepo = userBlockLogRepo;
-        this.userReportLogRepo = userReportLogRepo;
-        this.reviewReportLogRepo = reviewReportLogRepo;
     }
 
     /**
@@ -173,16 +190,16 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-        @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-        public WorldDto JoinWorld( String worldInvitationCode) throws YOPLEServiceException {
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    public WorldDto JoinWorld( String worldInvitationCode) throws YOPLEServiceException {
 
-            // 1. 사용자 SUID 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        // 1. 사용자 SUID 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
-            // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
-            Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
+        // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
+        // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
+        Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
 
         if (inviteWorldId == null) {
             logger.error("해당 사용자가 이미 월드에 속해있습니다.");
@@ -209,7 +226,17 @@ public class UserServiceImpl implements UserService {
         WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
                 .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
 
-        // 5. 참여한 월드 정보 리턴.
+        // 5. 월드에 참여된 사용자들에게 알림 전송
+        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid(), null);
+        response.thenAccept(d -> {
+            if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
+                log.info(d.getDesc());
+            } else {
+                log.error(d.getDesc());
+            }
+        });
+
+        // 6. 참여한 월드 정보 리턴.
         return WorldDto.builder().worldId(world.getWorldId())
                 .worldName(world.getWorldName())
                 .worldDesc(world.getWorldDesc()).build();
@@ -332,7 +359,7 @@ public class UserServiceImpl implements UserService {
         if(userWorldInvitingLogRepo.findOneByUserSuidAndTargetSuidAndWorldIdAndInvitingStatus(suid,targetSuid,worldId,"-").isPresent())
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_INVITING_STATUS);
 
-        // TODO: 2022-04-15  PUSH 알림 보내기 개발 되어야함. 
+        // TODO: 2022-04-15  PUSH 알림 보내기 개발 되어야함.
         // 3. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
         if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,targetSuid).isPresent() == true )
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
@@ -373,7 +400,7 @@ public class UserServiceImpl implements UserService {
         String worldUserCode = worldMapping.get().getWorldUserCode();
 
         try {
-            smsService.inviteSendMessage(targetPhone, phone, worldUserCode);
+            smsSender.inviteSendMessage(targetPhone, phone, worldUserCode);
         }catch(IOException e){
             throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR,"SMS 서비스가 원활하지 않습니다.");
         }

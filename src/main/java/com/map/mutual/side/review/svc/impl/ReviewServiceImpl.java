@@ -257,24 +257,23 @@ public class ReviewServiceImpl implements ReviewService {
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         try {
             EmojiEntity emojiEntity = emojiRepo.findByEmojiValue(emojiType);
-            if(!emojiEntity.getEmojiStatus().equals(EmojiType.findActiveType(emojiType.getActiveType()))) {
+            if (!emojiEntity.getEmojiStatus().equals(EmojiType.findActiveType(emojiType.getActiveType()))) {
                 throw new YOPLEServiceException(ApiStatusCode.NOT_USABLE_EMOJI);
             }
-            if(emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(userInfoDto.getSuid(), worldId, reviewId, emojiEntity)){
+            if (emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(userInfoDto.getSuid(), worldId, reviewId, emojiEntity)) {
                 throw new YOPLEServiceException(ApiStatusCode.ALREADY_EMOJI_ADDED);
             }
             EmojiStatusEntity emojiStatusEntity = EmojiStatusEntity.builder()
                     .reviewId(reviewId)
                     .userSuid(userInfoDto.getSuid())
                     .worldId(worldId)
-                    .emojiEntity(emojiEntity)
+                    .emojiId(emojiEntity.getEmojiId().getId())
                     .build();
             emojiStatusRepo.save(emojiStatusEntity);
         } catch (YOPLEServiceException e) {
             throw e;
         }
     }
-
 
 
 }

@@ -79,14 +79,12 @@ public class ReviewDto {
         @AllArgsConstructor
         @Builder
         @NoArgsConstructor
+        @Getter
         public static class TempEmoji {
+            private Long emojiType;
             private Long typeQuantity;
             private boolean isChecked;
-            public static class ActiveType {
-                public static final char Y = 'Y';
-                public static final char N = 'N';
-            }
-
+            private LocalDateTime createdDt;
         }
 
         @QueryProjection
@@ -103,5 +101,6 @@ public class ReviewDto {
             this.createDt = LocalDate.of(createDt.getYear(), createDt.getMonth(), createDt.getDayOfMonth()).toString();
 
         }
+
     }
 }

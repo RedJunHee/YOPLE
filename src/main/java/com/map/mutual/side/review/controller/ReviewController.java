@@ -43,7 +43,6 @@ import java.util.List;
 public class ReviewController {
     @Autowired
     private ReviewService reviewService;
-
     @Autowired
     private PlaceRepo placeRepo;
     @Autowired

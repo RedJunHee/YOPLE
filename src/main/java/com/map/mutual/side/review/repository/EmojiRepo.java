@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmojiRepo extends JpaRepository<EmojiEntity, Long> {
-    EmojiEntity findByEmojiValue(EmojiType emojiType);
+    EmojiEntity findByEmojiId(EmojiType emojiType);
 }

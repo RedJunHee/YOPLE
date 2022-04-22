@@ -242,24 +242,18 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
-
-
-
-
-
-
-
-
-//    TEST AREA
-
     /**
-     * TEST
+     * 이모지 추가
+     * @param reviewId
+     * @param worldId
+     * @param emojiId
+     * @return
      */
     @PostMapping("/emoji")
-    public ResponseEntity<ResponseJsonObject> addEmoji(@RequestParam Long reviewId, @RequestParam Long worldId, @RequestParam EmojiType emojiType) {
+    public ResponseEntity<ResponseJsonObject> addEmoji(@RequestParam Long reviewId, @RequestParam Long worldId, @RequestParam Long emojiId) {
         ResponseJsonObject responseJsonObject;
         try {
-            reviewService.addEmoji(reviewId, worldId, emojiType);
+            reviewService.addEmoji(reviewId, worldId, emojiId);
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 //            responseJsonObject.setData(result);
         } catch (YOPLEServiceException e) {

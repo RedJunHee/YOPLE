@@ -252,12 +252,12 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void addEmoji(Long reviewId, Long worldId, EmojiType emojiType) {
+    public void addEmoji(Long reviewId, Long worldId, Long emojiId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         try {
-            EmojiEntity emojiEntity = emojiRepo.findByEmojiValue(emojiType);
-            if (!emojiEntity.getEmojiStatus().equals(EmojiType.findActiveType(emojiType.getActiveType()))) {
+            EmojiEntity emojiEntity = emojiRepo.findByEmojiId(EmojiType.findId(emojiId));
+            if (!emojiEntity.getEmojiStatus().equals(EmojiType.findActiveType(EmojiType.findId(emojiId).getActiveType()))) {
                 throw new YOPLEServiceException(ApiStatusCode.NOT_USABLE_EMOJI);
             }
             if (emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(userInfoDto.getSuid(), worldId, reviewId, emojiEntity)) {

@@ -1,6 +1,7 @@
 package com.map.mutual.side.common.utils;
 
 import io.jsonwebtoken.io.Decoders;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class CryptUtilsTest {
     @BeforeEach
     public void befor()
     {
-        cryptUtils = new CryptUtils("184EBFA87C052FB66887177B429201CE");
+        cryptUtils = new CryptUtils("TXV0dWFsLU1hcHMtQUVTNTEyLVNlY3Jl");
         this.key = cryptUtils.getSecretKey();
         this.iv = key.substring(0, 16);
     }
@@ -29,7 +30,7 @@ class CryptUtilsTest {
     public void AES_Encryption(){
         String str = "암호화 테스트";
         try {
-            System.out.println(cryptUtils.AES_Encode(str));
+            Assertions.assertEquals(cryptUtils.AES_Encode(str),"7Qcchz/g4vVUj/1rWDtbggWDaOUIZSs5m1Zt/FE8jLA=");
         }catch(Exception ex)
         {
             ex.getMessage();
@@ -39,9 +40,9 @@ class CryptUtilsTest {
     @Test
     @DisplayName("AES256 복호화")
     public void AES_Decryption(){
-        String str = "yFbxF4IPEYjCpXhXzwPGIRkqlwQM0sCIFMK1sYq6oLw=";
+        String str = "7Qcchz/g4vVUj/1rWDtbggWDaOUIZSs5m1Zt/FE8jLA=";
         try {
-            System.out.println(cryptUtils.AES_Decode(str));
+            Assertions.assertEquals(cryptUtils.AES_Decode(str),"암호화 테스트");
         }catch(Exception ex)
         {
             ex.getMessage();

@@ -22,8 +22,8 @@ import java.util.List;
  *
  */
 public interface UserService {
-    UserInfoDto findUser(String id, String phone);
-    List<UserInWorld> worldUsers(long worldId, String suid);
+    UserInfoDto findUser(String id, String phone) throws YOPLEServiceException, Exception;
+    List<UserInWorld> worldUsers(long worldId, String suid) throws Exception;
 
     //2. 월드에 참여하기.
     WorldDto JoinWorld( String worldinvitationCode);
@@ -64,7 +64,7 @@ public interface UserService {
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
-    NotiDto notificationList(String suid);
+    NotiDto notificationList(String suid) throws Exception;
 
     /**
      * Description : 월드 초대에 응답하기. 수락하기, 거절하기.

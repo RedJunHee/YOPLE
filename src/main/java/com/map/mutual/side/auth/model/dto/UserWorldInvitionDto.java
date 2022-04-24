@@ -1,22 +1,21 @@
 package com.map.mutual.side.auth.model.dto;
 
 import com.map.mutual.side.common.config.BeanConfig;
+import com.map.mutual.side.common.utils.CryptUtils;
+import com.map.mutual.side.common.utils.YOPLEAssert;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UserWorldInvitionDto {
-    @Size(min = 18, max = 18)
+
     private String targetSuid;
 
     @Pattern(regexp = BeanConfig.phoneRegexp)
@@ -25,5 +24,8 @@ public class UserWorldInvitionDto {
     @NotNull
     private Long worldId;
 
+    public void suidChange(String decodingSuid){
+        targetSuid = decodingSuid;
+    }
 
 }

@@ -24,7 +24,6 @@ public class WorldInviteAccept {
     private Long inviteNumber;
 
     @NotBlank
-    @Size(min = 18, max = 18)
     private String userSuid;
 
     @NotBlank
@@ -33,4 +32,8 @@ public class WorldInviteAccept {
 
     @Pattern(regexp = "Y|N")
     private String isAccept = "N";
+
+    public void suidChange(String decodingSuid){
+        userSuid = decodingSuid;
+    }
 }

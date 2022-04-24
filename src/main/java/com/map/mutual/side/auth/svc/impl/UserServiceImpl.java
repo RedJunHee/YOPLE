@@ -21,6 +21,7 @@ import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
 import com.map.mutual.side.auth.model.dto.report.UserReportDto;
 import com.map.mutual.side.auth.model.entity.*;
 import com.map.mutual.side.auth.repository.*;
+import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
 import com.map.mutual.side.world.repository.WorldJoinLogRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
@@ -140,7 +141,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public UserInfoDto findUser(String id, String phone) throws YOPLEServiceException {
+    public UserInfoDto findUser(String id, String phone) throws YOPLEServiceException, Exception {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
 
@@ -159,13 +160,13 @@ public class UserServiceImpl implements UserService {
         //폰으로 검색.
         if(StringUtil.isNullOrEmpty(id) == true) {
             userInfoDto = UserInfoDto.builder()
-                    .suid(userEntity.getSuid())
+                    .suid(CryptUtils.AES_Encode(userEntity.getSuid()))
                     .build();
 
         }
         else { // 유저 ID로 검색.
             userInfoDto = UserInfoDto.builder()
-                    .suid(userEntity.getSuid())
+                    .suid(CryptUtils.AES_Encode(userEntity.getSuid()))
                     .userId(userEntity.getUserId())
                     .name(userEntity.getName())
                     .profileUrl(userEntity.getProfileUrl())
@@ -409,10 +410,14 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public List<UserInWorld> worldUsers(long worldId, String suid) {
+    public List<UserInWorld> worldUsers(long worldId, String suid) throws Exception {
         List<UserInWorld> userInfoEntities;
 
         userInfoEntities = worldUserMappingRepo.findAllUsersInWorld(worldId, suid);
+
+        //suid 암호화.
+        for(UserInWorld user : userInfoEntities)
+            user.suidChange(CryptUtils.AES_Encode( user.getSuid() ));
 
         return userInfoEntities;
     }
@@ -424,10 +429,14 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-13] - 조 준 희 - Create
      */
     @Override
-    public NotiDto notificationList(String suid) {
+    public NotiDto notificationList(String suid) throws Exception {
 
 
         List<InvitedNotiDto> invitedNotiList =   userWorldInvitingLogRepo.InvitedNotiList(suid);
+
+        for(InvitedNotiDto noti : invitedNotiList)
+            noti.decodingSuid();
+
         List<WorldEntryNotiDto> worldEntryNotiList =  worldUserMappingRepo.WorldEntryNotiList(suid);
 
 

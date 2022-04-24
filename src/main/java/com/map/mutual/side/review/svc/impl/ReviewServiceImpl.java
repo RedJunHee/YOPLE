@@ -5,15 +5,15 @@ import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
+import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.review.model.dto.*;
 import com.map.mutual.side.review.model.entity.*;
 import com.map.mutual.side.review.model.enumeration.EmojiType;
 import com.map.mutual.side.review.repository.*;
 import com.map.mutual.side.review.svc.ReviewService;
 import com.map.mutual.side.world.model.entity.WorldEntity;
-import com.map.mutual.side.world.repository.WorldRepo;
 import lombok.extern.log4j.Log4j2;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,19 +41,17 @@ public class ReviewServiceImpl implements ReviewService {
     @Autowired
     private ReviewRepo reviewRepo;
     @Autowired
-    private WorldRepo worldRepo;
-    @Autowired
-    private UserInfoRepo userInfoRepo;
+    private FCMService fcmService;
     @Autowired
     private ReviewWorldMappingRepository reviewWorldPlaceMappingRepository;
-    @Autowired
-    private ModelMapper modelMapper;
     @Autowired
     private PlaceRepo placeRepo;
     @Autowired
     private EmojiStatusRepo emojiStatusRepo;
     @Autowired
     private EmojiRepo emojiRepo;
+    @Autowired
+    private UserInfoRepo userInfoRepo;
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
@@ -270,8 +268,15 @@ public class ReviewServiceImpl implements ReviewService {
                     .emojiId(emojiEntity.getEmojiId().getId())
                     .build();
             emojiStatusRepo.save(emojiStatusEntity);
+
+            if(!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)){
+                String reviewOwnerFcmToken = reviewRepo.findByReviewOwnerFcmToken(reviewId);
+                fcmService.sendNotificationToken(reviewOwnerFcmToken, FCMConstant.MSGType.C, userInfoDto.getSuid(), worldId, reviewId);
+            }
         } catch (YOPLEServiceException e) {
             throw e;
+        } catch (InterruptedException e) {
+            throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
         }
     }
 

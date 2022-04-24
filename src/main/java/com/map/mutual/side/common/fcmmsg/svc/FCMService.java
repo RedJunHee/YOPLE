@@ -23,10 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -126,8 +123,9 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Map<String, String> msgData) throws InterruptedException {
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException {
         String body;
+        Map<String, String> msgData = new HashMap<>();
         switch (msgType) {
             case A:
                 String aUserId = userInfoRepo.findBySuid(userSuid).getUserId();
@@ -136,6 +134,8 @@ public class FCMService {
                         + "님이 "
                         + aWorldName
                         + "에 회원님을 초대하였습니다.";
+                msgData.put("worldId", String.valueOf(worldId));
+                msgData.put("userSuid", userSuid);
                 break;
             case C:
                 String cUserId = userInfoRepo.findBySuid(userSuid).getUserId();
@@ -144,6 +144,11 @@ public class FCMService {
                         + "에서"
                         + cUserId
                         + " 님이 내 리뷰에 반응을 남겼습니다.";
+                msgData.put("worldId", String.valueOf(worldId));
+                msgData.put("userSuid", userSuid);
+                msgData.put("reviewId", String.valueOf(reviewId));
+
+
                 break;
             default:
                 log.error("[FCM]잘못된 알림 타입 입니다.");
@@ -155,20 +160,11 @@ public class FCMService {
                 .setBody(body)
                 .build();
 
-        Message message;
-
-        if (!(msgData == null)) {
-             message = Message.builder()
+        Message message = Message.builder()
                     .setToken(targetFcmToken)
                     .setNotification(notification)
                     .putAllData(msgData)
                     .build();
-        } else {
-            message = Message.builder()
-                    .setToken(targetFcmToken)
-                    .setNotification(notification)
-                    .build();
-        }
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
         } catch (FirebaseMessagingException e) {
@@ -178,8 +174,9 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid, Map<String, String> msgData) {
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) {
         String body;
+        Map<String, String> msgData = new HashMap<>();
         switch (msgType) {
             case B:
                 String userId = userInfoRepo.findBySuid(userSuid).getUserId();
@@ -188,6 +185,8 @@ public class FCMService {
                         + "에 "
                         + userId
                         + "님이 초대되었습니다.";
+                msgData.put("worldId", String.valueOf(worldId));
+                msgData.put("userSuid", userSuid);
                 break;
             default:
                 log.error("[FCM]잘못된 알림 타입 입니다.");
@@ -199,19 +198,12 @@ public class FCMService {
                 .setBody(body)
                 .build();
 
-        Message message;
-        if (!(msgData == null)) {
-             message = Message.builder()
+        Message message = Message.builder()
                     .setTopic(String.valueOf(worldId))
                     .setNotification(notification)
                     .putAllData(msgData)
                     .build();
-        } else {
-            message = Message.builder()
-                    .setTopic(String.valueOf(worldId))
-                    .setNotification(notification)
-                    .build();
-        }
+
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
 

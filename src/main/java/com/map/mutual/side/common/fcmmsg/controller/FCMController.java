@@ -72,7 +72,7 @@ public class FCMController {
     public void testTopic(@RequestParam FCMConstant.MSGType msgType,
                           @RequestParam Long worldId,
                           @RequestParam String userId) {
-        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(msgType, worldId, userId, null);
+        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(msgType, worldId, userId);
         response.thenAccept(d -> {
             if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
                 log.info(d.getDesc());

@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface EmojiStatusRepo extends JpaRepository<EmojiStatusEntity, Long> {
     boolean existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(String userSuid, Long worldId, Long reviewId, EmojiEntity emojiEntity);
+    boolean existsByUserSuidAndWorldIdAndReviewId(String userSuid, Long worldId, Long reviewId);
     List<EmojiStatusEntity> findAllByReviewIdAndWorldId(Long reviewId, Long worldId);
 }

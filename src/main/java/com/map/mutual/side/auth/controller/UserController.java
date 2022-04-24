@@ -19,7 +19,6 @@ import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
-import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -358,7 +357,7 @@ public class UserController {
         }
     }
 
-    
+
     /**
      * Description : 월드에 사용자 초대하기. PUSH성
      * - 초대자가 월드에 참여중이 아닌 경우 YOPLEServiceException(FORBIDDEN) Throw

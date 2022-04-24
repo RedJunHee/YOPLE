@@ -17,6 +17,7 @@ import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
+import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.apache.logging.log4j.LogManager;
@@ -185,7 +186,7 @@ public class UserController {
     public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam(required = false) @Valid     @Pattern(regexp = BeanConfig.userIdRegexp,
                                                                             message = "ID가 올바르지 않습니다.")  String userId,
                                                                   @RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.phoneRegexp,
-                                                                          message = "핸드폰 번호가 올바르지 않습니다.") String phone) {
+                                                                          message = "핸드폰 번호가 올바르지 않습니다.") String phone) throws Exception {
         ResponseJsonObject response;
         try{
 
@@ -217,7 +218,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/world/users")
-    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam @Valid @NotNull long worldId) {
+    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam @Valid @NotNull long worldId) throws Exception {
         ResponseJsonObject response;
         try{
 
@@ -240,6 +241,8 @@ public class UserController {
 
         }catch (YOPLEServiceException e) {
             logger.error("월드 참여자 조회 실패 :" + e.getResponseJsonObject().getMeta().getErrorType());
+            throw e;
+        }catch(Exception e) {
             throw e;
         }
 
@@ -368,18 +371,21 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping("/user/world")
-    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody @Valid UserWorldInvitionDto userWorldInvitionDto) throws InterruptedException {
+    public ResponseEntity<ResponseJsonObject> userWorldInviting(@RequestBody @Valid UserWorldInvitionDto userWorldInvitionDto) throws Exception {
 
         ResponseJsonObject responseJsonObject;
 
         try{
-
             // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
 
             // SUID로 초대하기 요청 온 경우. => 회원 유저임.
             if( StringUtil.isNullOrEmpty( userWorldInvitionDto.getTargetSuid()) == false ) {
+
+                // targetSuid AES256 디코딩 변환.
+                userWorldInvitionDto.suidChange(CryptUtils.AES_Decode(userWorldInvitionDto.getTargetSuid()));
+
                 userService.userWorldInviting(userToken.getSuid(), userWorldInvitionDto.getTargetSuid(), userWorldInvitionDto.getWorldId());
                 String fcmToken = userInfoRepo.findBySuid(userWorldInvitionDto.getTargetSuid()).getFcmToken();
 
@@ -425,7 +431,7 @@ public class UserController {
      * History     : [2022-04-13] - 조 준 희 - Create
      */
     @GetMapping("/notification")
-    public ResponseEntity<ResponseJsonObject> notification(){
+    public ResponseEntity<ResponseJsonObject> notification() throws Exception {
         try{
 
             // 1. 토큰에서 사용자 SUID 정보 조회
@@ -460,12 +466,15 @@ public class UserController {
      * History     : [2022/04/17] - 조 준 희 - Create
      */
     @PostMapping("/invite-response")
-    public ResponseEntity<ResponseJsonObject> inviteAccept(@RequestBody  @Valid WorldInviteAccept invited){
+    public ResponseEntity<ResponseJsonObject> inviteAccept(@RequestBody  @Valid WorldInviteAccept invited) throws Exception {
         try {
 
             // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto) authentication.getPrincipal();
+
+            // suid 디코딩.
+            invited.suidChange( CryptUtils.AES_Decode( invited.getUserSuid() ));
 
             // 2. 월드 초대 응답하기 서비스
             WorldDto joinWorld = userService.inviteJoinWorld(invited, userToken.getSuid());
@@ -490,6 +499,8 @@ public class UserController {
         }catch(YOPLEServiceException e) {
             logger.error("월드 초대 응답하기 실패.! : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
+        } catch (Exception e) {
+            throw e ;
         }
 
 
@@ -503,12 +514,15 @@ public class UserController {
      * History     : [2022-04-21] - 조 준 희 - Create
      */
     @PostMapping("/report")
-    public ResponseEntity<ResponseJsonObject> report (@RequestBody @Valid UserReportDto userReportDto){
+    public ResponseEntity<ResponseJsonObject> report (@RequestBody @Valid UserReportDto userReportDto) throws Exception {
         try{
             ResponseJsonObject response;
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            // suid 디코딩 작업.
+            userReportDto.suidChange( CryptUtils.AES_Decode( userReportDto.getReportSuid()) );
 
             userService.report(userInfoDto.getSuid(), userReportDto);
             // 응답 생성.
@@ -517,6 +531,8 @@ public class UserController {
             return new ResponseEntity<>(response,HttpStatus.OK);
         }catch(YOPLEServiceException e) {
             logger.error("유저 신고하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        } catch (Exception e) {
             throw e;
         }
 
@@ -557,12 +573,16 @@ public class UserController {
      * History     : [2022-04-21] - 조 준 희 - Create
      */
     @PostMapping("/block")
-    public ResponseEntity<ResponseJsonObject> block (@RequestBody @Valid UserBlockDto userBlockDto){
+    public ResponseEntity<ResponseJsonObject> block (@RequestBody @Valid UserBlockDto userBlockDto) throws Exception {
         try{
             ResponseJsonObject response;
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+
+            // suid 디코딩 작업.
+            userBlockDto.suidChange( CryptUtils.AES_Decode(userBlockDto.getBlockSuid()) );
 
             userService.block(userInfoDto.getSuid(), userBlockDto);
 
@@ -572,6 +592,8 @@ public class UserController {
             return new ResponseEntity<>(response,HttpStatus.OK);
         }catch(YOPLEServiceException e) {
             logger.error("유저 차단하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        } catch (Exception e) {
             throw e;
         }
 

@@ -17,4 +17,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserBlockDto {
     private String blockSuid;
+
+    public void suidChange(String decodingSuid){
+        blockSuid = decodingSuid;
+    }
 }

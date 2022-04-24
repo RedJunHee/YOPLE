@@ -1,18 +1,30 @@
 package com.map.mutual.side.auth.svc.impl;
 
+import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
+import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
 import com.map.mutual.side.auth.component.SmsSender;
 import com.map.mutual.side.auth.model.dto.UserInWorld;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
-import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
-import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
-import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
+import com.map.mutual.side.auth.model.dto.notification.NotiDto;
+import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
+import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.auth.model.entity.UserTOSEntity;
+import com.map.mutual.side.auth.model.entity.UserWorldInvitingLogEntity;
+import com.map.mutual.side.auth.repository.JWTRepo;
+import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.map.mutual.side.auth.repository.UserTOSRepo;
+import com.map.mutual.side.auth.repository.UserWorldInvitingLogRepo;
 import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
 import com.map.mutual.side.auth.model.dto.report.UserReportDto;
 import com.map.mutual.side.auth.model.entity.*;
 import com.map.mutual.side.auth.repository.*;
+import com.map.mutual.side.common.utils.CryptUtils;
+import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
+import com.map.mutual.side.world.repository.WorldJoinLogRepo;
+import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -21,12 +33,10 @@ import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
-import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
-import com.map.mutual.side.world.repository.WorldJoinLogRepo;
 import com.map.mutual.side.world.repository.WorldRepo;
-import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
@@ -36,7 +46,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -132,7 +141,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public UserInfoDto findUser(String id, String phone) throws YOPLEServiceException {
+    public UserInfoDto findUser(String id, String phone) throws YOPLEServiceException, Exception {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
 
@@ -151,13 +160,13 @@ public class UserServiceImpl implements UserService {
         //폰으로 검색.
         if(StringUtil.isNullOrEmpty(id) == true) {
             userInfoDto = UserInfoDto.builder()
-                    .suid(userEntity.getSuid())
+                    .suid(CryptUtils.AES_Encode(userEntity.getSuid()))
                     .build();
 
         }
         else { // 유저 ID로 검색.
             userInfoDto = UserInfoDto.builder()
-                    .suid(userEntity.getSuid())
+                    .suid(CryptUtils.AES_Encode(userEntity.getSuid()))
                     .userId(userEntity.getUserId())
                     .name(userEntity.getName())
                     .profileUrl(userEntity.getProfileUrl())
@@ -214,7 +223,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
 
         // 5. 월드에 참여된 사용자들에게 알림 전송
-        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid());
+        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid(), null);
         response.thenAccept(d -> {
             if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
                 logger.info(d.getDesc());
@@ -401,10 +410,14 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public List<UserInWorld> worldUsers(long worldId, String suid) {
+    public List<UserInWorld> worldUsers(long worldId, String suid) throws Exception {
         List<UserInWorld> userInfoEntities;
 
         userInfoEntities = worldUserMappingRepo.findAllUsersInWorld(worldId, suid);
+
+        //suid 암호화.
+        for(UserInWorld user : userInfoEntities)
+            user.suidChange(CryptUtils.AES_Encode( user.getSuid() ));
 
         return userInfoEntities;
     }
@@ -416,10 +429,14 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-13] - 조 준 희 - Create
      */
     @Override
-    public NotiDto notificationList(String suid) {
+    public NotiDto notificationList(String suid) throws Exception {
 
 
         List<InvitedNotiDto> invitedNotiList =   userWorldInvitingLogRepo.InvitedNotiList(suid);
+
+        for(InvitedNotiDto noti : invitedNotiList)
+            noti.decodingSuid();
+
         List<WorldEntryNotiDto> worldEntryNotiList =  worldUserMappingRepo.WorldEntryNotiList(suid);
 
 

@@ -19,7 +19,7 @@ import java.util.Base64;
 public class CryptUtils {
     private final Logger logger = LoggerFactory.getLogger(CryptUtils.class);
 
-    private String secretKey ;
+    private static String secretKey ;
     static String IV = ""; // 16bit
 
     public CryptUtils(@Value("${aes-secret}") String secretKey) {
@@ -63,7 +63,7 @@ public class CryptUtils {
      * @return 평문을 AES256으로 암호화 후 Base64인코딩한 문자열
      * @throws Exception
      */
-    public String AES_Encode(String text) throws Exception{
+    public static String AES_Encode(String text) throws Exception{
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
         IvParameterSpec ivParamSpec = new IvParameterSpec(IV.getBytes());
@@ -80,7 +80,7 @@ public class CryptUtils {
      * @return 복호화된 평문을 Base64인코딩한 문자열
      * @throws Exception
      */
-    public String AES_Decode(String cipherText) throws Exception {
+    public static String AES_Decode(String cipherText) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
         IvParameterSpec ivParamSpec = new IvParameterSpec(IV.getBytes());

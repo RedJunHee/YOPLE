@@ -1,7 +1,8 @@
+
 spring:
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
       naming:
         physical-strategy: com.map.mutual.side.common.config.JPANamingConfig
     open-in-view: true
@@ -13,10 +14,9 @@ spring:
     database: SQL_SERVER
   datasource:
     driverclassname: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    url: jdbc:sqlserver://person.jjhserverworld.pe.kr:49153;instanceName=SpringApplication;DatabaseName=INITDB
+    url: jdbc:sqlserver://172.17.0.3:11443;instanceName=SpringApplication;DatabaseName=CMS_DEV
     username: SA
     password: mutual#!12
-
 
   mvc:
     view:

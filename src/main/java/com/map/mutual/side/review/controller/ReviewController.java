@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -269,22 +271,23 @@ public class ReviewController {
     /**
      * TEST
      */
-    @PostMapping("/emojiAdd")
-    public void emojiAddTest() {
-        ResponseJsonObject responseJsonObject;
+    @PostMapping("/emojiCreate")
+    public ResponseEntity<ResponseJsonObject> emojiAddTest() {
         try {
-            EmojiEntity emojiEntity = EmojiEntity.builder()
-                            .emojiId(EmojiType.GOOD)
-                            .emojiStatus(EmojiType.GOOD)
-                            .emojiImg(EmojiType.GOOD)
-                            .emojiValue(EmojiType.GOOD)
-                    .build();
-            emojiRepo.save(emojiEntity);
+            List<EmojiEntity> emojiEntities = new ArrayList<>();
+                Arrays.stream(EmojiType.values()).forEach(data -> emojiEntities.add(EmojiEntity.builder()
+                        .emojiId(data)
+                        .emojiStatus(data)
+                        .emojiImg(data)
+                        .emojiValue(data)
+                        .build()));
+            emojiRepo.saveAll(emojiEntities);
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (Exception e) {
             throw e;
         }
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
 

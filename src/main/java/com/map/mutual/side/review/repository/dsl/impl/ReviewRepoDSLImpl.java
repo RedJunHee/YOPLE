@@ -99,4 +99,19 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         result.setEmoji(emojis);
         return result;
     }
+
+    @Override
+    public String findByReviewOwnerFcmToken(Long reviewId) {
+        QReviewEntity qReview = new QReviewEntity("qReview");
+        QUserEntity qUser1 = new QUserEntity("qUser1");
+        String result = jpaQueryFactory
+                .select(qUser1.fcmToken)
+//                .select(new QUserEntity(String.valueOf(qUser1.fcmToken)))
+                .from(qUser1)
+                .innerJoin(qReview)
+                .on(qUser1.suid.eq(qReview.userEntity.suid))
+                .where(qReview.reviewId.eq(reviewId))
+                .fetchOne();
+        return result;
+    }
 }

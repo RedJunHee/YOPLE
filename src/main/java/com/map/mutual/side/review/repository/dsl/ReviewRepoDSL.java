@@ -14,4 +14,5 @@ import com.map.mutual.side.review.model.dto.ReviewDto;
  */
 public interface ReviewRepoDSL {
     ReviewDto.ReviewWithInviterDto findByReviewWithInviter(Long reviewId, Long worldId);
+    String findByReviewOwnerFcmToken(Long reviewId);
 }

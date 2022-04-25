@@ -22,9 +22,12 @@ import java.util.concurrent.Executor;
 public class AsyncConfig extends AsyncConfigurerSupport {
     @Bean(name = "YOPLE-Executor")
     public Executor getAsyncExecutor() {
+//        int processors = Runtime.getRuntime().availableProcessors();
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(30);
+//        executor.setCorePoolSize(processors);
+//        executor.setMaxPoolSize(processors * 5);
         executor.setQueueCapacity(300);
         executor.setThreadNamePrefix("YOPLE-ASYNC-");
         executor.initialize();

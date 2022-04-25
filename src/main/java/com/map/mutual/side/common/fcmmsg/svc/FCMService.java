@@ -130,41 +130,40 @@ public class FCMService {
     @Async(value = "YOPLE-Executor")
     public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException {
         String body;
-        String decodedSuid;
+        Map<String, String> msgData = new HashMap<>();
         try {
-             decodedSuid = CryptUtils.AES_Decode(userSuid);
+            switch (msgType) {
+                case A:
+                    String aUserId = userInfoRepo.findBySuid(userSuid).getUserId();
+                    String aWorldName = worldRepo.findByWorldId(worldId).getWorldName();
+                    body = aUserId
+                            + "님이 "
+                            + aWorldName
+                            + "에 회원님을 초대하였습니다.";
+                    msgData.put("worldId", String.valueOf(worldId));
+                    msgData.put("userSuid", CryptUtils.AES_Encode(userSuid));
+                    break;
+                case C:
+                    String cUserId = userInfoRepo.findBySuid(userSuid).getUserId();
+                    String cWorldName = worldRepo.findByWorldId(worldId).getWorldName();
+                    body = cWorldName
+                            + "에서"
+                            + cUserId
+                            + " 님이 내 리뷰에 반응을 남겼습니다.";
+                    msgData.put("worldId", String.valueOf(worldId));
+                    msgData.put("userSuid", CryptUtils.AES_Encode(userSuid));
+                    msgData.put("reviewId", String.valueOf(reviewId));
+
+
+                    break;
+                default:
+                    log.error("[FCM]잘못된 알림 타입 입니다.");
+                    return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+            }
         } catch (Exception e) {
             throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
         }
-        Map<String, String> msgData = new HashMap<>();
-        switch (msgType) {
-            case A:
-                String aUserId = userInfoRepo.findBySuid(decodedSuid).getUserId();
-                String aWorldName = worldRepo.findByWorldId(worldId).getWorldName();
-                body = aUserId
-                        + "님이 "
-                        + aWorldName
-                        + "에 회원님을 초대하였습니다.";
-                msgData.put("worldId", String.valueOf(worldId));
-                msgData.put("userSuid", userSuid);
-                break;
-            case C:
-                String cUserId = userInfoRepo.findBySuid(decodedSuid).getUserId();
-                String cWorldName = worldRepo.findByWorldId(worldId).getWorldName();
-                body = cWorldName
-                        + "에서"
-                        + cUserId
-                        + " 님이 내 리뷰에 반응을 남겼습니다.";
-                msgData.put("worldId", String.valueOf(worldId));
-                msgData.put("userSuid", userSuid);
-                msgData.put("reviewId", String.valueOf(reviewId));
 
-
-                break;
-            default:
-                log.error("[FCM]잘못된 알림 타입 입니다.");
-                return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
-        }
 
         Notification notification = Notification.builder()
                 .setTitle(FCMConstant.YOPLE)

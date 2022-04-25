@@ -275,6 +275,13 @@ public class ReviewServiceImpl implements ReviewService {
             if (emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(userInfoDto.getSuid(), worldId, reviewId, emojiEntity)) {
                 throw new YOPLEServiceException(ApiStatusCode.ALREADY_EMOJI_ADDED);
             }
+
+            if(!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)){
+                String reviewOwnerFcmToken = reviewRepo.findByReviewOwnerFcmToken(reviewId);
+                fcmService.sendNotificationToken(reviewOwnerFcmToken, FCMConstant.MSGType.C, userInfoDto.getSuid(), worldId, reviewId);
+            }
+
+
             EmojiStatusEntity emojiStatusEntity = EmojiStatusEntity.builder()
                     .reviewId(reviewId)
                     .userSuid(userInfoDto.getSuid())
@@ -283,10 +290,6 @@ public class ReviewServiceImpl implements ReviewService {
                     .build();
             emojiStatusRepo.save(emojiStatusEntity);
 
-            if(!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)){
-                String reviewOwnerFcmToken = reviewRepo.findByReviewOwnerFcmToken(reviewId);
-                fcmService.sendNotificationToken(reviewOwnerFcmToken, FCMConstant.MSGType.C, userInfoDto.getSuid(), worldId, reviewId);
-            }
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (InterruptedException e) {

@@ -26,6 +26,6 @@ public class JWTRefreshTokenLogEntity {
     @Column(name="USER_SUID", insertable = false, updatable = false, columnDefinition = "VARCHAR(18)")
     private String userSuid;
 
-    @Column(name = "REFRESH_TOKEN", nullable = false, columnDefinition = "VARCHAR(200)")
+    @Column(name = "REFRESH_TOKEN", nullable = false, columnDefinition = "VARCHAR(300)")
     private String refreshToken;
 }

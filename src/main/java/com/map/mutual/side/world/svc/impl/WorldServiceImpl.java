@@ -3,6 +3,8 @@ package com.map.mutual.side.world.svc.impl;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
+import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
+import com.map.mutual.side.world.repository.WorldJoinLogRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -34,16 +36,19 @@ public class WorldServiceImpl implements WorldService {
     private ModelMapper modelMapper;
     private UserInfoRepo userInfoRepo;
     private ReviewWorldMappingRepository reviewWorldMappingRepo;
+    private WorldJoinLogRepo worldJoinLogRepo;
 
     @Autowired
     public WorldServiceImpl(WorldRepo worldRepo, WorldUserMappingRepo worldUserMappingRepo
             , ModelMapper modelMapper, UserInfoRepo userInfoRepo
-            , ReviewWorldMappingRepository reviewWorldMappingRepo) {
+            , ReviewWorldMappingRepository reviewWorldMappingRepo
+    , WorldJoinLogRepo worldJoinLogRepo) {
         this.worldRepo = worldRepo;
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.modelMapper = modelMapper;
         this.userInfoRepo = userInfoRepo;
         this.reviewWorldMappingRepo = reviewWorldMappingRepo;
+        this.worldJoinLogRepo = worldJoinLogRepo;
     }
 
 
@@ -86,7 +91,14 @@ public class WorldServiceImpl implements WorldService {
         // 6. 월드 매핑 저장.
         worldUserMappingRepo.save(worldUserMappingEntity);
 
-        // 7. 생성된 월드 정보 DTO 생성.
+        // 7. 월드 입장 처리
+        WorldJoinLogEntity join = WorldJoinLogEntity.builder().worldId(createWorld.getWorldId())
+                .userSuid(userInfoDto.getSuid())
+                .build();
+
+        worldJoinLogRepo.save(join);
+
+        // 8. 생성된 월드 정보 DTO 생성.
         WorldDto createdWorld = WorldDto.builder().worldId(createWorld.getWorldId())
                 .worldDesc(createWorld.getWorldDesc())
                 .worldName(createWorld.getWorldName())

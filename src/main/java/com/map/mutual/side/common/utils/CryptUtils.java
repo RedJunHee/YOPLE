@@ -1,5 +1,8 @@
 package com.map.mutual.side.common.utils;
 
+import com.map.mutual.side.common.dto.ResponseJsonObject;
+import com.map.mutual.side.common.enumerate.ApiStatusCode;
+import com.map.mutual.side.common.exception.YOPLEServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,15 +66,21 @@ public class CryptUtils {
      * @return 평문을 AES256으로 암호화 후 Base64인코딩한 문자열
      * @throws Exception
      */
-    public static String AES_Encode(String text) throws Exception{
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
-        IvParameterSpec ivParamSpec = new IvParameterSpec(IV.getBytes());
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParamSpec);
+    public static String AES_Encode(String text) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
-        byte[] encrypted = cipher.doFinal(text.getBytes("UTF-8"));
-        return Base64.getEncoder().encodeToString(encrypted);
+            SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
+            IvParameterSpec ivParamSpec = new IvParameterSpec(IV.getBytes());
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParamSpec);
 
+            byte[] encrypted = cipher.doFinal(text.getBytes("UTF-8"));
+            return Base64.getEncoder().encodeToString(encrypted);
+        }catch(Exception e){
+                YOPLEServiceException exception = new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+                exception.getResponseJsonObject().getMeta().setMsg("암호 변조된 값이 존재합니다. 보안 위험.");
+                throw exception;
+        }
     }
 
     /**
@@ -80,14 +89,20 @@ public class CryptUtils {
      * @return 복호화된 평문을 Base64인코딩한 문자열
      * @throws Exception
      */
-    public static String AES_Decode(String cipherText) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
-        IvParameterSpec ivParamSpec = new IvParameterSpec(IV.getBytes());
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivParamSpec);
+    public static String AES_Decode(String cipherText)  {
+        try {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
+            IvParameterSpec ivParamSpec = new IvParameterSpec(IV.getBytes());
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivParamSpec);
 
-        byte[] decodedBytes = Base64.getDecoder().decode(cipherText);
-        byte[] decrypted = cipher.doFinal(decodedBytes);
-        return new String(decrypted, "UTF-8");
+            byte[] decodedBytes = Base64.getDecoder().decode(cipherText);
+            byte[] decrypted = cipher.doFinal(decodedBytes);
+            return new String(decrypted, "UTF-8");
+        }catch(Exception e) {
+            YOPLEServiceException exception = new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+            exception.getResponseJsonObject().getMeta().setMsg("암호 변조된 값이 존재합니다. 보안 위험.");
+            throw exception;
+        }
     }
 }

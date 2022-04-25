@@ -11,6 +11,7 @@ import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
 import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
+import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
@@ -51,8 +52,12 @@ public class FCMService {
     public ResponseEntity<ResponseJsonObject> generateToken(String token) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-
-        UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+        UserEntity userEntity;
+        try {
+            userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+        } catch (Exception e) {
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+        }
         if (userEntity.getFcmToken() == null) {
             userEntity.setFcmToken(token);
             userInfoRepo.save(userEntity);
@@ -78,7 +83,7 @@ public class FCMService {
             userEntity.setFcmToken(token);
             userInfoRepo.save(userEntity);
 
-            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(userEntity.getSuid());
+            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(CryptUtils.AES_Decode(userEntity.getSuid()));
             if (!worldUserMappingEntities.isEmpty()) {
                 worldUserMappingEntities.forEach(data -> {
                     try {
@@ -92,8 +97,8 @@ public class FCMService {
                 });
                 fcmTopicRepository.saveAll(fcmTopicEntities);
             }
-        } catch (YOPLEServiceException e) {
-            throw e;
+        } catch (Exception e) {
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
         }
     }
 
@@ -117,18 +122,24 @@ public class FCMService {
                 fcmTopicRepository.deleteAll(fcmTopicEntities);
                 userInfoRepo.save(userEntity);
             }
-        } catch (YOPLEServiceException e) {
-            throw e;
+        } catch (Exception e) {
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
         }
     }
 
     @Async(value = "YOPLE-Executor")
     public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException {
         String body;
+        String decodedSuid;
+        try {
+             decodedSuid = CryptUtils.AES_Decode(userSuid);
+        } catch (Exception e) {
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+        }
         Map<String, String> msgData = new HashMap<>();
         switch (msgType) {
             case A:
-                String aUserId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String aUserId = userInfoRepo.findBySuid(decodedSuid).getUserId();
                 String aWorldName = worldRepo.findByWorldId(worldId).getWorldName();
                 body = aUserId
                         + "님이 "
@@ -138,7 +149,7 @@ public class FCMService {
                 msgData.put("userSuid", userSuid);
                 break;
             case C:
-                String cUserId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String cUserId = userInfoRepo.findBySuid(decodedSuid).getUserId();
                 String cWorldName = worldRepo.findByWorldId(worldId).getWorldName();
                 body = cWorldName
                         + "에서"
@@ -176,10 +187,16 @@ public class FCMService {
     @Async(value = "YOPLE-Executor")
     public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) {
         String body;
+        String decodedSuid;
+        try {
+            decodedSuid = CryptUtils.AES_Decode(userSuid);
+        } catch (Exception e) {
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+        }
         Map<String, String> msgData = new HashMap<>();
         switch (msgType) {
             case B:
-                String userId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String userId = userInfoRepo.findBySuid(decodedSuid).getUserId();
                 String worldName  = worldRepo.findByWorldId(worldId).getWorldName();
                 body = worldName
                         + "에 "

@@ -21,7 +21,9 @@ public class UserInWorld {
     public void setIsHost(String isHost) {
         this.isHost = isHost;
     }
-
+    public void suidChange(String decodingSuid){
+        suid = decodingSuid;
+    }
 
     @Builder
     @QueryProjection

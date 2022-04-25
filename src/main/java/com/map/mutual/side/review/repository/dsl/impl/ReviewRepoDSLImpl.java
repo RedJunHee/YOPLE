@@ -1,14 +1,25 @@
 package com.map.mutual.side.review.repository.dsl.impl;
 
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.review.model.dto.QReviewDto_ReviewWithInviterDto;
 import com.map.mutual.side.review.model.dto.ReviewDto;
+import com.map.mutual.side.review.model.entity.EmojiStatusEntity;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
+import com.map.mutual.side.review.model.enumeration.EmojiType;
+import com.map.mutual.side.review.repository.EmojiStatusRepo;
 import com.map.mutual.side.review.repository.dsl.ReviewRepoDSL;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * fileName       : ReviewRepoDSLImpl
@@ -22,14 +33,19 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class ReviewRepoDSLImpl implements ReviewRepoDSL {
     private final JPAQueryFactory jpaQueryFactory;
+    private final EmojiStatusRepo emojiStatusRepo;
 
-    public ReviewRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
+    public ReviewRepoDSLImpl(JPAQueryFactory jpaQueryFactory, EmojiStatusRepo emojiStatusRepo) {
         this.jpaQueryFactory = jpaQueryFactory;
+        this.emojiStatusRepo = emojiStatusRepo;
     }
 
 
     @Override
     public ReviewDto.ReviewWithInviterDto findByReviewWithInviter(Long reviewId, Long worldId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
         QReviewEntity qReview = new QReviewEntity("qReview");
         QReviewWorldMappingEntity qReviewWorldMappingEntity = new QReviewWorldMappingEntity("qReviewWorldMappingEntity");
         QWorldUserMappingEntity qWorldUserMappingEntity1 = new QWorldUserMappingEntity("qWorldUserMappingEntity1");
@@ -38,7 +54,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         QUserEntity qUser2 = new QUserEntity("qUser2");
 
 
-        ReviewDto.ReviewWithInviterDto result =  jpaQueryFactory.select(new QReviewDto_ReviewWithInviterDto(
+        ReviewDto.ReviewWithInviterDto result = jpaQueryFactory.select(new QReviewDto_ReviewWithInviterDto(
                         qReview.reviewId,
                         qReview.content,
                         qReview.imageUrl,
@@ -62,6 +78,25 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                         .and(qWorldUserMappingEntity1.worldEntity.worldId.eq(worldId)))
                 .fetchOne();
 
+        //Emoji 끌어오기.
+        List<ReviewDto.ReviewWithInviterDto.TempEmoji> emojis = new ArrayList<>();
+        List<EmojiStatusEntity> emojiStatusEntityList = emojiStatusRepo.findAllByReviewIdAndWorldId(reviewId, worldId);
+        for (int i = 1; i <= EmojiType.EMOJI_NUM; i++) {
+            Long emojiNum = (long) i;
+            if (emojiStatusEntityList.stream().noneMatch(data -> data.getEmojiEntity().getEmojiId().getId().equals(emojiNum))) {
+
+            } else {
+                ReviewDto.ReviewWithInviterDto.TempEmoji emoji = ReviewDto.ReviewWithInviterDto.TempEmoji.builder()
+                        .emojiType(emojiNum)
+                        .typeQuantity(emojiStatusEntityList.stream().filter(data -> Objects.equals(data.getEmojiEntity().getEmojiId().getId(), emojiNum)).count())
+                        .isChecked(emojiStatusEntityList.stream().filter(data -> data.getEmojiEntity().getEmojiId().getId().equals(emojiNum)).anyMatch(data -> data.getUserSuid().equals(userInfoDto.getSuid())))
+                        .createdDt(emojiStatusEntityList.stream().filter(data -> data.getEmojiEntity().getEmojiId().getId().equals(emojiNum)).min(Comparator.comparing(EmojiStatusEntity::getWorldId)).get().getCreateTime())
+                        .build();
+
+                emojis.add(emoji);
+            }
+        }
+        result.setEmoji(emojis);
         return result;
     }
 }

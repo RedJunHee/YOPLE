@@ -74,6 +74,19 @@ public class ReviewDto {
         private String[] imageUrls;
         private String createDt;
 
+        private List<TempEmoji> emoji;
+
+        @AllArgsConstructor
+        @Builder
+        @NoArgsConstructor
+        @Getter
+        public static class TempEmoji {
+            private Long emojiType;
+            private Long typeQuantity;
+            private boolean isChecked;
+            private LocalDateTime createdDt;
+        }
+
         @QueryProjection
         public ReviewWithInviterDto(Long reviewId, String content, String imageUrls , String userid, String inviterUserId, LocalDateTime createDt) {
             this.reviewId = reviewId;
@@ -88,5 +101,6 @@ public class ReviewDto {
             this.createDt = LocalDate.of(createDt.getYear(), createDt.getMonth(), createDt.getDayOfMonth()).toString();
 
         }
+
     }
 }

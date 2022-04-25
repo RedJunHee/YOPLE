@@ -1,7 +1,6 @@
 package com.map.mutual.side.review.svc;
 
 import com.map.mutual.side.review.model.dto.*;
-import com.map.mutual.side.review.model.enumeration.EmojiType;
 
 import java.util.List;
 
@@ -23,5 +22,5 @@ public interface ReviewService {
     List<ReviewDto> myReviews();
     List<PlaceDto.PlaceSimpleDto> worldPinPlaceInRange(PlaceRangeDto placeRangeDto);
     PlaceDetailDto placeDetail(String placeId, Long worldId);
-    void addEmoji(Long reviewId, Long worldId, EmojiType emojiType);
+    void addEmoji(Long reviewId, Long worldId, Long emojiId);
 }

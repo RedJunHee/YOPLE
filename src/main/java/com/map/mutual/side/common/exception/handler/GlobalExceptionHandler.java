@@ -28,8 +28,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private final Logger logger = LogManager.getLogger(GlobalExceptionHandler.class);
 
     // 사용자 정의 예외
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ResponseJsonObject> handleRuntimeException(RuntimeException ex) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ResponseJsonObject> handleException(Exception ex) {
         logger.debug("RuntimeExceptionHandler : " + ex.getMessage());
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.BAD_REQUEST);
     }

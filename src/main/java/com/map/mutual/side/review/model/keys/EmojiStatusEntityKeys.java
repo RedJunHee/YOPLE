@@ -18,4 +18,5 @@ public class EmojiStatusEntityKeys implements Serializable {
     private String userSuid;
     private Long worldId;
     private Long reviewId;
+    private Long emojiId;
 }

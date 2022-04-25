@@ -65,7 +65,7 @@ public class JwtTokenProvider {
         String jwt ="";
         try {
             jwt = Jwts.builder()
-                    .setSubject(userDetails.getSuid())
+                    .setSubject(cryptUtils.AES_Encode(userDetails.getSuid()))
                     .signWith(key, SignatureAlgorithm.HS512)
                     .setExpiration(validity)
                     .compact();
@@ -84,7 +84,7 @@ public class JwtTokenProvider {
         String jwt ="";
         try {
             jwt = Jwts.builder()
-                    .setSubject(suid)
+                    .setSubject(cryptUtils.AES_Encode(suid))
                     .signWith(key, SignatureAlgorithm.HS512)
                     .setExpiration(validity)
                     .compact();
@@ -114,7 +114,11 @@ public class JwtTokenProvider {
         String suid = null ;
         try {
 
-            suid = claims.getSubject();
+            // TODO: 2022/04/24 토큰 갱신 암호화 안된 SUID도 갱신 가능하게 설정 됨.
+            if(claims.getSubject().startsWith("YO"))
+                suid = claims.getSubject();
+            else
+                suid = cryptUtils.AES_Decode(claims.getSubject());
 
         } catch (Exception e) {
             logger.error("Token get Authentication Error "+ e.getMessage());
@@ -142,7 +146,11 @@ public class JwtTokenProvider {
         String suid = null ;
         try {
 
-            suid = claims.getSubject();
+            // TODO: 2022/04/24 토큰 갱신 암호화 안된 SUID도 갱신 가능하게 설정 됨.
+            if(claims.getSubject().startsWith("YO"))
+                suid = claims.getSubject();
+            else
+                suid = cryptUtils.AES_Decode(claims.getSubject());
 
         } catch (Exception e) {
             logger.error("Token get Authentication Error "+ e.getMessage());

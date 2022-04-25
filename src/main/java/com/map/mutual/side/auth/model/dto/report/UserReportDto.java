@@ -19,4 +19,8 @@ public class UserReportDto {
     private String reportSuid;
     private String reportTitle;
     private String reportDesc;
+
+    public void suidChange(String decodingSuid){
+        reportSuid = decodingSuid;
+    }
 }

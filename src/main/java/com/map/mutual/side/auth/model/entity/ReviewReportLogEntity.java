@@ -36,7 +36,7 @@ public class ReviewReportLogEntity extends CreateDtEntity implements Persistable
     @Column(name = "REPORT_TITLE", nullable = false, columnDefinition = "VARCHAR(100)")
     private String reportTitle;
 
-    @Column(name = "REPORT_DESC", nullable = false, columnDefinition = "VARCHAR(500)")
+    @Column(name = "REPORT_DESC", nullable = false, columnDefinition = "VARCHAR(1000)")
     private String reportDesc;
 
     @Override

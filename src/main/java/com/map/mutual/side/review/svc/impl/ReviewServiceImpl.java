@@ -4,7 +4,6 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
-import com.map.mutual.side.common.enumerate.BooleanType;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.review.model.dto.*;
 import com.map.mutual.side.review.model.entity.*;
@@ -240,7 +239,6 @@ public class ReviewServiceImpl implements ReviewService {
                     .build();
 
             tempReview = placeRepo.findPlaceDetails(worldId, placeId);
-
             tempReview.sort(new PlaceDetailDto.TempReview.TempReviewComparatorByImageNum());
 
 
@@ -254,29 +252,28 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void addEmoji(Long reviewId, Long worldId, EmojiType emojiType) {
+    public void addEmoji(Long reviewId, Long worldId, Long emojiId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         try {
-            EmojiEntity emojiEntity = emojiRepo.findByEmojiValue(emojiType);
-            if(!emojiEntity.getEmojiStatus().equals(BooleanType.Y)) {
+            EmojiEntity emojiEntity = emojiRepo.findByEmojiId(EmojiType.findId(emojiId));
+            if (!emojiEntity.getEmojiStatus().equals(EmojiType.findActiveType(EmojiType.findId(emojiId).getActiveType()))) {
                 throw new YOPLEServiceException(ApiStatusCode.NOT_USABLE_EMOJI);
             }
-            if(emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(userInfoDto.getSuid(), worldId, reviewId, emojiEntity)){
+            if (emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(userInfoDto.getSuid(), worldId, reviewId, emojiEntity)) {
                 throw new YOPLEServiceException(ApiStatusCode.ALREADY_EMOJI_ADDED);
             }
             EmojiStatusEntity emojiStatusEntity = EmojiStatusEntity.builder()
                     .reviewId(reviewId)
                     .userSuid(userInfoDto.getSuid())
                     .worldId(worldId)
-                    .emojiEntity(emojiEntity)
+                    .emojiId(emojiEntity.getEmojiId().getId())
                     .build();
             emojiStatusRepo.save(emojiStatusEntity);
         } catch (YOPLEServiceException e) {
             throw e;
         }
     }
-
 
 
 }

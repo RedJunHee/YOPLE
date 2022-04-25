@@ -1,22 +1,35 @@
 package com.map.mutual.side.auth.svc.impl;
 
-import com.map.mutual.side.auth.constant.SMSService;
-import com.map.mutual.side.auth.model.dto.*;
 import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
 import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
+import com.map.mutual.side.auth.component.SmsSender;
+import com.map.mutual.side.auth.model.dto.UserInWorld;
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
+import com.map.mutual.side.auth.model.entity.JWTRefreshTokenLogEntity;
+import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.auth.model.entity.UserTOSEntity;
+import com.map.mutual.side.auth.model.entity.UserWorldInvitingLogEntity;
+import com.map.mutual.side.auth.repository.JWTRepo;
+import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.map.mutual.side.auth.repository.UserTOSRepo;
+import com.map.mutual.side.auth.repository.UserWorldInvitingLogRepo;
 import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
 import com.map.mutual.side.auth.model.dto.report.UserReportDto;
 import com.map.mutual.side.auth.model.entity.*;
 import com.map.mutual.side.auth.repository.*;
+import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
 import com.map.mutual.side.world.repository.WorldJoinLogRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
+import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
@@ -33,12 +46,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +63,6 @@ import java.util.stream.Collectors;
  * 2022/03/16        kimjaejung       최초 생성
  */
 @Service
-@Log4j2
 public class UserServiceImpl implements UserService {
     private final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 
@@ -63,7 +74,8 @@ public class UserServiceImpl implements UserService {
     private JWTRepo jwtRepo;
     private UserWorldInvitingLogRepo userWorldInvitingLogRepo;
     private UserTOSRepo userTOSRepo;
-    private SMSService smsService;
+    private SmsSender smsSender;
+    private FCMService fcmService;
     private UserBlockLogRepo userBlockLogRepo;
     private UserReportLogRepo userReportLogRepo;
     private ReviewReportLogRepo reviewReportLogRepo;
@@ -71,10 +83,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo
             , ModelMapper modelMapper, WorldRepo worldRepo, JWTRepo jwtRepo
-            , UserWorldInvitingLogRepo userWorldInvitingLogRepo
-            , UserTOSRepo userTOSRepo
-    ,SMSService smsService, WorldJoinLogRepo worldJoinLogRepo, UserBlockLogRepo userBlockLogRepo,
-                           UserReportLogRepo userReportLogRepo, ReviewReportLogRepo reviewReportLogRepo) {
+            , UserWorldInvitingLogRepo userWorldInvitingLogRepo , UserTOSRepo userTOSRepo
+            , FCMService fcmService , SmsSender smsSender ,WorldJoinLogRepo worldJoinLogRepo
+            , UserBlockLogRepo userBlockLogRepo, UserReportLogRepo userReportLogRepo
+            , ReviewReportLogRepo reviewReportLogRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
@@ -82,7 +94,8 @@ public class UserServiceImpl implements UserService {
         this.jwtRepo = jwtRepo;
         this.userWorldInvitingLogRepo = userWorldInvitingLogRepo;
         this.userTOSRepo = userTOSRepo;
-        this.smsService = smsService;
+        this.fcmService = fcmService;
+        this.smsSender = smsSender;
         this.worldJoinLogRepo = worldJoinLogRepo;
         this.userBlockLogRepo = userBlockLogRepo;
         this.userReportLogRepo = userReportLogRepo;
@@ -128,7 +141,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public UserInfoDto findUser(String id, String phone) throws YOPLEServiceException {
+    public UserInfoDto findUser(String id, String phone) throws YOPLEServiceException, Exception {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
 
@@ -147,13 +160,13 @@ public class UserServiceImpl implements UserService {
         //폰으로 검색.
         if(StringUtil.isNullOrEmpty(id) == true) {
             userInfoDto = UserInfoDto.builder()
-                    .suid(userEntity.getSuid())
+                    .suid(CryptUtils.AES_Encode(userEntity.getSuid()))
                     .build();
 
         }
         else { // 유저 ID로 검색.
             userInfoDto = UserInfoDto.builder()
-                    .suid(userEntity.getSuid())
+                    .suid(CryptUtils.AES_Encode(userEntity.getSuid()))
                     .userId(userEntity.getUserId())
                     .name(userEntity.getName())
                     .profileUrl(userEntity.getProfileUrl())
@@ -173,16 +186,16 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-        @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-        public WorldDto JoinWorld( String worldInvitationCode) throws YOPLEServiceException {
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    public WorldDto JoinWorld( String worldInvitationCode) throws YOPLEServiceException {
 
-            // 1. 사용자 SUID 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        // 1. 사용자 SUID 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
-            // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
-            Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
+        // 2. 사용자가 월드에 이미 가입 되어있는지 확인.
+        // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
+        Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
 
         if (inviteWorldId == null) {
             logger.error("해당 사용자가 이미 월드에 속해있습니다.");
@@ -209,7 +222,17 @@ public class UserServiceImpl implements UserService {
         WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
                 .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
 
-        // 5. 참여한 월드 정보 리턴.
+        // 5. 월드에 참여된 사용자들에게 알림 전송
+        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid(), null);
+        response.thenAccept(d -> {
+            if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
+                logger.info(d.getDesc());
+            } else {
+                logger.error(d.getDesc());
+            }
+        });
+
+        // 6. 참여한 월드 정보 리턴.
         return WorldDto.builder().worldId(world.getWorldId())
                 .worldName(world.getWorldName())
                 .worldDesc(world.getWorldDesc()).build();
@@ -332,7 +355,7 @@ public class UserServiceImpl implements UserService {
         if(userWorldInvitingLogRepo.findOneByUserSuidAndTargetSuidAndWorldIdAndInvitingStatus(suid,targetSuid,worldId,"-").isPresent())
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_INVITING_STATUS);
 
-        // TODO: 2022-04-15  PUSH 알림 보내기 개발 되어야함. 
+        // TODO: 2022-04-15  PUSH 알림 보내기 개발 되어야함.
         // 3. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
         if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,targetSuid).isPresent() == true )
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
@@ -373,7 +396,7 @@ public class UserServiceImpl implements UserService {
         String worldUserCode = worldMapping.get().getWorldUserCode();
 
         try {
-            smsService.inviteSendMessage(targetPhone, phone, worldUserCode);
+            smsSender.inviteSendMessage(targetPhone, phone, worldUserCode);
         }catch(IOException e){
             throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR,"SMS 서비스가 원활하지 않습니다.");
         }
@@ -387,10 +410,14 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public List<UserInWorld> worldUsers(long worldId, String suid) {
+    public List<UserInWorld> worldUsers(long worldId, String suid) throws Exception {
         List<UserInWorld> userInfoEntities;
 
         userInfoEntities = worldUserMappingRepo.findAllUsersInWorld(worldId, suid);
+
+        //suid 암호화.
+        for(UserInWorld user : userInfoEntities)
+            user.suidChange(CryptUtils.AES_Encode( user.getSuid() ));
 
         return userInfoEntities;
     }
@@ -402,10 +429,14 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-13] - 조 준 희 - Create
      */
     @Override
-    public NotiDto notificationList(String suid) {
+    public NotiDto notificationList(String suid) throws Exception {
 
 
         List<InvitedNotiDto> invitedNotiList =   userWorldInvitingLogRepo.InvitedNotiList(suid);
+
+        for(InvitedNotiDto noti : invitedNotiList)
+            noti.decodingSuid();
+
         List<WorldEntryNotiDto> worldEntryNotiList =  worldUserMappingRepo.WorldEntryNotiList(suid);
 
 

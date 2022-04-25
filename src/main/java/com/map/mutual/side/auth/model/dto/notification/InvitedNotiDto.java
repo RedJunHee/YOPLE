@@ -1,6 +1,7 @@
 package com.map.mutual.side.auth.model.dto.notification;
 
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
+import com.map.mutual.side.common.utils.CryptUtils;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 
@@ -22,6 +23,10 @@ public class InvitedNotiDto extends notificationDto {
         data = new Data(inviteNumber,userSuid,worldUserCode);
     }
 
+    public void decodingSuid() throws Exception {
+        ((Data)data).userSuid = CryptUtils.AES_Encode(((Data)data).userSuid);
+    }
+
     @Getter
     private static class Payload{
         private String userId;
@@ -40,6 +45,8 @@ public class InvitedNotiDto extends notificationDto {
         private Long inviteNumber;
         private String userSuid;
         private String worldUserCode;
+
+
 
         public Data(Long inviteNumber, String userSuid, String worldUserCode) {
             this.inviteNumber = inviteNumber;

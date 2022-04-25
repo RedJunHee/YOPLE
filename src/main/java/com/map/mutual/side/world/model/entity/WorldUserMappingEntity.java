@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @IdClass(WorldUserMappingEntityKeys.class)
-public class WorldUserMappingEntity extends CreateDtEntity implements Persistable<WorldUserMappingEntityKeys> {
+public class WorldUserMappingEntity implements Persistable<WorldUserMappingEntityKeys> {
     @Id
     @Column(name="USER_SUID", nullable = false, columnDefinition = "VARCHAR(18)")
     private String userSuid;

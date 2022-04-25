@@ -86,12 +86,13 @@ public class AuthController {
             // 2. SMS 인증 번호 생성
             String smsAuthNum = YOPLEUtils.getSMSAuth();
 
+            // 3. 로그 저장
+            authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);
+
             // 2. 핸드폰 번호 인증 요청
 
             smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
-            // 3. 로그 저장
-            authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);
         }
         catch(Exception e){
             throw e;

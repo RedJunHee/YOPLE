@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 
@@ -20,7 +21,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class WorldJoinLogEntity extends CreateDtEntity {
+public class WorldJoinLogEntity extends CreateDtEntity implements Persistable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +35,13 @@ public class WorldJoinLogEntity extends CreateDtEntity {
     private Long worldId;
 
 
+    @Override
+    public Object getId() {
+        return seq;
+    }
 
-
+    @Override
+    public boolean isNew() {
+        return getCreateTime() == null ;
+    }
 }

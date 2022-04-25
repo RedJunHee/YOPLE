@@ -100,7 +100,7 @@ public class CryptUtils {
             byte[] decrypted = cipher.doFinal(decodedBytes);
             return new String(decrypted, "UTF-8");
         }catch(Exception e) {
-            YOPLEServiceException exception = new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            YOPLEServiceException exception = new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
             exception.getResponseJsonObject().getMeta().setMsg("암호 변조된 값이 존재합니다. 보안 위험.");
             throw exception;
         }

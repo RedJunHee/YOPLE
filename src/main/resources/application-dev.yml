@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
       naming:
         physical-strategy: com.map.mutual.side.common.config.JPANamingConfig
     open-in-view: true

@@ -113,11 +113,6 @@ public class JwtTokenProvider {
 
         String suid = null ;
         try {
-
-            // TODO: 2022/04/24 토큰 갱신 암호화 안된 SUID도 갱신 가능하게 설정 됨.
-            if(claims.getSubject().startsWith("YO"))
-                suid = claims.getSubject();
-            else
                 suid = cryptUtils.AES_Decode(claims.getSubject());
 
         } catch (Exception e) {
@@ -145,11 +140,6 @@ public class JwtTokenProvider {
 
         String suid = null ;
         try {
-
-            // TODO: 2022/04/24 토큰 갱신 암호화 안된 SUID도 갱신 가능하게 설정 됨.
-            if(claims.getSubject().startsWith("YO"))
-                suid = claims.getSubject();
-            else
                 suid = cryptUtils.AES_Decode(claims.getSubject());
 
         } catch (Exception e) {

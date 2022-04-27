@@ -33,6 +33,7 @@ public class AuthenticationExceptionHandler  implements AuthenticationEntryPoint
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(200);
 
         ServletOutputStream out = response.getOutputStream();
         om.writeValue(out,new CustomAuthenticationException().getResponseJsonObject());

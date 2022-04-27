@@ -363,7 +363,7 @@ public class UserServiceImpl implements UserService {
 
         // 4. 차단 당했는지 여부. 차단 당했다면 바로 OK(200) 리턴
         // 차단 여부 보다. 1,2,3의 예외가 우선이기에 차단여부가이 가장 마지막.
-        if(userBlockLogRepo.existsByUserSuidAndBlockSuidAndAndIsBlocking(targetSuid,suid,"Y")){
+        if(userBlockLogRepo.existsByUserSuidAndBlockSuidAndIsBlocking(targetSuid,suid,"Y")){
             throw new YOPLEServiceException(ApiStatusCode.OK);
         }
 
@@ -421,11 +421,20 @@ public class UserServiceImpl implements UserService {
         List<UserInWorld> userInfoEntities;
 
         userInfoEntities = worldUserMappingRepo.findAllUsersInWorld(worldId, suid);
+        List<UserBlockLogEntity> blocks = userBlockLogRepo.findByUserSuidAndIsBlocking(suid,"Y");
 
-        //suid 암호화.
-        for(UserInWorld user : userInfoEntities)
-            user.suidChange(CryptUtils.AES_Encode( user.getSuid() ));
+        // suid 암호화.
+        // 차단된 사용자 제거. 필터링.
+        for(int i = 0 ;  i < userInfoEntities.size() ; i++ ) {
+            UserInWorld user = userInfoEntities.get(i);
+            if(blocks.stream().anyMatch(v -> v.getBlockSuid().equals(user.getSuid()))){
+                userInfoEntities.remove(i);
+                i--;
+                continue;
+            }
 
+            user.suidChange(CryptUtils.AES_Encode(user.getSuid()));
+        }
         return userInfoEntities;
     }
 
@@ -566,7 +575,7 @@ public class UserServiceImpl implements UserService {
     public void block(String suid, UserBlockDto userBlockDto) {
 
         // 이미 차단된 유저인지 조회.
-        if( userBlockLogRepo.existsByUserSuidAndBlockSuidAndAndIsBlocking(suid, userBlockDto.getBlockSuid(), "Y"))
+        if( userBlockLogRepo.existsByUserSuidAndBlockSuidAndIsBlocking(suid, userBlockDto.getBlockSuid(), "Y"))
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_USER_BLOCKING);
 
         UserBlockLogEntity block = UserBlockLogEntity.builder()

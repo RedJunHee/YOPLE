@@ -36,6 +36,47 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * Description :
+     * CREATE TABLE #EMOJI_NOTIS(
+     *     WORLD_ID BIGINT,
+     *     REVIEW_ID BIGINT,
+     *     USER_SUID VARCHAR(18),
+     *     CREATE_DT DATETIME
+     * )
+     *
+     * CREATE TABLE #BLOCK(
+     *     BLOCK_SUID VARCHAR(18),
+     *     START_DT DATETIME,
+     *     END_DT DATETIME
+     * )
+     *
+     * INSERT INTO #BLOCK
+     * SELECT BLOCK_SUID, CREATE_DT, CASE WHEN IS_BLOCKING = 'Y' THEN '2999-01-01' ELSE UPDATE_DT END
+     *     FROM USER_BLOCK_LOG
+     *     WHERE USER_SUID = 'YO2022042527090787'
+     *
+     * 	SELECT * FROM #BLOCK
+     *
+     *
+     * INSERT INTO #EMOJI_NOTIS
+     * SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT, b.BLOCK_SUID
+     *     FROM  EMOJI_STATUS e
+     *     LEFT JOIN REVIEW r
+     *     ON r.REVIEW_ID = e.REVIEW_ID
+     *     LEFT JOIN #BLOCK b
+     *     ON  b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT
+     *     WHERE e.CREATE_DT BETWEEN  '1999-01-01' AND '2022-05-06' AND  r.USER_SUID = 'YO2022042527090787' AND BLOCK_SUID IS NULL
+     *     GROUP BY e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT
+     *
+     *     SELECT notis.REVIEW_ID, notis.WORLD_ID,
+     *         u.[USER_ID], w.NAME, place.PLACE_ID, place.X, place.Y, notis.CREATE_DT
+     *     FROM #EMOJI_NOTIS notis
+     *     LEFT JOIN
+     * Name        :
+     * Author      : 조 준 희
+     * History     : [2022/04/27] - 조 준 희 - Create
+     */
     @Override
     public List<EmojiNotiDto> findEmojiNotis(String suid) {
 
@@ -67,7 +108,7 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
                 " INNER JOIN REVIEW r\n" +
                 "    ON r.REVIEW_ID = e.REVIEW_ID\n" +
                 "  LEFT JOIN #BLOCK b\n" +
-                "    ON  b.START_DT <= e.CREATE_DT  AND e.CREATE_DT >= b.END_DT\n" +
+                "    ON  b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT\n" +
                 " WHERE e.CREATE_DT BETWEEN  ? AND ? AND  r.USER_SUID = ? AND BLOCK_SUID IS NULL\n" +
                 " GROUP BY e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT \n" +
 

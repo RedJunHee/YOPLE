@@ -357,10 +357,15 @@ public class UserServiceImpl implements UserService {
         if(userWorldInvitingLogRepo.findOneByUserSuidAndTargetSuidAndWorldIdAndInvitingStatus(suid,targetSuid,worldId,"-").isPresent())
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_INVITING_STATUS);
 
-        // TODO: 2022-04-15  PUSH 알림 보내기 개발 되어야함.
         // 3. 초대받는자가 월드에 참여인경우 ALREADY_WORLD_MEMEBER Exception
         if( worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,targetSuid).isPresent() == true )
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
+
+        // 4. 차단 당했는지 여부. 차단 당했다면 바로 OK(200) 리턴
+        // 차단 여부 보다. 1,2,3의 예외가 우선이기에 차단여부가이 가장 마지막.
+        if(userBlockLogRepo.existsByUserSuidAndBlockSuidAndAndIsBlocking(targetSuid,suid,"Y")){
+            throw new YOPLEServiceException(ApiStatusCode.OK);
+        }
 
         // 월드 참여 매핑 설정
         UserWorldInvitingLogEntity userWorldInvitingLogEntity = UserWorldInvitingLogEntity.builder()

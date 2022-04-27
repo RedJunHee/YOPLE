@@ -21,7 +21,7 @@ public class WorldEntryNotiDto extends notificationDto {
         payload = new Payload(userId,userProfileUrl,worldName);
     }
 
-
+    public LocalDateTime PushDate(){return getHeader().getPushDate();}
 
     @Getter
     private static class Payload{

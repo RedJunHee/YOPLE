@@ -9,6 +9,8 @@ import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
+import com.map.mutual.side.auth.model.dto.notification.EmojiNotiDto;
+import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
 import com.map.mutual.side.auth.model.dto.report.UserReportDto;
 import com.map.mutual.side.auth.model.entity.*;
@@ -20,6 +22,7 @@ import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.common.utils.YOPLEUtils;
+import com.map.mutual.side.review.repository.EmojiStatusRepo;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
@@ -39,11 +42,16 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import static org.jooq.lambda.Seq.seq;
 
 /**
  * fileName       : UserServiceImpl
@@ -71,6 +79,7 @@ public class UserServiceImpl implements UserService {
     private UserBlockLogRepo userBlockLogRepo;
     private UserReportLogRepo userReportLogRepo;
     private ReviewReportLogRepo reviewReportLogRepo;
+    private EmojiStatusRepo emojiStatusRepo;
 
     @Autowired
     public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo
@@ -78,7 +87,7 @@ public class UserServiceImpl implements UserService {
             , UserWorldInvitingLogRepo userWorldInvitingLogRepo , UserTOSRepo userTOSRepo
             , FCMService fcmService , SmsSender smsSender ,WorldJoinLogRepo worldJoinLogRepo
             , UserBlockLogRepo userBlockLogRepo, UserReportLogRepo userReportLogRepo
-            , ReviewReportLogRepo reviewReportLogRepo) {
+            , ReviewReportLogRepo reviewReportLogRepo, EmojiStatusRepo emojiStatusRepo) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
@@ -92,6 +101,7 @@ public class UserServiceImpl implements UserService {
         this.userBlockLogRepo = userBlockLogRepo;
         this.userReportLogRepo = userReportLogRepo;
         this.reviewReportLogRepo = reviewReportLogRepo;
+        this.emojiStatusRepo = emojiStatusRepo;
     }
 
     /**
@@ -429,11 +439,44 @@ public class UserServiceImpl implements UserService {
         for(InvitedNotiDto noti : invitedNotiList)
             noti.decodingSuid();
 
-        List<WorldEntryNotiDto> worldEntryNotiList =  worldUserMappingRepo.WorldEntryNotiList(suid);
+        List<WorldEntryNotiDto> worldEntryNotiList =  worldUserMappingRepo.WorldEntryNotiList(suid).stream().sorted(
+                Comparator.comparing( v -> Timestamp.valueOf(((WorldEntryNotiDto)v).PushDate()).getTime() ).reversed()
+        ).collect(Collectors.toList());
+
+        List<EmojiNotiDto> emojiNotiDtos =emojiStatusRepo.findEmojiNotis(suid).stream().sorted(
+                Comparator.comparing( v -> Timestamp.valueOf( ((EmojiNotiDto)v).PushDate()).getTime() ).reversed()
+        ).collect(Collectors.toList());
+
+        List<notificationDto> middleNoti = new ArrayList<>();
+
+
+        while((emojiNotiDtos.isEmpty() || worldEntryNotiList.isEmpty()) == false){
+            if(emojiNotiDtos.isEmpty()){
+                middleNoti.addAll(worldEntryNotiList);
+                break;
+            }
+            if(worldEntryNotiList.isEmpty()){
+                middleNoti.addAll(emojiNotiDtos);
+                break;
+            }
+
+            if(emojiNotiDtos.get(0).PushDate().isAfter(worldEntryNotiList.get(0).PushDate()))
+                middleNoti.add(emojiNotiDtos.remove(0));
+            else
+                middleNoti.add(worldEntryNotiList.remove(0));
+        }
+
+        if(emojiNotiDtos.isEmpty() == false){
+            middleNoti.addAll(emojiNotiDtos);
+        }
+        if(worldEntryNotiList.isEmpty() == false){
+            middleNoti.addAll(worldEntryNotiList);
+        }
+
 
 
         NotiDto notis = NotiDto.builder().topNoti(invitedNotiList.stream().collect(Collectors.toList()))
-                        .middleNoti(worldEntryNotiList.stream().collect(Collectors.toList())).
+                        .middleNoti(middleNoti).
                 build();
 
         return notis;

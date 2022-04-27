@@ -23,6 +23,7 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -305,6 +306,17 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 "    FROM WORLD_JOIN_LOG  \n" +
                 "  WHERE USER_SUID = ? \n" +
 
+                "CREATE TABLE #BLOCK(\n" +
+                "    BLOCK_SUID VARCHAR(18),\n" +
+                        "    START_DT DATETIME,\n" +
+                        "    END_DT DATETIME\n" +
+                        ")\n" +
+
+                "INSERT INTO #BLOCK\n" +
+                "SELECT BLOCK_SUID, CREATE_DT, CASE WHEN IS_BLOCKING = 'Y' THEN '2999-01-01' ELSE UPDATE_DT END\n" +
+                "  FROM USER_BLOCK_LOG \n" +
+                " WHERE USER_SUID = ? \n" +
+
                 "SELECT u.[USER_ID],u.PROFILE_URL,w.NAME, other.CREATE_DT \n" +
                 "  FROM #MY_WORLD as my \n" +
                 " INNER JOIN WORLD_JOIN_LOG as other \n" +
@@ -314,20 +326,27 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 "    ON other.USER_SUID = u.SUID \n" +
                 "  LEFT JOIN WORLD w \n" +
                 "    ON my.WORLD_ID = w.WORLD_ID \n" +
-                " ORDER BY other.CREATE_DT DESC \n" +
+                "  LEFT JOIN #BLOCK b\n" +
+                "    ON  b.START_DT <= other.CREATE_DT  AND other.CREATE_DT >= b.END_DT\n" +
+                " WHERE b.BLOCK_SUID IS NULL \n" +
 
-                " DROP TABLE #MY_WORLD ";
+                "  DROP TABLE #MY_WORLD \n " +
+                " DROP TABLE #BLOCK ";
 
-        Query nativeQuery  = entityManager.createNativeQuery(sql).setParameter(1,suid);
+        Query nativeQuery  = entityManager.createNativeQuery(sql).setParameter(1,suid)
+                .setParameter(2,suid);
 
         List<Object[]> result =  nativeQuery.getResultList();
 
         for(Object[] obj : result){
+            Timestamp notidate = new Timestamp(0);
+            if( obj[3] instanceof Timestamp )
+                notidate= (Timestamp)obj[3];
+
             notis.add(WorldEntryNotiDto.builder().userId( obj[0].toString())
                     .userProfileUrl(obj[1].toString())
                     .worldName(obj[2].toString())
-                    // TODO: 2022-04-14  날짜 형식 캐스팅 실패 시 날짜 null로 넣어주고있음.
-                    .notiDate(YOPLEUtils.String2LocalDateTime(obj[3].toString()))
+                    .notiDate( notidate.toLocalDateTime() )
                     .build());
         }
 

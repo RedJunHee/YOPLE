@@ -2,12 +2,14 @@ package com.map.mutual.side.common.utils;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomUtils;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.validation.Errors;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -83,11 +85,12 @@ public class YOPLEUtils {
         return code;
     }
 
-    public static LocalDateTime String2LocalDateTime (String str)
+    public static LocalDateTime TimeStamp2LocalDateTime (Timestamp time)
     {
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-            LocalDateTime dateTime = LocalDateTime.parse(str, formatter);
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime dateTime = time.toLocalDateTime();
             return dateTime;
 
         }catch(DateTimeParseException e)

@@ -1,7 +1,9 @@
 package com.map.mutual.side.auth.model.entity;
 
+import com.map.mutual.side.common.repository.config.CreateDtEntity;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 
@@ -18,7 +20,7 @@ import javax.persistence.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserEntity {
+public class UserEntity extends CreateDtEntity implements Persistable<String> {
 
     @Id
     @Column(name="SUID", nullable = false, updatable = false, columnDefinition = "VARCHAR(18)")
@@ -39,4 +41,14 @@ public class UserEntity {
 
     @Column(name="FCM_TOKEN", columnDefinition = "VARCHAR(170)")
     private String fcmToken;
+
+    @Override
+    public String getId() {
+        return getSuid();
+    }
+
+    @Override
+    public boolean isNew() {
+        return getCreateTime() == null;
+    }
 }

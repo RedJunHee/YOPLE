@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 
@@ -20,7 +21,7 @@ import javax.persistence.*;
 @Getter
 @Builder
 @AllArgsConstructor
-public class JWTRefreshTokenLogEntity {
+public class JWTRefreshTokenLogEntity implements Persistable<String> {
 
     @Id
     @Column(name="USER_SUID", insertable = false, updatable = false, columnDefinition = "VARCHAR(18)")
@@ -28,4 +29,22 @@ public class JWTRefreshTokenLogEntity {
 
     @Column(name = "REFRESH_TOKEN", nullable = false, columnDefinition = "VARCHAR(300)")
     private String refreshToken;
+
+    @Transient
+    private boolean isPersist = false;
+
+    @PostLoad
+    public void isPersist(){
+        isPersist = true;
+    }
+
+    @Override
+    public String getId() {
+        return getUserSuid();
+    }
+
+    @Override
+    public boolean isNew() {
+        return (isPersist==false);
+    }
 }

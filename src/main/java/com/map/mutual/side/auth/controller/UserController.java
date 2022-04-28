@@ -22,6 +22,7 @@ import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -117,8 +119,7 @@ public class UserController {
 
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtTokenDto), HttpStatus.OK);
 
-
-        }catch(YOPLEServiceException e){
+        }catch(YOPLEServiceException e) {
             logger.error("사용자 회원가입 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch (Exception e) {

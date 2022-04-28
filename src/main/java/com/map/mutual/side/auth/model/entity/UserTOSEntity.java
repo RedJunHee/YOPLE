@@ -4,11 +4,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.domain.Persistable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Class       : UserTOSEntity
@@ -20,7 +18,7 @@ import javax.persistence.Table;
 @Getter
 @NoArgsConstructor
 @Table(name = "USER_TOS")
-public class UserTOSEntity {
+public class UserTOSEntity implements Persistable<String> {
 
     @Id
     @Column(name = "SUID", nullable = false, columnDefinition = "VARCHAR(18)")
@@ -42,6 +40,15 @@ public class UserTOSEntity {
     @ColumnDefault("'N'")
     private String marketingYn;
 
+    @Transient
+    private boolean isPersist = false;
+
+    // 조회한 값이면 저장된 객체 표시.
+    @PostLoad
+    public void isPersist() {
+        isPersist = true;
+    }
+
     @Builder
     public UserTOSEntity(String suid, String serviceTosYN, String userInfoYn, String locationInfoYn, String ageCollectionYn, String marketingYn) {
         this.suid = suid;
@@ -50,5 +57,15 @@ public class UserTOSEntity {
         this.locationInfoYn = locationInfoYn;
         this.ageCollectionYn = ageCollectionYn;
         this.marketingYn = marketingYn;
+    }
+
+    @Override
+    public String getId() {
+        return getSuid();
+    }
+
+    @Override
+    public boolean isNew() {
+        return  (isPersist == false) ;
     }
 }

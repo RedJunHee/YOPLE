@@ -129,6 +129,9 @@ public class UserServiceImpl implements UserService {
                 .userInfoYn(user.getUserTOSDto().getUserInfoYN())
                 .build();
 
+        if(userInfoRepo.findOneByPhone(user.getPhone()) != null)
+            throw new YOPLEServiceException(ApiStatusCode.ALREADY_YOPLE_USER);
+
 
         userInfoRepo.save(userEntity);
         userTOSRepo.save(userTOSEntity);

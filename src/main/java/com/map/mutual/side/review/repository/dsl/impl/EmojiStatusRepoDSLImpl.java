@@ -38,41 +38,49 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
 
     /**
      * Description :
-     * CREATE TABLE #EMOJI_NOTIS(
-     *     WORLD_ID BIGINT,
-     *     REVIEW_ID BIGINT,
-     *     USER_SUID VARCHAR(18),
-     *     CREATE_DT DATETIME
-     * )
-     *
-     * CREATE TABLE #BLOCK(
-     *     BLOCK_SUID VARCHAR(18),
-     *     START_DT DATETIME,
-     *     END_DT DATETIME
-     * )
-     *
-     * INSERT INTO #BLOCK
-     * SELECT BLOCK_SUID, CREATE_DT, CASE WHEN IS_BLOCKING = 'Y' THEN '2999-01-01' ELSE UPDATE_DT END
-     *     FROM USER_BLOCK_LOG
-     *     WHERE USER_SUID = 'YO2022042527090787'
-     *
-     * 	SELECT * FROM #BLOCK
-     *
-     *
-     * INSERT INTO #EMOJI_NOTIS
-     * SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT, b.BLOCK_SUID
-     *     FROM  EMOJI_STATUS e
-     *     LEFT JOIN REVIEW r
-     *     ON r.REVIEW_ID = e.REVIEW_ID
-     *     LEFT JOIN #BLOCK b
-     *     ON  b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT
-     *     WHERE e.CREATE_DT BETWEEN  '1999-01-01' AND '2022-05-06' AND  r.USER_SUID = 'YO2022042527090787' AND BLOCK_SUID IS NULL
-     *     GROUP BY e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT
-     *
-     *     SELECT notis.REVIEW_ID, notis.WORLD_ID,
-     *         u.[USER_ID], w.NAME, place.PLACE_ID, place.X, place.Y, notis.CREATE_DT
-     *     FROM #EMOJI_NOTIS notis
-     *     LEFT JOIN
+     CREATE TABLE #EMOJI_NOTIS(
+     WORLD_ID BIGINT,
+     REVIEW_ID BIGINT,
+     USER_SUID VARCHAR(18),
+     CREATE_DT DATETIME
+     )
+
+     CREATE TABLE #BLOCK(
+     BLOCK_SUID VARCHAR(18),
+     START_DT DATETIME,
+     END_DT DATETIME
+     )
+
+     INSERT INTO #BLOCK
+     SELECT BLOCK_SUID, CREATE_DT, CASE WHEN IS_BLOCKING = 'Y' THEN '2999-01-01' ELSE UPDATE_DT END
+     FROM USER_BLOCK_LOG
+     WHERE USER_SUID = 'YO2022042527090787'
+
+     -- 이모지 이력에  차단 이력 넣는다
+     -- 각 이모지 이력은 차단상태에서 쌓인건지 나온다.
+     -- 안 쌓인 것들  뽑아서 그룹핑으로 1건 처리한다.
+     INSERT INTO #EMOJI_NOTIS
+     SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, MIN(e.CREATE_DT)
+     FROM  EMOJI_STATUS e
+     LEFT JOIN REVIEW r
+     ON r.REVIEW_ID = e.REVIEW_ID
+     LEFT JOIN #BLOCK b
+     ON  b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT
+     WHERE e.CREATE_DT BETWEEN  '1999-01-01' AND '2022-05-06' AND  r.USER_SUID = 'YO2022042527090787' --AND BLOCK_SUID IS NULL
+     GROUP BY e.WORLD_ID, e.REVIEW_ID , e.USER_SUID
+
+     SELECT notis.REVIEW_ID, notis.WORLD_ID,
+     u.[USER_ID], w.NAME, place.PLACE_ID, place.X, place.Y, notis.CREATE_DT
+     FROM #EMOJI_NOTIS notis
+     LEFT JOIN REVIEW r
+     ON notis.REVIEW_ID = r.REVIEW_ID
+     LEFT JOIN PLACE place
+     ON place.PLACE_ID = r.PLACE_ID
+     LEFT JOIN USER_INFO u
+     ON notis.USER_SUID = u.SUID
+     LEFT JOIN WORLD w
+     ON notis.WORLD_ID = w.WORLD_ID
+     ORDER BY notis.CREATE_DT DESC
      * Name        :
      * Author      : 조 준 희
      * History     : [2022/04/27] - 조 준 희 - Create
@@ -83,7 +91,8 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
 
         List<EmojiNotiDto> notis = new ArrayList<>();
 
-        String sql = "\n" +
+        String sql =
+                // 이모지 이력 전체.
                 "CREATE TABLE #EMOJI_NOTIS(\n" +
                 "    WORLD_ID BIGINT,\n" +
                 "    REVIEW_ID BIGINT,\n" +
@@ -91,6 +100,7 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
                 "    CREATE_DT DATETIME \n" +
                 ")\n" +
 
+                // 사용자 차단 리스트 목록
                 "CREATE TABLE #BLOCK(\n" +
                 "    BLOCK_SUID VARCHAR(18),\n" +
                 "    START_DT DATETIME,\n" +
@@ -102,15 +112,16 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
                 "  FROM USER_BLOCK_LOG \n" +
                 " WHERE USER_SUID = ? \n" +
 
+                 // 이모지 이력의 최초 1회만 해당하는 알림으로 MIN(이모지 시간)으로 차단 아닌 상태에서 달린 이모지 처음꺼 시간 가져옴.
                 "INSERT INTO #EMOJI_NOTIS\n" +
-                "SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT \n" +
+                "SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, MIN(e.CREATE_DT) \n" +
                 "  FROM  EMOJI_STATUS e\n" +
                 " INNER JOIN REVIEW r\n" +
                 "    ON r.REVIEW_ID = e.REVIEW_ID\n" +
                 "  LEFT JOIN #BLOCK b\n" +
                 "    ON  b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT\n" +
                 " WHERE e.CREATE_DT BETWEEN  ? AND ? AND  r.USER_SUID = ? AND BLOCK_SUID IS NULL\n" +
-                " GROUP BY e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT \n" +
+                " GROUP BY e.WORLD_ID, e.REVIEW_ID , e.USER_SUID \n" +
 
                 "  SELECT notis.REVIEW_ID, notis.WORLD_ID, \n" +
                 "        u.[USER_ID], w.NAME, place.PLACE_ID, place.X, place.Y, notis.CREATE_DT\n" +

@@ -22,7 +22,7 @@ import java.util.List;
  *
  */
 public interface UserService {
-    UserInfoDto findUser(String id, String phone) throws YOPLEServiceException, Exception;
+    UserInfoDto findUser(String id, String phone, String suid) ;
     List<UserInWorld> worldUsers(long worldId, String suid) throws Exception;
 
     //2. 월드에 참여하기.

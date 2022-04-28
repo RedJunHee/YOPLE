@@ -143,7 +143,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public UserInfoDto findUser(String id, String phone) throws YOPLEServiceException, Exception {
+    public UserInfoDto findUser(String id, String phone, String suid)  {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
 
@@ -158,6 +158,16 @@ public class UserServiceImpl implements UserService {
 
         if(userEntity == null)
             throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
+
+        // 차단된 사용자 리스트 조회
+        List<UserBlockLogEntity> blocks = userBlockLogRepo.findByUserSuidAndIsBlocking(suid,"Y");
+
+        // 사용자 검색된 유저가 차단된 사용자라면 사용자 없음.
+        for(UserBlockLogEntity blockUser : blocks) {
+            if(blockUser.getBlockSuid().equals(userEntity.getSuid()))
+                throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
+        }
+
 
         //폰으로 검색.
         if(StringUtil.isNullOrEmpty(id) == true) {
@@ -391,14 +401,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void unSignedUserWorldInviting(String suid, String targetPhone, Long worldId) throws YOPLEServiceException {
 
-
         /// 초대자 정보 가져오기.
         Optional<WorldUserMappingEntity> worldMapping = worldUserMappingRepo.findOneByWorldIdAndUserSuid(worldId,suid);
 
         //월드에 가입되어있지 않은 유저인 경우 권한 없음.
         worldMapping.orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));
 
-        String userID = worldMapping.get().getUserEntity().getUserId();
         String phone = worldMapping.get().getUserEntity().getPhone();
         String worldUserCode = worldMapping.get().getWorldUserCode();
 

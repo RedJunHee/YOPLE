@@ -177,7 +177,7 @@ public class UserController {
     }
 
     /**
-     * Description : 월드 초대하기 전 사용자 검색에 사용되는 API
+     * Description : 사용자 검색하기.
      * Name        : findUserByIdOrPhone
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -190,13 +190,20 @@ public class UserController {
         ResponseJsonObject response;
         try{
 
-            // 1. 둘 중에 하나도 안들어오면 파라미터 체크 에러.
+            // 1. 사용자 SUID 가져오기
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto requestUser = (UserInfoDto) authentication.getPrincipal();
+
+            // 2. 둘 중에 하나도 안들어오면 파라미터 체크 에러.
             if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(phone))
                 throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED,"사용자 ID 또는 핸드폰 번호 중에 한 정보 이상 요청해야합니다.");
 
             UserInfoDto userInfoDto;
 
-            userInfoDto = userService.findUser(userId, phone);
+            userInfoDto = userService.findUser(userId, phone, requestUser.getSuid());
+
+
+
 
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);
@@ -212,7 +219,7 @@ public class UserController {
     }
 
     /**
-     * Description : 월드에서 참여자 리스트 화면에 사용되는 API
+     * Description : 월드 참여자 조회
      * Name        :  worldUsers
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -360,7 +367,6 @@ public class UserController {
         }
     }
 
-
     /**
      * Description : 월드에 사용자 초대하기. PUSH성
      * - 초대자가 월드에 참여중이 아닌 경우 YOPLEServiceException(FORBIDDEN) Throw
@@ -420,9 +426,6 @@ public class UserController {
             throw e;
         }
     }
-
-
-
 
     /**
      * Description : 알림 메시지 조회

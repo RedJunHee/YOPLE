@@ -73,6 +73,12 @@ public class WorldServiceImpl implements WorldService {
                 .worldOwner(userInfoDto.getSuid())
                 .build();
 
+        // 월드 생성 제한 수 초과 시
+        // 제한된 수를 초과
+        if( worldRepo.countAllByWorldOwner(userInfoDto.getSuid()) >= 10 ){
+            throw new YOPLEServiceException(ApiStatusCode.EXCEEDED_LIMITED_COUNT);
+        }
+
         // 3. 월드 생성.
         worldRepo.save(createWorld);
 

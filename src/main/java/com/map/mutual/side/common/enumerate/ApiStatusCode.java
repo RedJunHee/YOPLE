@@ -25,6 +25,7 @@ public enum ApiStatusCode {
     ,USER_ID_OVERLAPS (215, "User ID Overlaps.", "사용자 ID 중복.",false)
     ,ALREADY_USER_BLOCKING(240, "Already User Blocking", "이미 차단된 사용자입니다.", false)
     ,ALREADY_YOPLE_USER (241,"Already YOPLE User","이미 YOPLE에 가입된 정보입니다.", true)
+    ,EXCEEDED_LIMITED_COUNT(250, "Exceeded limited count", "제한된 수를 초과했습니다.", true)
     ,PARAMETER_CHECK_FAILED (400,"Bad Request","문법상 또는 파라미터 오류가 있어서 서버가 요청사항을 처리하지 못함.", true)
     ,UNAUTHORIZED (401, "UnAuthorized", "Unauthorized, 사용자 인증 실패.", true)
     ,FORBIDDEN (403, "Forbidden", "Forbidden, 사용권한 없음.", true)

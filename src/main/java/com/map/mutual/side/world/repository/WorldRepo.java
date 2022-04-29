@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WorldRepo extends JpaRepository<WorldEntity, Long>, WorldRepoDSL {
     WorldEntity findByWorldId(Long worldId);
+    Long countAllByWorldOwner(String worldOwner);
 }

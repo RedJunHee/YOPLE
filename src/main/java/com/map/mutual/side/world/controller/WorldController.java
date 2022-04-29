@@ -40,6 +40,7 @@ public class WorldController {
 
     /**
      * Description : 월드 생성하기.
+     * - 월드 생성 제한 초과시 250 EXCEEDED_LIMITED_COUNT 예외.
      * Name        : createWorld
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -47,8 +48,6 @@ public class WorldController {
     @PostMapping(value = "/world")
     public ResponseEntity<ResponseJsonObject> createWorld(@RequestBody WorldDto worldDto){
         try{
-            // TODO: 2022-04-06 월드 생성 시 벨리데이션 체크 필요한지 생각하기.
-
             // 1. 월드 바로 생성하기.
             WorldDto createdWorld = worldService.createWolrd(worldDto);
 

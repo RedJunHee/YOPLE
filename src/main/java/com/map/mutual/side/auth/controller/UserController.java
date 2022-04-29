@@ -300,6 +300,7 @@ public class UserController {
 
     /**
      * Description : 사용자 상세정보 수정.
+     * - 사용자 ID 이미 사용중이면 USER_ID_OVERLAPS 예외.
      * Name        :  userInfoUpdate
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create

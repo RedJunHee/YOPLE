@@ -301,6 +301,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Description : 사용자 정보 수정.
+     * - 사용자 ID 이미 사용중이면, USER_ID_OVERLAPS 예외.
      * Name        : userInfoUpdate
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -318,6 +319,9 @@ public class UserServiceImpl implements UserService {
 
         if(StringUtil.isNullOrEmpty(profileUrl) == false)
             userEntity.setProfileUrl(profileUrl);
+
+        if(userInfoRepo.findByUserId(userId) != null)
+            throw new YOPLEServiceException(ApiStatusCode.USER_ID_OVERLAPS);
 
         // 3. 사용자 프로필 정보 수정.
         userInfoRepo.save(userEntity);

@@ -231,7 +231,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public PlaceDetailDto placeDetail(String placeId, Long worldId) {
         PlaceDto placeDto;
-        List<PlaceDetailDto.TempReview> tempReview;
+        List<PlaceDetailDto.PlaceDetailInReview> placeDetailInReview;
         PlaceDetailDto result;
         try {
             PlaceEntity placeEntity = placeRepo.findByPlaceId(placeId);
@@ -249,13 +249,13 @@ public class ReviewServiceImpl implements ReviewService {
                     .y(placeEntity.getY())
                     .build();
 
-            tempReview = placeRepo.findPlaceDetails(worldId, placeId);
-            tempReview.sort(new PlaceDetailDto.TempReview.TempReviewComparatorByImageNum());
+            placeDetailInReview = placeRepo.findPlaceDetails(worldId, placeId);
+            placeDetailInReview.sort(new PlaceDetailDto.PlaceDetailInReview.PlaceDetailInReviewComparatorByImageNum());
 
 
             result = PlaceDetailDto.builder()
                     .place(placeDto)
-                    .reviews(tempReview).build();
+                    .reviews(placeDetailInReview).build();
         } catch (YOPLEServiceException e) {
             throw e;
         }

@@ -1,7 +1,10 @@
 package com.map.mutual.side.review.repository.dsl.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.entity.QUserBlockLogEntity;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
+import com.map.mutual.side.common.enumerate.ApiStatusCode;
+import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.review.model.dto.QReviewDto_ReviewWithInviterDto;
 import com.map.mutual.side.review.model.dto.ReviewDto;
 import com.map.mutual.side.review.model.entity.EmojiStatusEntity;
@@ -11,6 +14,7 @@ import com.map.mutual.side.review.model.enumeration.EmojiType;
 import com.map.mutual.side.review.repository.EmojiStatusRepo;
 import com.map.mutual.side.review.repository.dsl.ReviewRepoDSL;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,7 +56,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         QWorldUserMappingEntity qWorldUserMappingEntity2 = new QWorldUserMappingEntity("qWorldUserMappingEntity2");
         QUserEntity qUser1 = new QUserEntity("qUser1");
         QUserEntity qUser2 = new QUserEntity("qUser2");
-
+        QUserBlockLogEntity qUserBlockLog = new QUserBlockLogEntity("qUserBlockLog");
 
         ReviewDto.ReviewWithInviterDto result = jpaQueryFactory.select(new QReviewDto_ReviewWithInviterDto(
                         qReview.reviewId,
@@ -75,14 +79,15 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                 .on(qWorldUserMappingEntity2.userEntity.suid.eq(qUser2.suid))
                 .where(qReviewWorldMappingEntity.reviewEntity.reviewId.eq(reviewId)
                         .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
-                        .and(qWorldUserMappingEntity1.worldEntity.worldId.eq(worldId)))
+                        .and(qWorldUserMappingEntity1.worldEntity.worldId.eq(worldId))
+                        .and(qReview.userEntity.suid.notIn(JPAExpressions.select(qUserBlockLog.blockSuid).from(qUserBlockLog).where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid())))))
                 .fetchOne();
 
         //Emoji 끌어오기.
         List<ReviewDto.ReviewWithInviterDto.TempEmoji> emojis = new ArrayList<>();
         List<EmojiStatusEntity> emojiStatusEntityList = emojiStatusRepo.findAllByReviewIdAndWorldId(reviewId, worldId);
-        for (int i = 1; i <= EmojiType.EMOJI_NUM; i++) {
-            Long emojiNum = (long) i;
+        for (int emojiId = 1; emojiId <= EmojiType.EMOJI_NUM; emojiId++) {
+            Long emojiNum = (long) emojiId;
             if (emojiStatusEntityList.stream().noneMatch(data -> data.getEmojiEntity().getEmojiId().getId().equals(emojiNum))) {
 
             } else {
@@ -95,6 +100,9 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
 
                 emojis.add(emoji);
             }
+        }
+        if (result == null) {
+            throw new YOPLEServiceException(ApiStatusCode.THIS_REVIEW_IS_BLOCK_USERS_REVIEW);
         }
         result.setEmoji(emojis);
         return result;

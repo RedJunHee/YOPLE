@@ -24,19 +24,19 @@ import java.util.List;
 @Builder
 public class PlaceDetailDto {
 
-    private List<TempReview> reviews;
+    private List<PlaceDetailInReview> reviews;
     private PlaceDto place;
 
     @Getter
     @Setter
     @NoArgsConstructor
-    public static class TempReview{
+    public static class PlaceDetailInReview {
         private Long reviewId;
         private String[] imageUrls;
         private String profileUrl;
 
         @QueryProjection
-        public TempReview(Long reviewId, String imageUrls, String profileUrl, LocalDateTime createDt) {
+        public PlaceDetailInReview(Long reviewId, String imageUrls, String profileUrl, LocalDateTime createDt) {
             this.reviewId = reviewId;
             this.profileUrl = profileUrl;
             if (imageUrls != null) {
@@ -46,9 +46,9 @@ public class PlaceDetailDto {
             }
         }
 
-        public static class TempReviewComparatorByImageNum implements Comparator<TempReview> {
+        public static class PlaceDetailInReviewComparatorByImageNum implements Comparator<PlaceDetailInReview> {
             @Override
-            public int compare(TempReview o1, TempReview o2) {
+            public int compare(PlaceDetailInReview o1, PlaceDetailInReview o2) {
                 return Integer.compare(o2.imageUrls.length, o1.imageUrls.length);
             }
         }

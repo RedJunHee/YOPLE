@@ -1,12 +1,17 @@
 package com.map.mutual.side.review.repository.dsl.impl;
 
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.entity.QUserBlockLogEntity;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.review.model.dto.PlaceDetailDto;
 import com.map.mutual.side.review.model.dto.QPlaceDetailDto_TempReview;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.repository.dsl.PlaceRepoDSL;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -31,11 +36,16 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
 
 
     @Override
-    public List<PlaceDetailDto.TempReview> findPlaceDetails(Long worldId, String placeId) {
+    public List<PlaceDetailDto.PlaceDetailInReview> findPlaceDetails(Long worldId, String placeId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
         QReviewEntity qReview = new QReviewEntity("qReview");
         QUserEntity qUser = new QUserEntity("qUser");
+        QUserBlockLogEntity qUserBlockLog = new QUserBlockLogEntity("qUserBlockLog");
 
-        List<PlaceDetailDto.TempReview> results = jpaQueryFactory.select(new QPlaceDetailDto_TempReview(
+
+        List<PlaceDetailDto.PlaceDetailInReview> results = jpaQueryFactory.select(new QPlaceDetailDto_TempReview(
                 qReview.reviewId,
                 qReview.imageUrl,
                 qUser.profileUrl,
@@ -44,6 +54,7 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
                 .from(qReview)
                 .join(qUser)
                 .on(qReview.userEntity.suid.eq(qUser.suid))
+                .where(qReview.userEntity.suid.notIn(JPAExpressions.select(qUserBlockLog.blockSuid).from(qUserBlockLog).where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid()))))
                 .orderBy(qReview.createTime.desc())
                 .fetch();
         return results;

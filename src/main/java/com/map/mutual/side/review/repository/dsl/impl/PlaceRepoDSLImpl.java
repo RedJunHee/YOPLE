@@ -4,7 +4,7 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.QUserBlockLogEntity;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.review.model.dto.PlaceDetailDto;
-import com.map.mutual.side.review.model.dto.QPlaceDetailDto_TempReview;
+import com.map.mutual.side.review.model.dto.QPlaceDetailDto_PlaceDetailInReview;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.repository.dsl.PlaceRepoDSL;
 import com.querydsl.jpa.JPAExpressions;
@@ -45,7 +45,7 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
         QUserBlockLogEntity qUserBlockLog = new QUserBlockLogEntity("qUserBlockLog");
 
 
-        List<PlaceDetailDto.PlaceDetailInReview> results = jpaQueryFactory.select(new QPlaceDetailDto_TempReview(
+        List<PlaceDetailDto.PlaceDetailInReview> results = jpaQueryFactory.select(new QPlaceDetailDto_PlaceDetailInReview(
                 qReview.reviewId,
                 qReview.imageUrl,
                 qUser.profileUrl,

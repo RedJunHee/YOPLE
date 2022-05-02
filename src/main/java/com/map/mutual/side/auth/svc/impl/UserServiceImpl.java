@@ -266,7 +266,7 @@ public class UserServiceImpl implements UserService {
 
         //1. 토큰에 저장된 SUID 사용자가 없을 경우. Exception.
         UserEntity userEntity = userInfoRepo.findById(suid)
-                        .orElseThrow( ()-> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR) );
+                        .orElseThrow( ()-> new YOPLEServiceException(ApiStatusCode.UNAUTHORIZED) );
 
         // 2. 응답 객체 설정
         UserInfoDto userInfoDto = UserInfoDto.builder()

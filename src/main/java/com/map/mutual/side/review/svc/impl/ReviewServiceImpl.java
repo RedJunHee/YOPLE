@@ -2,7 +2,6 @@ package com.map.mutual.side.review.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
-import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
@@ -52,7 +51,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Autowired
     private EmojiRepo emojiRepo;
     @Autowired
-    private UserInfoRepo userInfoRepo;
+    private EmojiStatusNotiRepo emojiStatusNotiRepo;
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
@@ -263,6 +262,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional(rollbackFor = {Exception.class})
     public void addEmoji(Long reviewId, Long worldId, Long emojiId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
@@ -279,6 +279,15 @@ public class ReviewServiceImpl implements ReviewService {
             if(!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)){
                 String reviewOwnerFcmToken = reviewRepo.findByReviewOwnerFcmToken(reviewId);
                 fcmService.sendNotificationToken(reviewOwnerFcmToken, FCMConstant.MSGType.C, userInfoDto.getSuid(), worldId, reviewId);
+            }
+
+            if(!emojiStatusNotiRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)) {
+                EmojiStatusNotiEntity emojiStatusNotiEntity = EmojiStatusNotiEntity.builder()
+                        .userSuid(userInfoDto.getSuid())
+                        .worldId(worldId)
+                        .reviewId(reviewId)
+                        .build();
+                emojiStatusNotiRepo.save(emojiStatusNotiEntity);
             }
 
 

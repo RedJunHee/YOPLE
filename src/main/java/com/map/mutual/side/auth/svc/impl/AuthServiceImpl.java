@@ -159,7 +159,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void saveJwtLog(JWTRefreshTokenLogEntity log) throws Exception {
         try {
+
+            if(jwtRepo.findOneByUserSuid(log.getUserSuid()) != null )
+                log.isPersist();
+
             jwtRepo.save(log);
+
         }catch(Exception e)
         {
             throw e;

@@ -323,7 +323,10 @@ public class UserServiceImpl implements UserService {
             userEntity.setProfilePinUrl(profilePinUrl);
         }
 
-        if(userInfoRepo.findByUserId(userId) != null)
+        UserEntity idUser = userInfoRepo.findByUserId(userId);
+
+        // id 사용자가 있고, 해당 사용자가 아닌 경우.
+        if(idUser != null && idUser.getSuid().equals(suid) == false)
             throw new YOPLEServiceException(ApiStatusCode.USER_ID_OVERLAPS);
 
         // 3. 사용자 프로필 정보 수정.

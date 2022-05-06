@@ -22,7 +22,6 @@ import com.map.mutual.side.world.model.dto.WorldDto;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +36,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -90,6 +88,9 @@ public class UserController {
             ){
                 throw new YOPLEServiceException(ApiStatusCode.USER_TOS_INFO_VALID_FAILED);
             }
+
+            if( StringUtil.isNullOrEmpty(userInfoDto.getProfileUrl()) == false && StringUtil.isNullOrEmpty(userInfoDto.getProfilePinUrl()) == true)
+                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
 
             String suid = "YO";
             LocalDate date = LocalDate.now();

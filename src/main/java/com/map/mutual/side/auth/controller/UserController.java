@@ -308,21 +308,27 @@ public class UserController {
     @PatchMapping("/user")
     public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.userIdRegexp,
                                                                         message = "ID가 올바르지 않습니다.") String userId,
-                                                             @RequestParam(required = false) String profileUrl){
+                                                             @RequestParam(required = false) String profileUrl,
+                                                             @RequestParam(required = false) String profilePinUrl){
 
         ResponseJsonObject responseJsonObject ;
 
         try{
 
-            // 1. 둘 중에 하나도 안들어오면 파라미터 체크 에러.
-            if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(profileUrl))
+            // 1.  파라미터 체크 에러.  - 프로필 사진이 들어온 경우 핀 프로필도 들어와야함.
+            if( StringUtil.isNullOrEmpty(profileUrl) == false)
+                if(  StringUtil.isNullOrEmpty(profilePinUrl) == true )
+                    throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+
+            // 1. 파라미터 체크 에러    - ID나 프로필 사진 둘 중 하나는 들어와야함.
+            if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(profileUrl) )
                 throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
 
             // 2. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userToken = (UserInfoDto) authentication.getPrincipal();
 
-            UserInfoDto updatedUser = userService.userInfoUpdate(userToken.getSuid(), userId,profileUrl);
+            UserInfoDto updatedUser = userService.userInfoUpdate(userToken.getSuid(), userId,profileUrl, profilePinUrl);
 
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(updatedUser);
 

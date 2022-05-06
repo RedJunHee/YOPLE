@@ -118,7 +118,8 @@ public class UserServiceImpl implements UserService {
                 .userId(user.getUserId())
                 .name(user.getName())
                 .phone(user.getPhone())
-                .profileUrl(user.getProfileUrl()).build();
+                .profileUrl(user.getProfileUrl())
+                .profilePinUrl(user.getProfilePinUrl()).build();
 
         UserTOSEntity userTOSEntity = UserTOSEntity.builder()
                 .suid(user.getSuid())
@@ -307,7 +308,7 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl) {
+    public UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl, String profilePinUrl) {
 
         // 1. 사용자 SUID 가져오기.
         UserEntity userEntity = userInfoRepo.findById(suid)
@@ -317,8 +318,10 @@ public class UserServiceImpl implements UserService {
         if(StringUtil.isNullOrEmpty(userId) == false)
             userEntity.setUserId(userId);
 
-        if(StringUtil.isNullOrEmpty(profileUrl) == false)
+        if(StringUtil.isNullOrEmpty(profileUrl) == false) {
             userEntity.setProfileUrl(profileUrl);
+            userEntity.setProfilePinUrl(profilePinUrl);
+        }
 
         if(userInfoRepo.findByUserId(userId) != null)
             throw new YOPLEServiceException(ApiStatusCode.USER_ID_OVERLAPS);
@@ -331,6 +334,7 @@ public class UserServiceImpl implements UserService {
                 .userId(userEntity.getUserId())
                 .name(userEntity.getName())
                 .profileUrl(userEntity.getProfileUrl())
+                .profilePinUrl(userEntity.getProfilePinUrl())
                 .build();
 
         // 5. 리턴.

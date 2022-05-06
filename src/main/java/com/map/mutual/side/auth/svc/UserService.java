@@ -28,7 +28,7 @@ public interface UserService {
     //2. 월드에 참여하기.
     WorldDto JoinWorld( String worldinvitationCode);
     UserInfoDto userDetails(String suid);
-    UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl);
+    UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl, String profilePinUrl);
     void userLogout(String suid);
     UserInfoDto signUp(UserInfoDto user) throws Exception;
 

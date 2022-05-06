@@ -213,10 +213,16 @@ public class UserServiceImpl implements UserService {
         // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
         Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
 
+
         if (inviteWorldId == null) {
             logger.error("해당 사용자가 이미 월드에 속해있습니다.");
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
         }
+
+        // 타인의 월드는 최대 20개 까지만 입장 가능.
+        Long worldCnt = worldUserMappingRepo.countAllByActiveWorlds(userInfoDto.getSuid());
+        if(worldCnt >= 20)
+            throw new YOPLEServiceException(ApiStatusCode.EXCEEDED_LIMITED_COUNT);
 
         // 3. 초대 수락한 월드 입장 처리
         WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
@@ -534,7 +540,6 @@ public class UserServiceImpl implements UserService {
     public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) {
 
         // 초대하기인지 수락하기인지 분기
-
         Optional<UserWorldInvitingLogEntity> inviteLog = userWorldInvitingLogRepo.findById(invited.getInviteNumber());
 
         //초대장이 존재하지 않는 경우.
@@ -550,12 +555,13 @@ public class UserServiceImpl implements UserService {
         // 1. 초대장 조회하기, 유효성 체크,
         // 2. 월드 입장 처리
         if(invited.getIsAccept().equals("Y")){
-            inviteLog.get().inviteAccept();
-            userWorldInvitingLogRepo.save(inviteLog.get());
 
-            //월드에 참여하기 서비스 사용
-            return JoinWorld(invited.getWorldUserCode());
+                //월드에 참여하기 서비스 사용
+                WorldDto world =  JoinWorld(invited.getWorldUserCode());
+                inviteLog.get().inviteAccept();
+                userWorldInvitingLogRepo.save(inviteLog.get());
 
+                return world;
         }else {
         //거절
         // 1. 초대장 거절처리.
@@ -565,7 +571,6 @@ public class UserServiceImpl implements UserService {
         }
 
     }
-
 
     /**
      * Description : 사용자 신고하기.

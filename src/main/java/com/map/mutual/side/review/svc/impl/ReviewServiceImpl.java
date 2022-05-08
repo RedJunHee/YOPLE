@@ -2,7 +2,6 @@ package com.map.mutual.side.review.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
-import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
@@ -52,11 +51,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Autowired
     private EmojiRepo emojiRepo;
     @Autowired
-    private UserInfoRepo userInfoRepo;
+    private EmojiStatusNotiRepo emojiStatusNotiRepo;
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public ReviewDto createReview(ReviewPlaceDto dto) throws YOPLEServiceException {
+    public ReviewDto createReview(ReviewPlaceDto dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         ReviewDto result;
@@ -80,7 +79,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public ReviewDto updateReview(ReviewDto reviewDto) throws YOPLEServiceException {
+    public ReviewDto updateReview(ReviewDto reviewDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         ReviewDto result;
@@ -100,46 +99,50 @@ public class ReviewServiceImpl implements ReviewService {
         return result;
     }
 
-    public ReviewDto saveReviewAndMappings(ReviewDto reviewDto, ReviewEntity entity, @Nullable PlaceDto placeDto) throws YOPLEServiceException {
+    public ReviewDto saveReviewAndMappings(ReviewDto reviewDto, ReviewEntity entity, @Nullable PlaceDto placeDto) {
         ReviewEntity returnedReview;
-        returnedReview = reviewRepo.save(entity);
-        //공통 리뷰 저장
+        try {
+            returnedReview = reviewRepo.save(entity);
+            //공통 리뷰 저장
 
-        List<Long> presentWorldIds = reviewWorldPlaceMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(returnedReview.getReviewId()).build())
-                .stream().map(data -> data.getWorldEntity().getWorldId()).collect(Collectors.toList());
-        //현재 db에 매핑 돼있는 월드 id들 조회
+            List<Long> presentWorldIds = reviewWorldPlaceMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(returnedReview.getReviewId()).build())
+                    .stream().map(data -> data.getWorldEntity().getWorldId()).collect(Collectors.toList());
+            //현재 db에 매핑 돼있는 월드 id들 조회
 
-        List<Long> receivedWorldIds = reviewDto.getWorldList();
-        //생성, 수정 할 월드 id들 리스트
-        presentWorldIds.removeAll(receivedWorldIds);
-        //생성, 수정 할 월드 id가 아닐 시 제거 -> DB worldIds - 받은 worldIds = 삭제할 worldIds
-
-
-        List<ReviewWorldMappingEntity> todoDeleteEntities = new ArrayList<>();
-        //삭제하기 위한 리스트 엔티티 생성
-        presentWorldIds.forEach(data -> {
-            ReviewWorldMappingEntity mappingEntity = ReviewWorldMappingEntity.builder()
-                    .worldEntity(WorldEntity.builder().worldId(data).build())
-                    .reviewEntity(ReviewEntity.builder().reviewId(returnedReview.getReviewId()).build())
-                    .build();
-            todoDeleteEntities.add(mappingEntity);
-        });
-
-        reviewWorldPlaceMappingRepository.deleteAll(todoDeleteEntities);
+            List<Long> receivedWorldIds = reviewDto.getWorldList();
+            //생성, 수정 할 월드 id들 리스트
+            presentWorldIds.removeAll(receivedWorldIds);
+            //생성, 수정 할 월드 id가 아닐 시 제거 -> DB worldIds - 받은 worldIds = 삭제할 worldIds
 
 
-        //생성, 수정 할 월드 ID 저장 로직
-        List<ReviewWorldMappingEntity> reviewWorldMappingEntities = new ArrayList<>();
-
-        if (reviewDto.getWorldList() != null) {
-            reviewDto.getWorldList().forEach(data -> {
-                ReviewWorldMappingEntity mapping = ReviewWorldMappingEntity.builder()
+            List<ReviewWorldMappingEntity> todoDeleteEntities = new ArrayList<>();
+            //삭제하기 위한 리스트 엔티티 생성
+            presentWorldIds.forEach(data -> {
+                ReviewWorldMappingEntity mappingEntity = ReviewWorldMappingEntity.builder()
                         .worldEntity(WorldEntity.builder().worldId(data).build())
                         .reviewEntity(ReviewEntity.builder().reviewId(returnedReview.getReviewId()).build())
                         .build();
-                reviewWorldMappingEntities.add(mapping);
+                todoDeleteEntities.add(mappingEntity);
             });
-            reviewWorldPlaceMappingRepository.saveAll(reviewWorldMappingEntities);
+
+            reviewWorldPlaceMappingRepository.deleteAll(todoDeleteEntities);
+
+
+            //생성, 수정 할 월드 ID 저장 로직
+            List<ReviewWorldMappingEntity> reviewWorldMappingEntities = new ArrayList<>();
+
+            if (reviewDto.getWorldList() != null) {
+                reviewDto.getWorldList().forEach(data -> {
+                    ReviewWorldMappingEntity mapping = ReviewWorldMappingEntity.builder()
+                            .worldEntity(WorldEntity.builder().worldId(data).build())
+                            .reviewEntity(ReviewEntity.builder().reviewId(returnedReview.getReviewId()).build())
+                            .build();
+                    reviewWorldMappingEntities.add(mapping);
+                });
+                reviewWorldPlaceMappingRepository.saveAll(reviewWorldMappingEntities);
+            }
+        } catch (YOPLEServiceException e) {
+            throw e;
         }
         ReviewDto result;
         try {
@@ -157,7 +160,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void deleteReview(Long reviewId) throws YOPLEServiceException {
+    public void deleteReview(Long reviewId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         try {
@@ -172,7 +175,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDto.ReviewWithInviterDto getReview(Long reviewId, Long worldId) throws YOPLEServiceException {
+    public ReviewDto.ReviewWithInviterDto getReview(Long reviewId, Long worldId) {
         ReviewDto.ReviewWithInviterDto reviewDto;
         try {
             reviewDto = reviewRepo.findByReviewWithInviter(reviewId, worldId);
@@ -183,7 +186,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> myReviews() throws YOPLEServiceException {
+    public List<ReviewDto> myReviews() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
@@ -201,11 +204,7 @@ public class ReviewServiceImpl implements ReviewService {
                 //                  .imageUrls()
                                             .build());
                         } catch (Exception e) {
-                            try {
-                                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-                            } catch (YOPLEServiceException ex) {
-                                ex.printStackTrace();
-                            }
+                            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
                         }
                     }
             );
@@ -216,7 +215,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<PlaceDto.PlaceSimpleDto> worldPinPlaceInRange(PlaceRangeDto placeRangeDto) throws YOPLEServiceException {
+    public List<PlaceDto.PlaceSimpleDto> worldPinPlaceInRange(PlaceRangeDto placeRangeDto) {
         try {
             List<PlaceDto.PlaceSimpleDto> result = reviewWorldPlaceMappingRepository.findRangePlaces(placeRangeDto);
             if (result.isEmpty()) {
@@ -229,7 +228,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public PlaceDetailDto placeDetail(String placeId, Long worldId) throws YOPLEServiceException {
+    public PlaceDetailDto placeDetail(String placeId, Long worldId) {
         PlaceDto placeDto;
         List<PlaceDetailDto.PlaceDetailInReview> placeDetailInReview;
         PlaceDetailDto result;
@@ -263,7 +262,8 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void addEmoji(Long reviewId, Long worldId, Long emojiId) throws YOPLEServiceException {
+    @Transactional(rollbackFor = {Exception.class})
+    public void addEmoji(Long reviewId, Long worldId, Long emojiId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         try {
@@ -279,6 +279,15 @@ public class ReviewServiceImpl implements ReviewService {
             if(!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)){
                 String reviewOwnerFcmToken = reviewRepo.findByReviewOwnerFcmToken(reviewId);
                 fcmService.sendNotificationToken(reviewOwnerFcmToken, FCMConstant.MSGType.C, userInfoDto.getSuid(), worldId, reviewId);
+            }
+
+            if(!emojiStatusNotiRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)) {
+                EmojiStatusNotiEntity emojiStatusNotiEntity = EmojiStatusNotiEntity.builder()
+                        .userSuid(userInfoDto.getSuid())
+                        .worldId(worldId)
+                        .reviewId(reviewId)
+                        .build();
+                emojiStatusNotiRepo.save(emojiStatusNotiEntity);
             }
 
 

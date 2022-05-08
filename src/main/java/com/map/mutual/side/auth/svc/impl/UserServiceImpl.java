@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UserInfoDto signUp(UserInfoDto user) {
+    public UserInfoDto signUp(UserInfoDto user) throws YOPLEServiceException {
         UserEntity userEntity = UserEntity.builder()
                 .suid(user.getSuid())
                 .userId(user.getUserId())
@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public UserInfoDto findUser(String id, String phone, String suid)  {
+    public UserInfoDto findUser(String id, String phone, String suid) throws YOPLEServiceException {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
 
@@ -314,7 +314,7 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl, String profilePinUrl) {
+    public UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl, String profilePinUrl) throws YOPLEServiceException {
 
         // 1. 사용자 SUID 가져오기.
         UserEntity userEntity = userInfoRepo.findById(suid)
@@ -537,7 +537,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) {
+    public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) throws YOPLEServiceException {
 
         // 초대하기인지 수락하기인지 분기
         Optional<UserWorldInvitingLogEntity> inviteLog = userWorldInvitingLogRepo.findById(invited.getInviteNumber());
@@ -599,7 +599,7 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-21] - 조 준 희 - Create
      */
     @Override
-    public void block(String suid, UserBlockDto userBlockDto) {
+    public void block(String suid, UserBlockDto userBlockDto) throws YOPLEServiceException {
 
         // 이미 차단된 유저인지 조회.
         if( userBlockLogRepo.existsByUserSuidAndBlockSuidAndIsBlocking(suid, userBlockDto.getBlockSuid(), "Y"))
@@ -624,7 +624,7 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-21] - 조 준 희 - Create
      */
     @Override
-    public void blockCancel(String suid, Long blockId) {
+    public void blockCancel(String suid, Long blockId) throws YOPLEServiceException {
 
         UserBlockLogEntity log = userBlockLogRepo.findById(blockId)
                                                 .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));

@@ -115,7 +115,7 @@ public class ReviewController {
      * @return
      */
     @PutMapping("/review")
-    public ResponseEntity<ResponseJsonObject> updateReview(@RequestBody ReviewDto reviewDto) {
+    public ResponseEntity<ResponseJsonObject> updateReview(@RequestBody ReviewDto reviewDto) throws YOPLEServiceException {
         try {
             if (reviewDto.getWorldList() == null || reviewDto.getWorldList().isEmpty()) {
                 throw new YOPLEServiceException(ApiStatusCode.WORLD_LIST_IS_NULL);
@@ -137,7 +137,7 @@ public class ReviewController {
      * 해당 메소드는 리뷰뿐만 아니라, ReviewWorldMapping 데이터도 삭제합니다.
      */
     @DeleteMapping("/review")
-    public ResponseEntity<ResponseJsonObject> deleteReview(@NotNull @RequestParam Long reviewId) {
+    public ResponseEntity<ResponseJsonObject> deleteReview(@NotNull @RequestParam Long reviewId) throws YOPLEServiceException {
         try {
             reviewService.deleteReview(reviewId);
         } catch (YOPLEServiceException e) {
@@ -155,7 +155,7 @@ public class ReviewController {
      * @return
      */
     @GetMapping("/review")
-    public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId, @RequestParam Long worldId) {
+    public ResponseEntity<ResponseJsonObject> getReview(@RequestParam Long reviewId, @RequestParam Long worldId) throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
         try {
@@ -180,7 +180,7 @@ public class ReviewController {
      *
      */
     @GetMapping("/myReviews")
-    public ResponseEntity<ResponseJsonObject> myReviews() {
+    public ResponseEntity<ResponseJsonObject> myReviews() throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
         try {
@@ -203,7 +203,7 @@ public class ReviewController {
      * @return
      */
     @GetMapping("/worldPin/placeInRange")
-    public ResponseEntity<ResponseJsonObject> worldPinPlaceInRange(@RequestBody PlaceRangeDto placeRangeDto) {
+    public ResponseEntity<ResponseJsonObject> worldPinPlaceInRange(@RequestBody PlaceRangeDto placeRangeDto) throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
         try {
@@ -228,7 +228,7 @@ public class ReviewController {
      * @return
      */
     @GetMapping("/placeDetail")
-    public ResponseEntity<ResponseJsonObject> placeDetail(@RequestParam String placeId, @RequestParam Long worldId) {
+    public ResponseEntity<ResponseJsonObject> placeDetail(@RequestParam String placeId, @RequestParam Long worldId) throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
         try {
@@ -252,7 +252,7 @@ public class ReviewController {
      * @return
      */
     @PostMapping("/emoji")
-    public ResponseEntity<ResponseJsonObject> addEmoji(@RequestParam Long reviewId, @RequestParam Long worldId, @RequestParam Long emojiId) {
+    public ResponseEntity<ResponseJsonObject> addEmoji(@RequestParam Long reviewId, @RequestParam Long worldId, @RequestParam Long emojiId) throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
         try {
             reviewService.addEmoji(reviewId, worldId, emojiId);
@@ -282,8 +282,6 @@ public class ReviewController {
                         .emojiValue(data)
                         .build()));
             emojiRepo.saveAll(emojiEntities);
-        } catch (YOPLEServiceException e) {
-            throw e;
         } catch (Exception e) {
             throw e;
         }
@@ -298,40 +296,36 @@ public class ReviewController {
     @PostMapping("/upload")
     public ResponseEntity<ResponseJsonObject> upload(@RequestPart MultipartFile file, @RequestParam String tempReview) throws IOException {
 
-        try {
-            System.out.println("파일 이름 : " + file.getOriginalFilename());
-            System.out.println("파일 크기 : " + file.getSize());
+        System.out.println("파일 이름 : " + file.getOriginalFilename());
+        System.out.println("파일 크기 : " + file.getSize());
 
-            String dirPath = File.separator
-                    +"tmp"
-                    +File.separator
-                    +"yople"
-                    +File.separator
-                    +tempReview;
+        String dirPath = File.separator
+                +"tmp"
+                +File.separator
+                +"yople"
+                +File.separator
+                +tempReview;
 
-            YOPLEUtils.createDirectories(dirPath);
-
-
-            FileOutputStream fos = new FileOutputStream(dirPath
-                    +File.separator
-                    +file.getOriginalFilename());
-
-            InputStream is  = file.getInputStream();
+        YOPLEUtils.createDirectories(dirPath);
 
 
-            int readCount = 0;
-            byte[] buffer = new byte[1024];
+        FileOutputStream fos = new FileOutputStream(dirPath
+                +File.separator
+                +file.getOriginalFilename());
 
-            while ((readCount = is.read(buffer)) != -1) {
-                //  파일에서 가져온 fileInputStream을 설정한 크기 (1024byte) 만큼 읽고
+        InputStream is  = file.getInputStream();
 
-                fos.write(buffer, 0, readCount);
-                // 위에서 생성한 fileOutputStream 객체에 출력하기를 반복한다
-            }
 
-        } catch (YOPLEServiceException e) {
-            throw e;
+        int readCount = 0;
+        byte[] buffer = new byte[1024];
+
+        while ((readCount = is.read(buffer)) != -1) {
+            //  파일에서 가져온 fileInputStream을 설정한 크기 (1024byte) 만큼 읽고
+
+            fos.write(buffer, 0, readCount);
+            // 위에서 생성한 fileOutputStream 객체에 출력하기를 반복한다
         }
+
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 

@@ -135,18 +135,15 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world/user")
-    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6,message = "인증 코드는 6자리 입니다.") String worldinvitationCode){
-        try{
+    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6,message = "인증 코드는 6자리 입니다.") String worldinvitationCode) throws YOPLEServiceException {
+        try {
 
-            WorldDto joinedWorld = userService.JoinWorld( worldinvitationCode);
+            WorldDto joinedWorld = userService.JoinWorld(worldinvitationCode);
 
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinedWorld);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        }catch(YOPLEServiceException e) {
-            logger.error("월드에 참여하기 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
-            throw e;
         }catch(Exception e)
         {
             logger.error("WorldController inviteJoinWorld Failed.!! : " + e.getMessage());
@@ -164,16 +161,13 @@ public class UserController {
     public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") @Valid
                                                               @Pattern(regexp = BeanConfig.userIdRegexp, message = "ID가 올바르지 않습니다.") String userId) {
         ResponseJsonObject response;
-        try{
+
             if(userInfoRepo.findByUserId(userId) == null) {
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             } else {
                 response =  ResponseJsonObject.withStatusCode(ApiStatusCode.USER_ID_OVERLAPS);
             }
-        }catch (YOPLEServiceException e) {
-            logger.error("유저 ID 중복체크 실패 . : " + e.getResponseJsonObject().getMeta().getErrorType());
-            throw e;
-        }
+
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -264,7 +258,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping("/user")
-    public ResponseEntity<ResponseJsonObject> userDetails() {
+    public ResponseEntity<ResponseJsonObject> userDetails() throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
         try{
@@ -310,7 +304,7 @@ public class UserController {
     public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.userIdRegexp,
                                                                         message = "ID가 올바르지 않습니다.") String userId,
                                                              @RequestParam(required = false) String profileUrl,
-                                                             @RequestParam(required = false) String profilePinUrl){
+                                                             @RequestParam(required = false) String profilePinUrl) throws YOPLEServiceException {
 
         ResponseJsonObject responseJsonObject ;
 
@@ -350,14 +344,14 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @DeleteMapping("/user")
-    public ResponseEntity<ResponseJsonObject> userLogout() {
+    public ResponseEntity<ResponseJsonObject> userLogout() throws YOPLEServiceException {
 
         ResponseJsonObject responseJsonObject;
 
-        try{
+        try {
             // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto)authentication.getPrincipal();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
             userService.userLogout(userInfoDto.getSuid());
 
@@ -366,11 +360,8 @@ public class UserController {
 
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
-            return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
-        }catch(YOPLEServiceException e){
-            logger.error("사용자 로그아웃 실패. : "+ e.getResponseJsonObject().getMeta().getErrorType());
-            throw e;
         }catch(Exception e){
             throw e;
         }
@@ -541,9 +532,6 @@ public class UserController {
             response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
             return new ResponseEntity<>(response,HttpStatus.OK);
-        }catch(YOPLEServiceException e) {
-            logger.error("유저 신고하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
-            throw e;
         } catch (Exception e) {
             throw e;
         }
@@ -558,22 +546,17 @@ public class UserController {
      */
     @PostMapping("/review/report")
     public ResponseEntity<ResponseJsonObject> reviewReport (@RequestBody @Valid ReviewReportDto reviewReportDto){
-        try{
-            ResponseJsonObject response;
+        ResponseJsonObject response;
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            userService.reviewReport(userInfoDto.getSuid(), reviewReportDto);
+        userService.reviewReport(userInfoDto.getSuid(), reviewReportDto);
 
-            // 응답 생성.
-            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+        // 응답 생성.
+        response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
-            return new ResponseEntity<>(response,HttpStatus.OK);
-        }catch(YOPLEServiceException e) {
-            logger.error("리뷰 신고하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
-            throw e;
-        }
+        return new ResponseEntity<>(response,HttpStatus.OK);
 
     }
 
@@ -620,7 +603,7 @@ public class UserController {
      * History     : [2022-04-21] - 조 준 희 - Create
      */
     @PatchMapping("/block")
-    public ResponseEntity<ResponseJsonObject> blockCancel (@RequestParam(required = true) @Valid @Positive Long blockId ){
+    public ResponseEntity<ResponseJsonObject> blockCancel (@RequestParam(required = true) @Valid @Positive Long blockId ) throws YOPLEServiceException {
         try{
             ResponseJsonObject response;
 
@@ -649,22 +632,17 @@ public class UserController {
      */
     @GetMapping("/block")
     public ResponseEntity<ResponseJsonObject> getBlock (){
-        try{
-            ResponseJsonObject response;
+        ResponseJsonObject response;
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            List<UserBlockedDto> blockUsers = userService.getBlock(userInfoDto.getSuid());
+        List<UserBlockedDto> blockUsers = userService.getBlock(userInfoDto.getSuid());
 
-            // 응답 생성.
-            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(blockUsers);
+        // 응답 생성.
+        response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(blockUsers);
 
-            return new ResponseEntity<>(response,HttpStatus.OK);
-        }catch(YOPLEServiceException e) {
-            logger.error("유저 차단해지하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
-            throw e;
-        }
+        return new ResponseEntity<>(response,HttpStatus.OK);
 
     }
 

@@ -46,7 +46,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
 
 
     @Override
-    public ReviewDto.ReviewWithInviterDto findByReviewWithInviter(Long reviewId, Long worldId) {
+    public ReviewDto.ReviewWithInviterDto findByReviewWithInviter(Long reviewId, Long worldId) throws YOPLEServiceException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 

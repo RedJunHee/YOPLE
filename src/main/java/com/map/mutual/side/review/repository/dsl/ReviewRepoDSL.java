@@ -1,5 +1,6 @@
 package com.map.mutual.side.review.repository.dsl;
 
+import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.review.model.dto.ReviewDto;
 
 /**
@@ -13,6 +14,6 @@ import com.map.mutual.side.review.model.dto.ReviewDto;
  *
  */
 public interface ReviewRepoDSL {
-    ReviewDto.ReviewWithInviterDto findByReviewWithInviter(Long reviewId, Long worldId);
+    ReviewDto.ReviewWithInviterDto findByReviewWithInviter(Long reviewId, Long worldId) throws YOPLEServiceException;
     String findByReviewOwnerFcmToken(Long reviewId);
 }

@@ -60,7 +60,7 @@ public class WorldServiceImpl implements WorldService {
      */
     @Override
     @Transactional
-    public WorldDto createWolrd(WorldDto worldDto) {
+    public WorldDto createWolrd(WorldDto worldDto) throws YOPLEServiceException {
 
         // 1. 사용자 SUID 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -152,7 +152,7 @@ public class WorldServiceImpl implements WorldService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public WorldDetailResponseDto getWorldDetail(Long worldId, String suid) {
+    public WorldDetailResponseDto getWorldDetail(Long worldId, String suid) throws YOPLEServiceException {
 
         // 1. 월드 상세정보 조회 - suid 생성자와 같다면 마이월드.
         WorldDetailResponseDto worldDetailResponseDto = worldRepo.getWorldDetail(worldId, suid);

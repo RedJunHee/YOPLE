@@ -42,14 +42,14 @@ public class FCMController {
     private UserInfoRepo userInfoRepo;
 
     @PostMapping("/generateToken")
-    public ResponseEntity<ResponseJsonObject> generateToken(@RequestParam String token) {
+    public ResponseEntity<ResponseJsonObject> generateToken(@RequestParam String token) throws YOPLEServiceException {
         return fcmService.generateToken(token);
     }
 
     @PostMapping("/test")
     public ResponseEntity<ResponseJsonObject> tests(@RequestParam String token,
                                                     @RequestParam String title,
-                                                    @RequestParam String body) {
+                                                    @RequestParam String body) throws YOPLEServiceException {
         try {
             Notification notification = Notification.builder().setTitle(title).setBody(body).build();
 
@@ -71,7 +71,7 @@ public class FCMController {
     @PostMapping("/sendNotification/topic")
     public void testTopic(@RequestParam FCMConstant.MSGType msgType,
                           @RequestParam Long worldId,
-                          @RequestParam String userId) {
+                          @RequestParam String userId) throws YOPLEServiceException {
         CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(msgType, worldId, userId);
         response.thenAccept(d -> {
             if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
@@ -85,7 +85,7 @@ public class FCMController {
     @PostMapping("/sendNotification/token")
     public void testToken(@RequestParam FCMConstant.MSGType msgType,
                           @RequestParam String userId,
-                          @RequestParam Long worldId) throws InterruptedException {
+                          @RequestParam Long worldId) throws InterruptedException, YOPLEServiceException {
         String token = "d-fw6-17tkDokesl9fmT6q:APA91bGQUn4OT1b3reXhqEcdzb4UCRFdUkCadoxdWtsCTz9YOhMdlelQoss_Vnrl1GKEsuMB-AOPm9y_padkMaa8duVvKERddBfn_mDdP29VlV9sWUO27XvUkPX3636m7DBjQi-ynyEV";
 
         CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationToken(token, msgType, userId, worldId, null);
@@ -101,13 +101,13 @@ public class FCMController {
 //
     @PostMapping("/subscribeTopic")
     public void testSubscribe(@RequestParam String token,
-                          @RequestParam String topic) throws FirebaseMessagingException {
+                          @RequestParam String topic) throws FirebaseMessagingException, YOPLEServiceException {
         try {
             TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), topic);
             if (!response.getErrors().isEmpty()) {
                 throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
             }
-        } catch (FirebaseMessagingException e) {
+        } catch (FirebaseMessagingException | YOPLEServiceException e) {
             throw e;
         }
     }

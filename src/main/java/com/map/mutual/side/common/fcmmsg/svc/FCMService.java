@@ -49,7 +49,7 @@ public class FCMService {
     @Autowired
     private WorldRepo worldRepo;
 
-    public ResponseEntity<ResponseJsonObject> generateToken(String token) {
+    public ResponseEntity<ResponseJsonObject> generateToken(String token) throws YOPLEServiceException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         UserEntity userEntity;
@@ -76,7 +76,7 @@ public class FCMService {
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private void registryFcmToken(UserEntity userEntity, String token) {
+    private void registryFcmToken(UserEntity userEntity, String token) throws YOPLEServiceException {
         List<FcmTopicEntity> fcmTopicEntities = new ArrayList<>();
         try {
 
@@ -90,7 +90,11 @@ public class FCMService {
                         TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
                         log.info(response);
                     } catch (FirebaseMessagingException e) {
-                        throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);
+                        try {
+                            throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);
+                        } catch (YOPLEServiceException ex) {
+                            log.error(ex.getMessage());
+                        }
                     }
                     FcmTopicEntity fcmTopicEntity = FcmTopicEntity.builder().fcmToken(token).worldId(data.getWorldId()).build();
                     fcmTopicEntities.add(fcmTopicEntity);
@@ -102,7 +106,7 @@ public class FCMService {
         }
     }
 
-    public void deleteFcmToken(UserInfoDto userInfoDto) {
+    public void deleteFcmToken(UserInfoDto userInfoDto) throws YOPLEServiceException {
         List<FcmTopicEntity> fcmTopicEntities;
 
         try {
@@ -116,7 +120,11 @@ public class FCMService {
                     try {
                         FirebaseMessaging.getInstance().unsubscribeFromTopic(Collections.singletonList(data.getFcmToken()), String.valueOf(data.getWorldId()));
                     } catch (FirebaseMessagingException e) {
-                        throw new YOPLEServiceException(ApiStatusCode.UNSUBSCRIPTION_FCM_TOPIC_FAIL);
+                        try {
+                            throw new YOPLEServiceException(ApiStatusCode.UNSUBSCRIPTION_FCM_TOPIC_FAIL);
+                        } catch (YOPLEServiceException ex) {
+                            log.error(ex.getMessage());
+                        }
                     }
                 });
                 fcmTopicRepository.deleteAll(fcmTopicEntities);
@@ -128,7 +136,7 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException {
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException, YOPLEServiceException {
         String body;
         Map<String, String> msgData = new HashMap<>();
         try {
@@ -184,7 +192,7 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) {
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) throws YOPLEServiceException {
         String body;
         String decodedSuid;
         try {

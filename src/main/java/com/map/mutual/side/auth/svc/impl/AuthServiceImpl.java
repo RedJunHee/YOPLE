@@ -83,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO) throws YOPLEServiceException{
+    public void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO) throws YOPLEServiceException {
 
         try {
             SMSRequestLogEntity smslog = smsLogRepo

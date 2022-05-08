@@ -38,7 +38,7 @@ public class WorldRepoDSLImpl implements WorldRepoDSL {
      * History     : [2022/04/12] - 조 준 희 - Create
      */
     @Override
-    public WorldDetailResponseDto getWorldDetail(Long worldId, String suid) {
+    public WorldDetailResponseDto getWorldDetail(Long worldId, String suid) throws YOPLEServiceException {
 
         WorldDetailResponseDto worldDetailResponseDto = jpaQueryFactory.select(
                         new QWorldDetailResponseDto(QWorldEntity.worldEntity.worldId,

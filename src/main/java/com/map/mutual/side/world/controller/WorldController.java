@@ -46,7 +46,7 @@ public class WorldController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world")
-    public ResponseEntity<ResponseJsonObject> createWorld(@RequestBody WorldDto worldDto){
+    public ResponseEntity<ResponseJsonObject> createWorld(@RequestBody WorldDto worldDto) throws YOPLEServiceException {
         try{
             // 1. 월드 바로 생성하기.
             WorldDto createdWorld = worldService.createWolrd(worldDto);
@@ -74,7 +74,7 @@ public class WorldController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PatchMapping(value = "/world")
-    public ResponseEntity<ResponseJsonObject> updateWorld(@RequestBody WorldDto worldDto){
+    public ResponseEntity<ResponseJsonObject> updateWorld(@RequestBody WorldDto worldDto) throws YOPLEServiceException {
         try{
 
             // 1. 월드 수정하기.
@@ -107,7 +107,7 @@ public class WorldController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/world")
-    public ResponseEntity<ResponseJsonObject> worldDetail(@NotNull @RequestParam Long worldId){
+    public ResponseEntity<ResponseJsonObject> worldDetail(@NotNull @RequestParam Long worldId) throws YOPLEServiceException {
         try{
             WorldDetailResponseDto worldDetail ;
 
@@ -125,10 +125,7 @@ public class WorldController {
             // 4. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        }catch(YOPLEServiceException e){
-            logger.debug(e.getMessage());
-            throw e;
-        }catch(Exception e)
+        } catch(Exception e)
         {
             logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
             throw e;
@@ -162,10 +159,7 @@ public class WorldController {
             // 5. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        }catch(YOPLEServiceException e){
-            logger.debug(e.getMessage());
-            throw e;
-        }catch(Exception e)
+        } catch(Exception e)
         {
             logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
             throw e;
@@ -198,10 +192,7 @@ public class WorldController {
             // 3. 리턴.
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
-        }catch(YOPLEServiceException e){
-            logger.debug(e.getMessage());
-            throw e;
-        }catch(Exception e){
+        } catch(Exception e){
             throw e;
         }
 
@@ -233,10 +224,7 @@ public class WorldController {
 
             // 4. 리턴.
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
-        }catch(YOPLEServiceException e){
-            logger.debug(e.getMessage());
-            throw e;
-        }catch(Exception e){
+        } catch(Exception e){
             throw e;
         }
 
@@ -249,7 +237,7 @@ public class WorldController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/code-validation")
-    public ResponseEntity<ResponseJsonObject> worldUserCodeValid(@RequestParam("worldUserCode") String worldUserCode){
+    public ResponseEntity<ResponseJsonObject> worldUserCodeValid(@RequestParam("worldUserCode") String worldUserCode) throws YOPLEServiceException {
         try{
             ResponseJsonObject responseJsonObject;
 

@@ -209,8 +209,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     // 월드 초대 코드로 월드에 입장하려는 사용자 SUID가 월드에 이미 존재하는지 체크하는 쿼리.
     // 존재하면 null 존재하지않으면 [입장 worldId]
     @Override
-    public Long exsistUserCodeInWorld (String worldinvitationCode, String suid) throws YOPLEServiceException
-    {
+    public Long exsistUserCodeInWorld (String worldinvitationCode, String suid) throws YOPLEServiceException {
 
         Long worldId = jpaQueryFactory.select(QWorldUserMappingEntity.worldUserMappingEntity.worldId)
                 .from(QWorldUserMappingEntity.worldUserMappingEntity) // 월드초대 코드를 지닌 사용자의 월드정보를 알아낸다.

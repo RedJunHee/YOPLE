@@ -12,7 +12,7 @@ import com.map.mutual.side.common.enumerate.ApiStatusCode;
  * ExceptionHandler = com.map.mutual.side.common.exception.handler.GlobalExceptionHandler.java
  * History     : [2022-03-13] - 조 준희 - Class Create
  */
-public class YOPLEServiceException extends RuntimeException{
+public class YOPLEServiceException extends Exception{
     private final ApiStatusCode errorStatusCode ;
     private final ResponseJsonObject responseJsonObject;
 

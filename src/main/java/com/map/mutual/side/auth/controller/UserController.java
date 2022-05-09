@@ -71,7 +71,7 @@ public class UserController {
     }
 
     /**
-     * Description : 사용자 회원가입.
+     * Description : 1. 회원가입.
      * Name        : smsSignUp
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -129,130 +129,38 @@ public class UserController {
     }
 
     /**
-     * Description : 월드에 참여하기. (월드-유저 매핑 )
-     * Name        : inviteJoinWorld
+     * Description : 2. 로그아웃
+     * - 리프레시 토큰 삭제처리
+     * Name        :  userLogout
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
      */
-    @PostMapping(value = "/world/user")
-    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6,message = "인증 코드는 6자리 입니다.") String worldinvitationCode) throws YOPLEServiceException {
+    @DeleteMapping("/user")
+    public ResponseEntity<ResponseJsonObject> userLogout() throws YOPLEServiceException {
+
+        ResponseJsonObject responseJsonObject;
+
         try {
-
-            WorldDto joinedWorld = userService.JoinWorld(worldinvitationCode);
-
-            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinedWorld);
-
-            return new ResponseEntity<>(response, HttpStatus.OK);
-
-        }catch(Exception e)
-        {
-            logger.error("WorldController inviteJoinWorld Failed.!! : " + e.getMessage());
-            throw e;
-        }
-    }
-
-    /**
-     * Description : 유저 ID 중복체크
-     * Name        : checkUserId
-     * Author      : 조 준 희
-     * History     : [2022-04-06] - 조 준 희 - Create
-     */
-    @GetMapping("/check-userid")
-    public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") @Valid
-                                                              @Pattern(regexp = BeanConfig.userIdRegexp, message = "ID가 올바르지 않습니다.") String userId) {
-        ResponseJsonObject response;
-
-            if(userInfoRepo.findByUserId(userId) == null) {
-                response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            } else {
-                response =  ResponseJsonObject.withStatusCode(ApiStatusCode.USER_ID_OVERLAPS);
-            }
-
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    /**
-     * Description : 사용자 검색하기.
-     * Name        : findUserByIdOrPhone
-     * Author      : 조 준 희
-     * History     : [2022-04-06] - 조 준 희 - Create
-     */
-    @GetMapping("/find-user")
-    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam(required = false) @Valid     @Pattern(regexp = BeanConfig.userIdRegexp,
-                                                                            message = "ID가 올바르지 않습니다.")  String userId,
-                                                                  @RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.phoneRegexp,
-                                                                          message = "핸드폰 번호가 올바르지 않습니다.") String phone) throws Exception {
-        ResponseJsonObject response;
-        try{
-
-            // 1. 사용자 SUID 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto requestUser = (UserInfoDto) authentication.getPrincipal();
-
-            // 2. 둘 중에 하나도 안들어오면 파라미터 체크 에러.
-            if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(phone))
-                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED,"사용자 ID 또는 핸드폰 번호 중에 한 정보 이상 요청해야합니다.");
-
-            UserInfoDto userInfoDto;
-
-            userInfoDto = userService.findUser(userId, phone, requestUser.getSuid());
-
-
-
-
-            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            response.setData(userInfoDto);
-        }catch (YOPLEServiceException e) {
-            throw e;
-        }catch(Exception e){
-            logger.error(e.getMessage());
-            throw e;
-        }
-
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    /**
-     * Description : 월드 참여자 조회
-     * Name        :  worldUsers
-     * Author      : 조 준 희
-     * History     : [2022-04-06] - 조 준 희 - Create
-     */
-    @GetMapping("/world/users")
-    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam @Valid @NotNull long worldId) throws Exception {
-        ResponseJsonObject response;
-        try{
-
             // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            // 1. 월드에 참여 중인 사용자 조회.
-            List<UserInWorld> userInfoDto = userService.worldUsers(worldId, userToken.getSuid());
+            userService.userLogout(userInfoDto.getSuid());
 
-            // 2. 응답 객체 설정
-            Map<String, Object> Users = new HashMap<>();
+            //2. fcm 유저 토큰 / 토픽 제거
+            fcmService.deleteFcmToken(userInfoDto);
 
-            Users.put("users", userInfoDto);
-            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            response.setData(Users);
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
-            // 3. 리턴.
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
-        }catch (YOPLEServiceException e) {
-            logger.error("월드 참여자 조회 실패 :" + e.getResponseJsonObject().getMeta().getErrorType());
-            throw e;
-        }catch(Exception e) {
+        }catch(Exception e){
             throw e;
         }
-
     }
 
     /**
-     * Description : 사용자 상세정보 조회
+     * Description : 3. 사용자 상세정보 조회
      * Name        : userDetails
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -294,7 +202,7 @@ public class UserController {
     }
 
     /**
-     * Description : 사용자 상세정보 수정.
+     * Description : 4. 사용자 프로필 수정.
      * - 사용자 ID 이미 사용중이면 USER_ID_OVERLAPS 예외.
      * Name        :  userInfoUpdate
      * Author      : 조 준 희
@@ -302,7 +210,7 @@ public class UserController {
      */
     @PatchMapping("/user")
     public ResponseEntity<ResponseJsonObject> userInfoUpdate(@RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.userIdRegexp,
-                                                                        message = "ID가 올바르지 않습니다.") String userId,
+            message = "ID가 올바르지 않습니다.") String userId,
                                                              @RequestParam(required = false) String profileUrl,
                                                              @RequestParam(required = false) String profilePinUrl) throws YOPLEServiceException {
 
@@ -338,37 +246,107 @@ public class UserController {
     }
 
     /**
-     * Description : 사용자 로그아웃 - 리프레시 토큰 삭제처리
-     * Name        :  userLogout
+     * Description : 5. 사용자 찾기.
+     * Name        : findUserByIdOrPhone
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
      */
-    @DeleteMapping("/user")
-    public ResponseEntity<ResponseJsonObject> userLogout() throws YOPLEServiceException {
+    @GetMapping("/find-user")
+    public ResponseEntity<ResponseJsonObject> findUserByIdOrPhone(@RequestParam(required = false) @Valid     @Pattern(regexp = BeanConfig.userIdRegexp,
+                                                                            message = "ID가 올바르지 않습니다.")  String userId,
+                                                                  @RequestParam(required = false) @Valid @Pattern(regexp = BeanConfig.phoneRegexp,
+                                                                          message = "핸드폰 번호가 올바르지 않습니다.") String phone) throws Exception {
+        ResponseJsonObject response;
+        try{
 
-        ResponseJsonObject responseJsonObject;
-
-        try {
-            // 1. 토큰에서 사용자 SUID 정보 조회
+            // 1. 사용자 SUID 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+            UserInfoDto requestUser = (UserInfoDto) authentication.getPrincipal();
 
-            userService.userLogout(userInfoDto.getSuid());
+            // 2. 둘 중에 하나도 안들어오면 파라미터 체크 에러.
+            if(StringUtil.isNullOrEmpty(userId) && StringUtil.isNullOrEmpty(phone))
+                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED,"사용자 ID 또는 핸드폰 번호 중에 한 정보 이상 요청해야합니다.");
 
-            //2. fcm 유저 토큰 / 토픽 제거
-            fcmService.deleteFcmToken(userInfoDto);
+            UserInfoDto userInfoDto;
 
-            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            userInfoDto = userService.findUser(userId, phone, requestUser.getSuid());
 
-            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
+
+
+            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            response.setData(userInfoDto);
+        }catch (YOPLEServiceException e) {
+            throw e;
         }catch(Exception e){
+            logger.error(e.getMessage());
             throw e;
         }
+
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
-     * Description : 월드에 사용자 초대하기. PUSH성
+     * Description : 6. 사용자 ID 중복체크
+     * Name        : checkUserId
+     * Author      : 조 준 희
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
+    @GetMapping("/check-userid")
+    public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") @Valid
+                                                          @Pattern(regexp = BeanConfig.userIdRegexp, message = "ID가 올바르지 않습니다.") String userId) {
+        ResponseJsonObject response;
+
+        if(userInfoRepo.findByUserId(userId) == null) {
+            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+        } else {
+            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.USER_ID_OVERLAPS);
+        }
+
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * Description : 7. 월드 참여자 리스트
+     * Name        :  worldUsers
+     * Author      : 조 준 희
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
+    @GetMapping("/world/users")
+    public ResponseEntity<ResponseJsonObject> worldUsers(@RequestParam @Valid @NotNull long worldId) throws Exception {
+        ResponseJsonObject response;
+        try{
+
+            // 1. 토큰에서 사용자 SUID 정보 조회
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto)authentication.getPrincipal();
+
+            // 1. 월드에 참여 중인 사용자 조회.
+            List<UserInWorld> userInfoDto = userService.worldUsers(worldId, userToken.getSuid());
+
+            // 2. 응답 객체 설정
+            Map<String, Object> Users = new HashMap<>();
+
+            Users.put("users", userInfoDto);
+            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            response.setData(Users);
+
+            // 3. 리턴.
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        }catch (YOPLEServiceException e) {
+            logger.error("월드 참여자 조회 실패 :" + e.getResponseJsonObject().getMeta().getErrorType());
+            throw e;
+        }catch(Exception e) {
+            throw e;
+        }
+
+    }
+
+    /**
+     * Description : 8. 월드에 사용자 초대하기.
      * - 초대자가 월드에 참여중이 아닌 경우 YOPLEServiceException(FORBIDDEN) Throw
      * - 이미 월드에 참여 중인 경우 YOPLEServiceException(ALREADY_WORLD_MEMEBER) Throw
      * - 사용자가 이미 초대 대기 중인 경우 YOPLEServiceException() Throw
@@ -428,7 +406,30 @@ public class UserController {
     }
 
     /**
-     * Description : 알림 메시지 조회
+     * Description : 9. 월드에 참여하기. (월드-유저 매핑 )
+     * Name        : inviteJoinWorld
+     * Author      : 조 준 희
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
+    @PostMapping(value = "/world/user")
+    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6,message = "인증 코드는 6자리 입니다.") String worldinvitationCode) throws YOPLEServiceException {
+        try {
+
+            WorldDto joinedWorld = userService.JoinWorld(worldinvitationCode);
+
+            ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(joinedWorld);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        }catch(Exception e)
+        {
+            logger.error("WorldController inviteJoinWorld Failed.!! : " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Description : 10. 알림 조회하기
      * Name        : notification
      * Author      : 조 준 희
      * History     : [2022-04-13] - 조 준 희 - Create
@@ -459,11 +460,11 @@ public class UserController {
 
     }
 
-
     /**
-     * Description : 월드 초대 응답하기. isAccept여부에 따라 수락하는지 거절하는지 판단.
-     *      *      *  - 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED
-     *      *      *  - 사용자 이미 월드에 가입되어있으면 ALREADY_WORLD_MEMEBER
+     * Description : 11. 월드 초대 응답하기.
+     * - isAccept여부에 따라 수락하는지 거절하는지 판단.
+     * - 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED
+     * - 사용자 이미 월드에 가입되어있으면 ALREADY_WORLD_MEMEBER
      * Name        : invite-response
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
@@ -509,9 +510,30 @@ public class UserController {
 
     }
 
+    /**
+     * Description : 12. 리뷰 신고하기.
+     * Name        : reviewReport
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @PostMapping("/review/report")
+    public ResponseEntity<ResponseJsonObject> reviewReport (@RequestBody @Valid ReviewReportDto reviewReportDto){
+        ResponseJsonObject response;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+        userService.reviewReport(userInfoDto.getSuid(), reviewReportDto);
+
+        // 응답 생성.
+        response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+
+    }
 
     /**
-     * Description : 사용자 신고하기.
+     * Description : 13. 사용자 신고하기.
      * Name        : report
      * Author      : 조 준 희
      * History     : [2022-04-21] - 조 준 희 - Create
@@ -539,29 +561,7 @@ public class UserController {
     }
 
     /**
-     * Description : 리뷰 신고하기.
-     * Name        : reviewReport
-     * Author      : 조 준 희
-     * History     : [2022-04-21] - 조 준 희 - Create
-     */
-    @PostMapping("/review/report")
-    public ResponseEntity<ResponseJsonObject> reviewReport (@RequestBody @Valid ReviewReportDto reviewReportDto){
-        ResponseJsonObject response;
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-
-        userService.reviewReport(userInfoDto.getSuid(), reviewReportDto);
-
-        // 응답 생성.
-        response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-
-        return new ResponseEntity<>(response,HttpStatus.OK);
-
-    }
-
-    /**
-     * Description : 사용자 차단하기.
+     * Description : 14. 사용자 차단하기.
      * - 이미 차단된 유저인경우 ALREADY_USER_BLOCKING
      * Name        : block
      * Author      : 조 준 희
@@ -595,7 +595,29 @@ public class UserController {
     }
 
     /**
-     * Description : 사용자 차단해지하기.
+     * Description : 15. 사용자 차단리스트 조회
+     * Name        : getBlock
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @GetMapping("/block")
+    public ResponseEntity<ResponseJsonObject> getBlock (){
+        ResponseJsonObject response;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+        List<UserBlockedDto> blockUsers = userService.getBlock(userInfoDto.getSuid());
+
+        // 응답 생성.
+        response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(blockUsers);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+
+    }
+
+    /**
+     * Description : 16. 사용자 차단해제하기.
      * - 없는 차단 이력 요청할 경우 FORBIDDEN
      * - 사용자 차단 이력 아닌 경우 FORBIDDEN
      * Name        : blockCancel
@@ -620,29 +642,6 @@ public class UserController {
             logger.error("유저 차단해지하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
         }
-
-    }
-
-
-    /**
-     * Description : 사용자 차단리스트 조회
-     * Name        : getBlock
-     * Author      : 조 준 희
-     * History     : [2022-04-21] - 조 준 희 - Create
-     */
-    @GetMapping("/block")
-    public ResponseEntity<ResponseJsonObject> getBlock (){
-        ResponseJsonObject response;
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-
-        List<UserBlockedDto> blockUsers = userService.getBlock(userInfoDto.getSuid());
-
-        // 응답 생성.
-        response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(blockUsers);
-
-        return new ResponseEntity<>(response,HttpStatus.OK);
 
     }
 

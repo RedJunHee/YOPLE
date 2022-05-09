@@ -50,7 +50,7 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
         List<PlaceDetailDto.PlaceDetailInReview> results = jpaQueryFactory.select(new QPlaceDetailDto_PlaceDetailInReview(
                 qReview.reviewId,
                 qReview.imageUrl,
-                qUser.profilePinUrl,
+                qUser.profileUrl,
                 qReview.createTime
                 ))
                 .from(qReview)

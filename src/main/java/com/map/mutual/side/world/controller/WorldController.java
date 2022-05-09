@@ -58,11 +58,10 @@ public class WorldController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.debug(e.getMessage());
+            logger.error("월드 생성하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
-        }catch(Exception e)
-        {
-            logger.error("WorldController createWorld Failed.!! : "+ e.getMessage());
+        }catch(Exception e){
+            logger.error("월드 생성하기 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -90,11 +89,10 @@ public class WorldController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.debug(e.getMessage());
+            logger.error("월드 수정하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
-        }catch(Exception e)
-        {
-            logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
+        }catch(Exception e){
+            logger.error("월드 수정하기 ERROR : " + e.getMessage());
             throw e;
         }
     }

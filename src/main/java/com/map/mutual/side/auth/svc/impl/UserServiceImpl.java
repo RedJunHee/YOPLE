@@ -362,6 +362,9 @@ public class UserServiceImpl implements UserService {
 
         JWTRefreshTokenLogEntity jwtRefreshTokenLogEntity = JWTRefreshTokenLogEntity.builder().userSuid(suid).build();
 
+        // 이미 저장된 객체
+        jwtRefreshTokenLogEntity.isPersist();
+
         jwtRepo.delete(jwtRefreshTokenLogEntity);
 
 

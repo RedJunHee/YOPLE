@@ -39,7 +39,7 @@ public class WorldController {
     }
 
     /**
-     * Description : 월드 생성하기.
+     * Description : 1. 월드 생성하기.
      * - 월드 생성 제한 초과시 250 EXCEEDED_LIMITED_COUNT 예외.
      * Name        : createWorld
      * Author      : 조 준 희
@@ -68,7 +68,7 @@ public class WorldController {
     }
 
     /**
-     * Description : 월드 수정하기.
+     * Description : 2. 월드 수정하기.
      * Name        : updateWorld
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -100,7 +100,7 @@ public class WorldController {
     }
 
     /**
-     * Description : 월드 상세정보 조회.
+     * Description : 3. 월드 상세정보 조회.
      * - 존재하지 않는 월드 조회 시 권한 없음 403 에러
      * Name        : worldDetail
      * Author      : 조 준 희
@@ -133,7 +133,8 @@ public class WorldController {
     }
 
     /**
-     * Description : 참여 중인 월드 리스트 조회. isDetails로 세부정보 조회 가능.
+     * Description : 4. 참여 중인 월드 조회.
+     * - isDetails로 세부정보 조회 가능.
      * Name        : activityWorlds
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -168,38 +169,7 @@ public class WorldController {
     }
 
     /**
-     * Description : 월드에 입장이 가능한지 권한 체크.
-     * Name        : worldAuthCheck
-     * Author      : 조 준 희
-     * History     : [2022-04-06] - 조 준 희 - Create
-     */
-    @GetMapping(value = "/user/auth-check")
-    public ResponseEntity<ResponseJsonObject> worldAuthCheck(@RequestParam("worldId") Long worldId){
-        try{
-
-            // 1. 사용자 SUID 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-
-            ResponseJsonObject responseJsonObject;
-
-            // 2. 월드에 참여 중인지 확인 후 응답 설정.
-            if(worldService.authCheck(worldId, userInfoDto.getSuid()) == true )
-                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-            else
-                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.FORBIDDEN);
-
-            // 3. 리턴.
-            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
-
-        } catch(Exception e){
-            throw e;
-        }
-
-    }
-
-    /**
-     * Description : 리뷰가 등록된 월드 리스트 조회 - 월드 이름만 나옴
+     * Description : 5. 리뷰가 등록된 월드 조회 - 월드 이름만 나옴
      * Name        : getWorldOfReivew
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -231,7 +201,8 @@ public class WorldController {
     }
 
     /**
-     * Description : 월드 초대 코드 유효성 체크 - 월드 초대 코드가 유효한 코드인지 확인.
+     * Description : 6. 월드 초대 코드 유효성 체크
+     *  - 월드 초대 코드가 유효한 코드인지 확인.
      * Name        : worldUserCodeValid
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
@@ -258,5 +229,37 @@ public class WorldController {
             throw e;
         }
     }
+
+    /**
+     * Description : 7. 월드에 입장 권한 체크.
+     * Name        : worldAuthCheck
+     * Author      : 조 준 희
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
+    @GetMapping(value = "/user/auth-check")
+    public ResponseEntity<ResponseJsonObject> worldAuthCheck(@RequestParam("worldId") Long worldId){
+        try{
+
+            // 1. 사용자 SUID 가져오기
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+            ResponseJsonObject responseJsonObject;
+
+            // 2. 월드에 참여 중인지 확인 후 응답 설정.
+            if(worldService.authCheck(worldId, userInfoDto.getSuid()) == true )
+                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            else
+                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.FORBIDDEN);
+
+            // 3. 리턴.
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+
+        } catch(Exception e){
+            throw e;
+        }
+
+    }
+
 
 }

@@ -114,7 +114,6 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         QUserEntity qUser1 = new QUserEntity("qUser1");
         String result = jpaQueryFactory
                 .select(qUser1.fcmToken)
-//                .select(new QUserEntity(String.valueOf(qUser1.fcmToken)))
                 .from(qUser1)
                 .innerJoin(qReview)
                 .on(qUser1.suid.eq(qReview.userEntity.suid))

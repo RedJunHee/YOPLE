@@ -20,8 +20,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,18 +59,22 @@ public class ReviewServiceImpl implements ReviewService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         ReviewDto result;
-
-        try {
-            ReviewEntity reviewEntity = ReviewEntity.builder()
+        ReviewEntity reviewEntity;
+        if (dto.getReview().getImageUrls() == null) {
+            reviewEntity = ReviewEntity.builder()
                     .userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build())
                     .content(dto.getReview().getContent())
                     .placeEntity(PlaceEntity.builder().placeId(dto.getPlace().getPlaceId()).build())
-//                    .imageUrl(reviewDto.getImageUrls().stream().map(String::toString).collect(Collectors.joining(",")))
                     .build();
-            result = saveReviewAndMappings(dto.getReview(), reviewEntity, dto.getPlace());
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+        } else {
+            reviewEntity = ReviewEntity.builder()
+                    .userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build())
+                    .content(dto.getReview().getContent())
+                    .placeEntity(PlaceEntity.builder().placeId(dto.getPlace().getPlaceId()).build())
+                    .imageUrl(Arrays.stream(dto.getReview().getImageUrls()).map(String::toString).collect(Collectors.joining(",")))
+                    .build();
         }
+        result = saveReviewAndMappings(dto.getReview(), reviewEntity);
         return result;
     }
 
@@ -88,16 +92,19 @@ public class ReviewServiceImpl implements ReviewService {
             } else if (!entity.getUserEntity().getSuid().equals(userInfoDto.getSuid())) {
                 throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
             } else {
+                if (reviewDto.getImageUrls() != entity.getImageUrl().split(",")) {
+                    entity.setImageUrl(Arrays.stream(reviewDto.getImageUrls()).map(String::toString).collect(Collectors.joining(",")));
+                }
                 entity.setContent(reviewDto.getContent());
-                result = saveReviewAndMappings(reviewDto, entity, null);
+                result = saveReviewAndMappings(reviewDto, entity);
             }
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
         }
         return result;
     }
 
-    public ReviewDto saveReviewAndMappings(ReviewDto reviewDto, ReviewEntity entity, @Nullable PlaceDto placeDto) throws YOPLEServiceException {
+    public ReviewDto saveReviewAndMappings(ReviewDto reviewDto, ReviewEntity entity) throws YOPLEServiceException {
         ReviewEntity returnedReview;
         returnedReview = reviewRepo.save(entity);
         //공통 리뷰 저장
@@ -139,16 +146,20 @@ public class ReviewServiceImpl implements ReviewService {
             reviewWorldPlaceMappingRepository.saveAll(reviewWorldMappingEntities);
         }
         ReviewDto result;
-        try {
+
+        if (returnedReview.getImageUrl() == null) {
             result = ReviewDto.builder()
                     .userSuid(CryptUtils.AES_Encode(returnedReview.getUserEntity().getSuid()))
                     .content(reviewDto.getContent())
-//                .imageFiles()
                     .reviewId(returnedReview.getReviewId())
-                    // TODO: 2022/03/30 월드 리스트 반환여부 , image 관련 처리
                     .build();
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+        } else {
+            result = ReviewDto.builder()
+                    .userSuid(CryptUtils.AES_Encode(returnedReview.getUserEntity().getSuid()))
+                    .content(reviewDto.getContent())
+                    .imageUrls(entity.getImageUrl().split(","))
+                    .reviewId(returnedReview.getReviewId())
+                    .build();
         }
         return result;
     }
@@ -190,13 +201,20 @@ public class ReviewServiceImpl implements ReviewService {
             reviewEntity = reviewRepo.findAllByUserEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build());
             reviewEntity.forEach(data -> {
                         try {
-                            reviewDto.add(ReviewDto.builder()
-                                            .reviewId(data.getReviewId())
-                                            .userSuid(CryptUtils.AES_Encode(data.getUserEntity().getSuid()))
-                                            .content(data.getContent())
-                                            // TODO: 2022/03/29 imageUrl 추가해야함
-                //                  .imageUrls()
-                                            .build());
+                            if (data.getImageUrl() == null) {
+                                reviewDto.add(ReviewDto.builder()
+                                        .reviewId(data.getReviewId())
+                                        .userSuid(CryptUtils.AES_Encode(data.getUserEntity().getSuid()))
+                                        .content(data.getContent())
+                                        .build());
+                            } else {
+                                reviewDto.add(ReviewDto.builder()
+                                        .reviewId(data.getReviewId())
+                                        .userSuid(CryptUtils.AES_Encode(data.getUserEntity().getSuid()))
+                                        .content(data.getContent())
+                                        .imageUrls(data.getImageUrl().split(","))
+                                        .build());
+                            }
                         } catch (Exception e) {
                             try {
                                 throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
@@ -206,7 +224,7 @@ public class ReviewServiceImpl implements ReviewService {
                         }
                     }
             );
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
         }
         return reviewDto;
@@ -274,12 +292,12 @@ public class ReviewServiceImpl implements ReviewService {
                 throw new YOPLEServiceException(ApiStatusCode.ALREADY_EMOJI_ADDED);
             }
 
-            if(!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)){
+            if (!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)) {
                 String reviewOwnerFcmToken = reviewRepo.findByReviewOwnerFcmToken(reviewId);
                 fcmService.sendNotificationToken(reviewOwnerFcmToken, FCMConstant.MSGType.C, userInfoDto.getSuid(), worldId, reviewId);
             }
 
-            if(!emojiStatusNotiRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)) {
+            if (!emojiStatusNotiRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)) {
                 EmojiStatusNotiEntity emojiStatusNotiEntity = EmojiStatusNotiEntity.builder()
                         .userSuid(userInfoDto.getSuid())
                         .worldId(worldId)

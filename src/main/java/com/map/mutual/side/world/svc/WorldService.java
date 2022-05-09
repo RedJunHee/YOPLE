@@ -17,6 +17,6 @@ public interface WorldService {
 
     WorldDetailResponseDto getWorldDetail(Long worldDto, String suid) throws YOPLEServiceException; // 월드 상세 정보 조회
 
-    Boolean authCheck(Long worldId, String suid);   // 월드 입장 권한 체크
+    WorldDto authCheck(Long worldId, String suid) throws YOPLEServiceException;   // 월드 입장 권한 체크
     Boolean worldUserCodeValid(String worldUserCode) throws YOPLEServiceException;   // 월드 코드 유효성 체크.
 }

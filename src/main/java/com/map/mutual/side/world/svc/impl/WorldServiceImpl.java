@@ -186,12 +186,13 @@ public class WorldServiceImpl implements WorldService {
 
     /**
      * Description : 월드에 입장 권한이 있는지 확인.
+     * - 권한이 있다면 WorldDto리턴  권한이 없다면 null 리턴.
      * Name        : authCheck
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public Boolean authCheck(Long worldId, String suid) {
+    public WorldDto authCheck(Long worldId, String suid) throws YOPLEServiceException {
 
         // 1. 월드 매핑 정보 조회
         Optional<WorldUserMappingEntity> worldUserMappingEntity
@@ -199,15 +200,33 @@ public class WorldServiceImpl implements WorldService {
 
         // 월드 소속 멤버 인경우
         if(worldUserMappingEntity.isPresent() == true){
-           WorldUserMappingEntity mapping = worldUserMappingEntity.get();
+
+            Optional<WorldEntity> world = worldRepo.findById(worldId);
+
+            if(world.isPresent() == false){
+                YOPLEServiceException e = new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+
+                e.getResponseJsonObject().getMeta().setMsg("입장 권한 체크하려는 월드가 존재하지 않습니다.");
+                logger.error("월드 입장 권한 체크 ERROR : 입장 권한 체크하려는 월드가 존재하지 않습니다. - " + e.getResponseJsonObject().getMeta().getErrorMsg());
+                throw e;
+
+            }
+
+            WorldEntity worldEntity = world.get();
+            WorldDto worldDto = WorldDto.builder().worldId(worldEntity.getWorldId())
+                    .worldName(worldEntity.getWorldName())
+                    .worldDesc(worldEntity.getWorldDesc())
+                    .build();
+
+            WorldUserMappingEntity mapping = worldUserMappingEntity.get();
            // 월드 입장 시간 갱신.
            mapping.setAccessTime(LocalDateTime.now());
            worldUserMappingRepo.save(mapping);
 
-            return true;    // 월드에 참여중이므로 입장 가능.
+            return worldDto;    // 월드에 참여중이므로 입장 가능.
         }
         else    // 월드에 참여되어있지 않음. => 월드 입장 권한 없음.
-            return false;
+            return null;
     }
 
     /**

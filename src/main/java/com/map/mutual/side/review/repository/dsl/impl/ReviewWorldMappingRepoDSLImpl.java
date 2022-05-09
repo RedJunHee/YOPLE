@@ -12,6 +12,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
@@ -61,7 +62,7 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
     public List<PlaceDto.PlaceSimpleDto> findRangePlaces(PlaceRangeDto placeRangeDto) {
         List<PlaceDto.PlaceSimpleDto> result = new ArrayList<>();
 
-        String sql = "SELECT p.PLACE_ID , p.NAME, p.X , p.Y , ui.PROFILE_URL" +
+        String sql = "SELECT p.PLACE_ID , p.NAME, p.X , p.Y , ui.PROFILE_PIN_URL" +
                 " FROM (" +
                 "SELECT ROW_NUMBER() OVER(PARTITION BY r.PLACE_ID ORDER BY m.CREATE_DT DESC) as NUM" +
                 " , r.PLACE_ID, r.REVIEW_ID, m.WORLD_ID, r.USER_SUID " +
@@ -78,13 +79,25 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
 
         List<Object[]> dtos = entityManager.createNativeQuery(sql).getResultList();
         dtos.forEach(data -> {
-                        PlaceDto.PlaceSimpleDto placeInRange = PlaceDto.PlaceSimpleDto.builder()
-                    .placeId(data[0].toString())
-                    .name(data[1].toString())
-                    .x((BigDecimal)data[2])
-                    .y((BigDecimal)data[3])
-                    .profileUrl(data[4].toString())
-                    .build();
+            PlaceDto.PlaceSimpleDto placeInRange;
+            if(data[4] == null) {
+                placeInRange = PlaceDto.PlaceSimpleDto.builder()
+                        .placeId(data[0].toString())
+                        .name(data[1].toString())
+                        .x((BigDecimal)data[2])
+                        .y((BigDecimal)data[3])
+                        .build();
+
+            } else {
+                placeInRange = PlaceDto.PlaceSimpleDto.builder()
+                        .placeId(data[0].toString())
+                        .name(data[1].toString())
+                        .x((BigDecimal)data[2])
+                        .y((BigDecimal)data[3])
+                        .profileUrl(data[4].toString())
+                        .build();
+
+            }
             result.add(placeInRange);
         });
         return result;

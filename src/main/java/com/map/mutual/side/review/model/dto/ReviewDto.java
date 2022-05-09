@@ -3,7 +3,6 @@ package com.map.mutual.side.review.model.dto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
@@ -31,7 +30,6 @@ public class ReviewDto {
     @Size(min = 1, max = 500)
     private String content;
     @Size(min = 0, max = 9)
-    private MultipartFile[] imageFiles;
     private String[] imageUrls;
     private Long reviewId;
     private String placeId;

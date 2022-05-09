@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,7 +73,6 @@ public class ReviewController {
      *     BigDecimal x: x좌표
      *     BigDecimal y: y좌표
      * }
-     * // TODO: 2022/04/01 imageFiles 서버 구축 후 추가 테스트
      * @return
      */
     @PostMapping("/review")
@@ -107,11 +107,6 @@ public class ReviewController {
     /**
      * Review 수정
      * @param reviewDto
-     * String content: 내용
-     * Long reviewId: 수정할 리뷰 ID
-     * MultipartFile[] imageFiles: 리뷰에 올릴 이미지들
-     * List[Long] worldList: 월드 리스트
-     * // TODO: 2022/04/01 imageFiles 서버 구축 후 추가 테스트
      * @return
      */
     @PutMapping("/review")
@@ -179,7 +174,7 @@ public class ReviewController {
      * 내가 작성한 리뷰들을 불러옵니다.
      *
      */
-    @GetMapping("/myReviews")
+    @GetMapping("/my-reviews")
     public ResponseEntity<ResponseJsonObject> myReviews() throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
@@ -199,13 +194,29 @@ public class ReviewController {
 
     /**
      * x축, y축 범위에 따른 장소들 리스트를 가져옴.
-     * @param placeRangeDto
+     * @param worldId
+     * @param x_start
+     * @param x_end
+     * @param y_start
+     * @param y_end
      * @return
+     * @throws YOPLEServiceException
      */
-    @GetMapping("/worldPin/placeInRange")
-    public ResponseEntity<ResponseJsonObject> worldPinPlaceInRange(@RequestBody PlaceRangeDto placeRangeDto) throws YOPLEServiceException {
+    @GetMapping("/world-pin")
+    public ResponseEntity<ResponseJsonObject> worldPinPlaceInRange(@RequestParam Long worldId,
+                                                                   @RequestParam BigDecimal x_start,
+                                                                   @RequestParam BigDecimal x_end,
+                                                                   @RequestParam BigDecimal y_start,
+                                                                   @RequestParam BigDecimal y_end) throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
+        PlaceRangeDto placeRangeDto = PlaceRangeDto.builder()
+                .worldId(worldId)
+                .x_start(x_start)
+                .x_end(x_end)
+                .y_start(y_start)
+                .y_end(y_end)
+                .build();
         try {
             List<PlaceDto.PlaceSimpleDto> places = reviewService.worldPinPlaceInRange(placeRangeDto);
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
@@ -227,7 +238,7 @@ public class ReviewController {
      * @param worldId
      * @return
      */
-    @GetMapping("/placeDetail")
+    @GetMapping("/place-detail")
     public ResponseEntity<ResponseJsonObject> placeDetail(@RequestParam String placeId, @RequestParam Long worldId) throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
@@ -257,7 +268,6 @@ public class ReviewController {
         try {
             reviewService.addEmoji(reviewId, worldId, emojiId);
             responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-//            responseJsonObject.setData(result);
         } catch (YOPLEServiceException e) {
             throw e;
         } catch (Exception e) {

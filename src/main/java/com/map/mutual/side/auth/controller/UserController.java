@@ -121,9 +121,10 @@ public class UserController {
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtTokenDto), HttpStatus.OK);
 
         }catch(YOPLEServiceException e) {
-            logger.error("사용자 회원가입 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("사용자 회원가입 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
         }catch (Exception e) {
+            logger.error("사용자 회원가입 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -154,7 +155,11 @@ public class UserController {
 
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
-        }catch(Exception e){
+        }catch(YOPLEServiceException e) {
+            logger.error("사용자 로그아웃 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }catch (Exception e) {
+            logger.error("사용자 로그아웃 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -194,9 +199,10 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("사용자 상세정보 조회 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("사용자 상세정보 조회 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
+            logger.error("사용자 상세정보 조회 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -238,9 +244,10 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("사용자 상세정보 수정 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("사용자 프로필 수정 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
+            logger.error("사용자 프로필 수정 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -272,19 +279,20 @@ public class UserController {
             userInfoDto = userService.findUser(userId, phone, requestUser.getSuid());
 
 
-
-
             response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
             response.setData(userInfoDto);
-        }catch (YOPLEServiceException e) {
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        }catch(YOPLEServiceException e){
+            logger.error("사용자 찾기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
-            logger.error(e.getMessage());
+            logger.error("사용자 찾기 ERROR : " + e.getMessage());
             throw e;
         }
 
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
@@ -296,16 +304,21 @@ public class UserController {
     @GetMapping("/check-userid")
     public ResponseEntity<ResponseJsonObject> checkUserId(@RequestParam("userId") @Valid
                                                           @Pattern(regexp = BeanConfig.userIdRegexp, message = "ID가 올바르지 않습니다.") String userId) {
-        ResponseJsonObject response;
+        try {
+            ResponseJsonObject response;
 
-        if(userInfoRepo.findByUserId(userId) == null) {
-            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-        } else {
-            response =  ResponseJsonObject.withStatusCode(ApiStatusCode.USER_ID_OVERLAPS);
+            if (userInfoRepo.findByUserId(userId) == null) {
+                response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            } else {
+                response = ResponseJsonObject.withStatusCode(ApiStatusCode.USER_ID_OVERLAPS);
+            }
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        }catch(Exception e){
+            logger.error("사용자 ID 중복체크 ERROR : " + e.getMessage());
+            throw e;
         }
-
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
@@ -337,9 +350,10 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch (YOPLEServiceException e) {
-            logger.error("월드 참여자 조회 실패 :" + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("월드 참여자 리스트 ERROR :" + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e) {
+            logger.error("월드 참여자 리스트 실패 :" + e.getMessage());
             throw e;
         }
 
@@ -398,9 +412,10 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject,HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 사용자 초대하기 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("월드 사용자 초대하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e){
+            logger.error("월드 사용자 초대하기 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -421,9 +436,11 @@ public class UserController {
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        }catch(Exception e)
-        {
-            logger.error("WorldController inviteJoinWorld Failed.!! : " + e.getMessage());
+        }catch(YOPLEServiceException e){
+            logger.error("월드 참여하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            throw e;
+        }catch(Exception e){
+            logger.error("월드 참여하기 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -450,11 +467,11 @@ public class UserController {
 
         }catch(YOPLEServiceException e)
         {
-            logger.error("사용자 알림 메시지 조회 실패. : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("알림 조회하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
             throw e;
         }catch(Exception e)
         {
-            logger.error(e.getMessage());
+            logger.error("알림 조회하기 ERROR : " + e.getMessage());
             throw e;
         }
 
@@ -501,9 +518,10 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e) {
-            logger.error("월드 초대 응답하기 실패.! : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("월드 초대 응답하기 ERROR : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
         } catch (Exception e) {
+            logger.error("월드 초대 응답하기 ERROR : "+ e.getMessage());
             throw e ;
         }
 
@@ -518,17 +536,23 @@ public class UserController {
      */
     @PostMapping("/review/report")
     public ResponseEntity<ResponseJsonObject> reviewReport (@RequestBody @Valid ReviewReportDto reviewReportDto){
-        ResponseJsonObject response;
+        try {
+            ResponseJsonObject response;
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-        userService.reviewReport(userInfoDto.getSuid(), reviewReportDto);
+            userService.reviewReport(userInfoDto.getSuid(), reviewReportDto);
 
-        // 응답 생성.
-        response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            // 응답 생성.
+            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
-        return new ResponseEntity<>(response,HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        }catch(Exception e){
+            logger.error("리뷰 신고하기 ERROR : "+ e.getMessage());
+            throw e ;
+        }
 
     }
 
@@ -541,6 +565,7 @@ public class UserController {
     @PostMapping("/report")
     public ResponseEntity<ResponseJsonObject> report (@RequestBody @Valid UserReportDto userReportDto) throws Exception {
         try{
+
             ResponseJsonObject response;
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -554,7 +579,9 @@ public class UserController {
             response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
             return new ResponseEntity<>(response,HttpStatus.OK);
+
         } catch (Exception e) {
+            logger.error("사용자 신고하기 ERROR : "+ e.getMessage());
             throw e;
         }
 
@@ -585,10 +612,12 @@ public class UserController {
             response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
             return new ResponseEntity<>(response,HttpStatus.OK);
+
         }catch(YOPLEServiceException e) {
-            logger.error("유저 차단하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("사용자 차단하기 ERROR : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
         } catch (Exception e) {
+            logger.error("사용자 차단하기 ERROR : "+ e.getMessage());
             throw e;
         }
 
@@ -602,18 +631,23 @@ public class UserController {
      */
     @GetMapping("/block")
     public ResponseEntity<ResponseJsonObject> getBlock (){
-        ResponseJsonObject response;
+        try {
+            ResponseJsonObject response;
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-        List<UserBlockedDto> blockUsers = userService.getBlock(userInfoDto.getSuid());
+            List<UserBlockedDto> blockUsers = userService.getBlock(userInfoDto.getSuid());
 
-        // 응답 생성.
-        response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(blockUsers);
+            // 응답 생성.
+            response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(blockUsers);
 
-        return new ResponseEntity<>(response,HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
 
+        }catch(Exception e){
+            logger.error("사용자 차단리스트 조회 ERROR : "+ e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -627,6 +661,7 @@ public class UserController {
     @PatchMapping("/block")
     public ResponseEntity<ResponseJsonObject> blockCancel (@RequestParam(required = true) @Valid @Positive Long blockId ) throws YOPLEServiceException {
         try{
+
             ResponseJsonObject response;
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -638,8 +673,12 @@ public class UserController {
             response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
 
             return new ResponseEntity<>(response,HttpStatus.OK);
+
         }catch(YOPLEServiceException e) {
-            logger.error("유저 차단해지하기 실패. : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("사용자 차단해제 ERROR : "+ e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        } catch (Exception e) {
+            logger.error("사용자 차단해제 ERROR : "+ e.getMessage());
             throw e;
         }
 

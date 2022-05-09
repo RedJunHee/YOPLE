@@ -61,24 +61,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void smsAuthNumSave(SMSAuthReqeustDto smsAuthReqeustDTO, String smsAuthNum) {
 
-        try {
+        // 2. SMSRequestLog 생성
+        SMSRequestLogEntity smsLog = SMSRequestLogEntity.builder().phone(smsAuthReqeustDTO.getPhone())
+                .requestAuthNum(smsAuthNum)
+                .duid(smsAuthReqeustDTO.getDuid())
+                .build();
 
-            // 2. SMSRequestLog 생성
-            SMSRequestLogEntity smsLog = SMSRequestLogEntity.builder().phone(smsAuthReqeustDTO.getPhone())
-                    .requestAuthNum(smsAuthNum)
-                    .duid(smsAuthReqeustDTO.getDuid())
-                    .build();
+        // 3. Log 저장
+        smsLogRepo.save(smsLog);
 
-            // 3. Log 저장
-            smsLogRepo.save(smsLog);
-
-            log.debug("SMS Auth Number Insert Success !! ");
-        }
-        catch(Exception e)
-        {
-            log.error("SMS Auth Number Insert Failed!! : %s",e.getMessage());
-            throw e;
-        }
+        log.debug("SMS Auth Number Insert Success !! ");
 
     }
 

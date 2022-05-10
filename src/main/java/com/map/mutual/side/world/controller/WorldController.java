@@ -5,6 +5,7 @@ import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.world.model.dto.WorldAuthResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.svc.WorldService;
@@ -244,11 +245,11 @@ public class WorldController {
 
             ResponseJsonObject responseJsonObject;
 
-            WorldDto world = null;
+            WorldAuthResponseDto worldAuthResponseDto = null;
 
             // 2. 월드에 참여 중인지 확인 후 응답 설정.
-            if ((world = worldService.authCheck(worldId, userInfoDto.getSuid())) != null)
-                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(world);
+            if ((worldAuthResponseDto = worldService.authCheck(worldId, userInfoDto.getSuid())) != null)
+                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(worldAuthResponseDto);
             else
                 responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.FORBIDDEN);
 

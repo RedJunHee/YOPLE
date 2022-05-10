@@ -3,6 +3,7 @@ package com.map.mutual.side.world.svc.impl;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
+import com.map.mutual.side.world.model.dto.WorldAuthResponseDto;
 import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
 import com.map.mutual.side.world.repository.WorldJoinLogRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
@@ -190,9 +191,10 @@ public class WorldServiceImpl implements WorldService {
      * Name        : authCheck
      * Author      : 조 준 희
      * History     : [2022-04-06] - 조 준 희 - Create
+     * @return
      */
     @Override
-    public WorldDto authCheck(Long worldId, String suid) throws YOPLEServiceException {
+    public WorldAuthResponseDto authCheck(Long worldId, String suid) throws YOPLEServiceException {
 
         // 1. 월드 매핑 정보 조회
         Optional<WorldUserMappingEntity> worldUserMappingEntity
@@ -213,17 +215,18 @@ public class WorldServiceImpl implements WorldService {
             }
 
             WorldEntity worldEntity = world.get();
-            WorldDto worldDto = WorldDto.builder().worldId(worldEntity.getWorldId())
-                    .worldName(worldEntity.getWorldName())
-                    .worldDesc(worldEntity.getWorldDesc())
-                    .build();
+
 
             WorldUserMappingEntity mapping = worldUserMappingEntity.get();
            // 월드 입장 시간 갱신.
            mapping.setAccessTime(LocalDateTime.now());
            worldUserMappingRepo.save(mapping);
 
-            return worldDto;    // 월드에 참여중이므로 입장 가능.
+            WorldAuthResponseDto worldAuthResponseDto = WorldAuthResponseDto.builder().worldName(worldEntity.getWorldName())
+                    .worldUserCode(mapping.getWorldUserCode())
+                    .build();
+
+            return worldAuthResponseDto;    // 월드에 참여중이므로 입장 가능.
         }
         else    // 월드에 참여되어있지 않음. => 월드 입장 권한 없음.
             return null;

@@ -5,6 +5,7 @@ import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.world.model.dto.WorldAuthResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.svc.WorldService;
@@ -58,11 +59,10 @@ public class WorldController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.debug(e.getMessage());
+            logger.error("월드 생성하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
-        }catch(Exception e)
-        {
-            logger.error("WorldController createWorld Failed.!! : "+ e.getMessage());
+        }catch(Exception e){
+            logger.error("월드 생성하기 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -90,11 +90,10 @@ public class WorldController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.debug(e.getMessage());
+            logger.error("월드 수정하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
-        }catch(Exception e)
-        {
-            logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
+        }catch(Exception e){
+            logger.error("월드 수정하기 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -125,9 +124,8 @@ public class WorldController {
             // 4. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        } catch(Exception e)
-        {
-            logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
+        }catch(Exception e){
+            logger.error("월드 상세정보 조회 ERROR : + " + e.getMessage());
             throw e;
         }
     }
@@ -160,9 +158,8 @@ public class WorldController {
             // 5. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        } catch(Exception e)
-        {
-            logger.error("WorldController updateWorld Failed.!! : "+ e.getMessage());
+        }catch(Exception e){
+            logger.error("참여 중인 월드 조회 ERROR : + " + e.getMessage());
             throw e;
         }
 
@@ -194,7 +191,8 @@ public class WorldController {
 
             // 4. 리턴.
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
-        } catch(Exception e){
+        }catch(Exception e){
+            logger.error("리뷰가 등록된 월드 조회 ERROR : + " + e.getMessage());
             throw e;
         }
 
@@ -223,9 +221,10 @@ public class WorldController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.debug("월드 초대 코드 유효성 체크 실패.");
+            logger.error("월드 초대 코드 유효성 체크 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
         }catch(Exception e){
+            logger.error("월드 초대 코드 유효성 체크 ERROR : + " + e.getMessage());
             throw e;
         }
     }
@@ -237,8 +236,8 @@ public class WorldController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @GetMapping(value = "/user/auth-check")
-    public ResponseEntity<ResponseJsonObject> worldAuthCheck(@RequestParam("worldId") Long worldId){
-        try{
+    public ResponseEntity<ResponseJsonObject> worldAuthCheck(@RequestParam("worldId") Long worldId) throws YOPLEServiceException {
+        try {
 
             // 1. 사용자 SUID 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -246,16 +245,22 @@ public class WorldController {
 
             ResponseJsonObject responseJsonObject;
 
+            WorldAuthResponseDto worldAuthResponseDto = null;
+
             // 2. 월드에 참여 중인지 확인 후 응답 설정.
-            if(worldService.authCheck(worldId, userInfoDto.getSuid()) == true )
-                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            if ((worldAuthResponseDto = worldService.authCheck(worldId, userInfoDto.getSuid())) != null)
+                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(worldAuthResponseDto);
             else
                 responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.FORBIDDEN);
 
             // 3. 리턴.
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
-        } catch(Exception e){
+        }catch(YOPLEServiceException e){
+            logger.error("월드 입장 권한 체크 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            throw e;
+        }catch(Exception e){
+            logger.error("월드 입장 권한 체크 ERROR : + " + e.getMessage());
             throw e;
         }
 

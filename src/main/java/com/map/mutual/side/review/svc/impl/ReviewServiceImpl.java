@@ -92,9 +92,10 @@ public class ReviewServiceImpl implements ReviewService {
             } else if (!entity.getUserEntity().getSuid().equals(userInfoDto.getSuid())) {
                 throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
             } else {
-                if (reviewDto.getImageUrls() != entity.getImageUrl().split(",")) {
+
+                if (reviewDto.getImageUrls() != null) {
                     entity.setImageUrl(Arrays.stream(reviewDto.getImageUrls()).map(String::toString).collect(Collectors.joining(",")));
-                }
+                } else entity.setImageUrl(null);
                 entity.setContent(reviewDto.getContent());
                 result = saveReviewAndMappings(reviewDto, entity);
             }

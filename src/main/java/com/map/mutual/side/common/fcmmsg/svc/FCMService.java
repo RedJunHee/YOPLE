@@ -83,7 +83,7 @@ public class FCMService {
             userEntity.setFcmToken(token);
             userInfoRepo.save(userEntity);
 
-            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(CryptUtils.AES_Decode(userEntity.getSuid()));
+            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(userEntity.getSuid());
             if (!worldUserMappingEntities.isEmpty()) {
                 worldUserMappingEntities.forEach(data -> {
                     try {

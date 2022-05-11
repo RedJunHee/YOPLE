@@ -3,7 +3,6 @@ package com.map.mutual.side.common.fcmmsg.controller;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
-import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -13,10 +12,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -38,13 +34,16 @@ public class FCMController {
     @Autowired
     private FCMService fcmService;
 
-    @Autowired
-    private UserInfoRepo userInfoRepo;
-
-    @PostMapping("/generateToken")
-    public ResponseEntity<ResponseJsonObject> generateToken(@RequestParam String token) throws YOPLEServiceException {
+    @PostMapping("/generate")
+    public ResponseEntity<ResponseJsonObject> generateToken(@RequestBody String token) throws YOPLEServiceException {
         return fcmService.generateToken(token);
     }
+
+
+    // TODO: 2022/05/11 테스트 완료 후 아래 맵핑 리스트 삭제 예정
+
+
+
 
     @PostMapping("/test")
     public ResponseEntity<ResponseJsonObject> tests(@RequestParam String token,

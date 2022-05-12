@@ -148,7 +148,7 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
         for(Object[] obj : result){
 
             Timestamp notidate = new Timestamp(0);
-            if( obj[7] instanceof Timestamp )
+            if( obj[8] instanceof Timestamp )
                 notidate= (Timestamp)obj[8];
 
             notis.add(EmojiNotiDto.builder().reviewId(Long.parseLong(obj[0].toString()))

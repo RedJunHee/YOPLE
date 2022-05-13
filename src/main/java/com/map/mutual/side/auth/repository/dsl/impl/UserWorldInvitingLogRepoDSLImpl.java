@@ -8,6 +8,7 @@ import com.map.mutual.side.auth.model.entity.QUserWorldInvitingLogEntity;
 import com.map.mutual.side.auth.repository.dsl.UserWorldInvitingLogRepoDSL;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,18 +47,19 @@ public class UserWorldInvitingLogRepoDSLImpl implements UserWorldInvitingLogRepo
 
         List<InvitedNotiDto> notis = jpaQueryFactory.select( new QInvitedNotiDto(log.createTime,
                         QUserEntity.userEntity.userId,
-                        QUserEntity.userEntity.profileUrl,
+                        QUserEntity.userEntity.name,
+                        QUserEntity.userEntity.profileUrl, // 프로필 사진은 Optional Column
                         QWorldEntity.worldEntity.worldName,
                         log.seq,
                         log.userSuid,
                         log.worldUserCode
                         ))
                 .from(log)
-                .leftJoin(QUserEntity.userEntity)
+                .innerJoin(QUserEntity.userEntity)
                 .on(log.userSuid.eq(QUserEntity.userEntity.suid))
-                .leftJoin(QWorldEntity.worldEntity)
+                .innerJoin(QWorldEntity.worldEntity)
                 .on(log.worldId.eq(QWorldEntity.worldEntity.worldId))
-                .where(log.createTime.between(LocalDateTime.now().minusWeeks(7), LocalDateTime.now())
+                .where(log.createTime.between(LocalDateTime.now().minusWeeks(12), LocalDateTime.now())
                         .and(log.targetSuid.eq(suid)).and(log.targetSuid.eq(suid)).and(log.invitingStatus.eq("-")))
                 .orderBy(log.createTime.desc())
                 .fetch();

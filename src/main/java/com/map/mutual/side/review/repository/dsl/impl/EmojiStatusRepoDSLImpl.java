@@ -122,17 +122,23 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
                 " WHERE e.CREATE_DT BETWEEN  ? AND ? AND  r.USER_SUID = ? AND BLOCK_SUID IS NULL\n" +
 
                 "  SELECT notis.REVIEW_ID, notis.WORLD_ID, \n" +
-                "        u.[USER_ID], u.PROFILE_URL, w.NAME, place.PLACE_ID, place.X, place.Y, notis.CREATE_DT\n" +
+                "        u.[USER_ID], " +
+                 "      u.PROFILE_URL, " +
+                        "w.NAME, " +
+                        "place.PLACE_ID, " +
+                        "place.X, " +
+                        "place.Y, " +
+                        "notis.CREATE_DT\n" +
                 "   FROM #EMOJI_NOTIS notis\n" +
-                "  LEFT JOIN REVIEW r\n" +
-                "    ON notis.REVIEW_ID = r.REVIEW_ID\n" +
-                "  LEFT JOIN PLACE place\n" +
-                "    ON place.PLACE_ID = r.PLACE_ID\n" +
-                "  LEFT JOIN USER_INFO u\n" +
-                "    ON notis.USER_SUID = u.SUID\n" +
-                "  LEFT JOIN WORLD w\n" +
-                "    ON notis.WORLD_ID = w.WORLD_ID " +
-                " ORDER BY notis.CREATE_DT DESC \n" +
+                "  INNER JOIN REVIEW r\n" +
+                "     ON notis.REVIEW_ID = r.REVIEW_ID\n" +
+                "  INNER JOIN PLACE place\n" +
+                "     ON place.PLACE_ID = r.PLACE_ID\n" +
+                "  INNER JOIN USER_INFO u\n" +
+                "     ON notis.USER_SUID = u.SUID\n" +
+                "  INNER JOIN WORLD w\n" +
+                "     ON notis.WORLD_ID = w.WORLD_ID " +
+                "  ORDER BY notis.CREATE_DT DESC \n" +
 
                 "DROP TABLE #BLOCK \n" +
                 "DROP TABLE #EMOJI_NOTIS";
@@ -151,10 +157,10 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
             if( obj[8] instanceof Timestamp )
                 notidate= (Timestamp)obj[8];
 
-            notis.add(EmojiNotiDto.builder().reviewId(Long.parseLong(obj[0].toString()))
+            notis.add(EmojiNotiDto.builder().reviewId(Long.parseLong( obj[0].toString()))
                             .worldId(Long.parseLong(obj[1].toString()))
                             .userId(obj[2].toString())
-                            .userProfileUrl(obj[3].toString())
+                            .userProfileUrl( (obj[3] == null ) ? null : obj[3].toString()) // 프로필 사진은 Optional Column
                             .worldName(obj[4].toString())
                             .placeId(obj[5].toString())
                             .x(BigDecimalParser.parse(obj[6].toString()))

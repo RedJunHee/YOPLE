@@ -16,10 +16,10 @@ import java.time.LocalDateTime;
 public class InvitedNotiDto extends notificationDto {
 
     @QueryProjection
-    public InvitedNotiDto(LocalDateTime notiDate,  String userId, String userProfileUrl, String worldName, Long inviteNumber, String userSuid, String worldUserCode ) {
+    public InvitedNotiDto(LocalDateTime notiDate,  String userId,String userName , String userProfileUrl, String worldName, Long inviteNumber, String userSuid, String worldUserCode ) {
         super("A"); // A 타입 알림.
         header.SetNotiDate(notiDate);
-        payload = new Payload(userId,userProfileUrl,worldName);
+        payload = new Payload(userId,userName,userProfileUrl,worldName);
         data = new Data(inviteNumber,userSuid,worldUserCode);
     }
     public LocalDateTime PushDate(){return getHeader().getPushDate();}
@@ -30,11 +30,13 @@ public class InvitedNotiDto extends notificationDto {
     @Getter
     private static class Payload{
         private String userId;
+        private String userName;
         private String userProfileUrl;
         private String worldName;
 
-        public Payload(String userId, String userProfileUrl, String worldName) {
+        public Payload(String userId,String userName, String userProfileUrl, String worldName) {
             this.userId = userId;
+            this.userName = userName;
             this.userProfileUrl = userProfileUrl;
             this.worldName = worldName;
         }

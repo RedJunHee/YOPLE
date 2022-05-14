@@ -5,9 +5,11 @@ import com.map.mutual.side.auth.model.entity.QUserBlockLogEntity;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.review.model.dto.QReviewDto_MyReview;
 import com.map.mutual.side.review.model.dto.QReviewDto_ReviewWithInviterDto;
 import com.map.mutual.side.review.model.dto.ReviewDto;
 import com.map.mutual.side.review.model.entity.EmojiStatusEntity;
+import com.map.mutual.side.review.model.entity.QPlaceEntity;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
 import com.map.mutual.side.review.model.enumeration.EmojiType;
@@ -119,6 +121,27 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                 .on(qUser1.suid.eq(qReview.userEntity.suid))
                 .where(qReview.reviewId.eq(reviewId))
                 .fetchOne();
+        return result;
+    }
+
+    @Override
+    public List<ReviewDto.MyReview> findMyReviewsBySuid() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+        QReviewEntity qReview = new QReviewEntity("qReview");
+        QPlaceEntity qPlaceEntity = new QPlaceEntity("qPlaceEntity");
+        List<ReviewDto.MyReview> result = jpaQueryFactory.select(new QReviewDto_MyReview(
+                qReview.reviewId,
+                qReview.imageUrl,
+                qPlaceEntity.name,
+                qReview.createTime))
+                .from(qReview)
+                .innerJoin(qPlaceEntity)
+                .on(qReview.placeEntity.placeId.eq(qPlaceEntity.placeId))
+                .where(qReview.userEntity.suid.eq(userInfoDto.getSuid()))
+                .fetch();
+
         return result;
     }
 }

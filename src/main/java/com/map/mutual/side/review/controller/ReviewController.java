@@ -151,7 +151,7 @@ public class ReviewController {
     public ResponseEntity<ResponseJsonObject> myReviews() throws YOPLEServiceException {
         ResponseJsonObject responseJsonObject;
 
-        List<ReviewDto> reviewDto = reviewService.myReviews();
+        List<ReviewDto.MyReview> reviewDto = reviewService.myReviews();
         responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
         responseJsonObject.setData(reviewDto);
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);

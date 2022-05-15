@@ -192,43 +192,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> myReviews() throws YOPLEServiceException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+    public List<ReviewDto.MyReview> myReviews() throws YOPLEServiceException {
+        return reviewRepo.findMyReviewsBySuid();
 
-        List<ReviewEntity> reviewEntity;
-        List<ReviewDto> reviewDto = new ArrayList<>();
-        try {
-            reviewEntity = reviewRepo.findAllByUserEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build());
-            reviewEntity.forEach(data -> {
-                        try {
-                            if (data.getImageUrl() == null) {
-                                reviewDto.add(ReviewDto.builder()
-                                        .reviewId(data.getReviewId())
-                                        .userSuid(CryptUtils.AES_Encode(data.getUserEntity().getSuid()))
-                                        .content(data.getContent())
-                                        .build());
-                            } else {
-                                reviewDto.add(ReviewDto.builder()
-                                        .reviewId(data.getReviewId())
-                                        .userSuid(CryptUtils.AES_Encode(data.getUserEntity().getSuid()))
-                                        .content(data.getContent())
-                                        .imageUrls(data.getImageUrl().split(","))
-                                        .build());
-                            }
-                        } catch (Exception e) {
-                            try {
-                                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-                            } catch (YOPLEServiceException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }
-            );
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-        }
-        return reviewDto;
     }
 
     @Override

@@ -36,7 +36,6 @@ public class ReviewDto {
     @Size(min = 1)
     private List<Long> worldList;
 
-
     @QueryProjection
     public ReviewDto(UserEntity userEntity, String content, String imageUrls, Long reviewId) {
         this.userSuid = userEntity.getSuid();
@@ -57,6 +56,31 @@ public class ReviewDto {
             this.imageUrls = new String[0];
         }
         this.reviewId = reviewId;
+    }
+
+
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    public static class MyReview {
+        private Long reviewId;
+        private String imageUrl;
+        private String placeName;
+        private String createDt;
+
+        @QueryProjection
+        public MyReview(Long reviewId, String imageUrls, String placeName, LocalDateTime createDt) {
+            this.reviewId = reviewId;
+            if(imageUrls != null) {
+                if(imageUrls.split(",").length >= 2) {
+                    this.imageUrl = imageUrls.split(",")[0];
+                } else {
+                    this.imageUrl = imageUrls;
+                }
+            }
+            this.placeName = placeName;
+            this.createDt = LocalDate.of(createDt.getYear(), createDt.getMonth(), createDt.getDayOfMonth()).toString();
+        }
     }
 
     @NoArgsConstructor

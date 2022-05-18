@@ -30,6 +30,5 @@ public class YOPLEServiceException extends Exception{
         responseJsonObject = ResponseJsonObject.withStatusCode(errorStatusCode);
         responseJsonObject.getMeta().setMsg(msg);
     }
-
-
 }
+

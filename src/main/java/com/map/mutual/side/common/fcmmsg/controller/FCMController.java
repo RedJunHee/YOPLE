@@ -50,8 +50,7 @@ public class FCMController {
                                                     @RequestParam String title,
                                                     @RequestParam String body) throws YOPLEServiceException {
         try {
-            Notification notification = Notification.builder().setTitle(title).setBody(body).build();
-
+            Notification notification = Notification.builder().setTitle(title).setImage("https://i.ibb.co/30J0Z5L/Kakao-Talk-Image-2022-05-16-17-14-03.png").setBody(body).build();
             Message message = Message.builder()
                     .putData("data", "fcmMsgTest")
                     .setToken(token)

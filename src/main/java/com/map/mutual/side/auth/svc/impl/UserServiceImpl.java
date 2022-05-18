@@ -6,10 +6,10 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
 import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
 import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
+import com.map.mutual.side.auth.model.dto.notification.EmojiNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
-import com.map.mutual.side.auth.model.dto.notification.EmojiNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
 import com.map.mutual.side.auth.model.dto.report.UserReportDto;
@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import static org.jooq.lambda.Seq.seq;
 
 /**
  * fileName       : UserServiceImpl

@@ -106,32 +106,30 @@ public class FCMService {
         }
     }
 
+    @Async(value = "YOPLE-Executor")
     public void deleteFcmToken(UserInfoDto userInfoDto) throws YOPLEServiceException {
         List<FcmTopicEntity> fcmTopicEntities;
 
-        try {
-            UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+        UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
 
-            if (userEntity.getFcmToken() != null) {
-                userEntity.setFcmToken(FCMConstant.EXPIRED);
-                fcmTopicEntities = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
+        if (userEntity.getFcmToken() != null) {
+            userEntity.setFcmToken(FCMConstant.EXPIRED);
+            fcmTopicEntities = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
 
-                fcmTopicEntities.forEach(data -> {
+            fcmTopicRepository.deleteAll(fcmTopicEntities);
+            userInfoRepo.save(userEntity);
+
+            fcmTopicEntities.forEach(data -> {
+                try {
+                    FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).unsubscribeFromTopic(Collections.singletonList(data.getFcmToken()), String.valueOf(data.getWorldId()));
+                } catch (FirebaseMessagingException e) {
                     try {
-                        FirebaseMessaging.getInstance().unsubscribeFromTopic(Collections.singletonList(data.getFcmToken()), String.valueOf(data.getWorldId()));
-                    } catch (FirebaseMessagingException e) {
-                        try {
-                            throw new YOPLEServiceException(ApiStatusCode.UNSUBSCRIPTION_FCM_TOPIC_FAIL);
-                        } catch (YOPLEServiceException ex) {
-                            log.error(ex.getMessage());
-                        }
+                        throw new YOPLEServiceException(ApiStatusCode.UNSUBSCRIPTION_FCM_TOPIC_FAIL); // TODO: 2022/05/18 Error 나도 fcm store에는 문제가 없음. 토큰만 갱신할 지, 서비스 플로우 리팩토링 하기.
+                    } catch (YOPLEServiceException ex) {
+                        log.error(ex.getMessage());
                     }
-                });
-                fcmTopicRepository.deleteAll(fcmTopicEntities);
-                userInfoRepo.save(userEntity);
-            }
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+                }
+            });
         }
     }
 
@@ -179,10 +177,10 @@ public class FCMService {
                 .build();
 
         Message message = Message.builder()
-                    .setToken(targetFcmToken)
-                    .setNotification(notification)
-                    .putAllData(msgData)
-                    .build();
+                .setToken(targetFcmToken)
+                .setNotification(notification)
+                .putAllData(msgData)
+                .build();
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
         } catch (FirebaseMessagingException e) {
@@ -204,7 +202,7 @@ public class FCMService {
         switch (msgType) {
             case B:
                 String userId = userInfoRepo.findBySuid(decodedSuid).getUserId();
-                String worldName  = worldRepo.findByWorldId(worldId).getWorldName();
+                String worldName = worldRepo.findByWorldId(worldId).getWorldName();
                 body = worldName
                         + "에 "
                         + userId
@@ -223,10 +221,10 @@ public class FCMService {
                 .build();
 
         Message message = Message.builder()
-                    .setTopic(String.valueOf(worldId))
-                    .setNotification(notification)
-                    .putAllData(msgData)
-                    .build();
+                .setTopic(String.valueOf(worldId))
+                .setNotification(notification)
+                .putAllData(msgData)
+                .build();
 
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);

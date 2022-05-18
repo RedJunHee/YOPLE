@@ -14,7 +14,7 @@ spring:
     database: SQL_SERVER
   datasource:
     driverclassname: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    url: jdbc:sqlserver://172.17.0.3:11443;instanceName=SpringApplication;DatabaseName=CMS_DEV
+    url: jdbc:sqlserver://jjh-mssql-server:11443;instanceName=SpringApplication;DatabaseName=CMS_DEV
     username: SA
     password: mutual#!12
 

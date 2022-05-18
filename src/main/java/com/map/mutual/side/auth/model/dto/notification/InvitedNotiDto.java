@@ -16,11 +16,11 @@ import java.time.LocalDateTime;
 public class InvitedNotiDto extends notificationDto {
 
     @QueryProjection
-    public InvitedNotiDto(LocalDateTime notiDate,  String userId,String userName , String userProfileUrl, String worldName, Long inviteNumber, String userSuid, String worldUserCode ) {
+    public InvitedNotiDto(LocalDateTime notiDate,  String userId,String userName , String userProfileUrl, String worldName, Long inviteNumber, String userSuid, String worldUserCode, Long worldId ) {
         super("A"); // A 타입 알림.
         header.SetNotiDate(notiDate);
         payload = new Payload(userId,userName,userProfileUrl,worldName);
-        data = new Data(inviteNumber,userSuid,worldUserCode);
+        data = new Data(worldId,inviteNumber,userSuid,worldUserCode);
     }
     public LocalDateTime PushDate(){return getHeader().getPushDate();}
     public void decodingSuid() throws Exception {
@@ -44,13 +44,15 @@ public class InvitedNotiDto extends notificationDto {
 
     @Getter
     private static class Data{
+        private Long worldId;
         private Long inviteNumber;
         private String userSuid;
         private String worldUserCode;
 
 
 
-        public Data(Long inviteNumber, String userSuid, String worldUserCode) {
+        public Data(Long worldId,Long inviteNumber, String userSuid, String worldUserCode) {
+            this.worldId = worldId;
             this.inviteNumber = inviteNumber;
             this.userSuid = userSuid;
             this.worldUserCode = worldUserCode;

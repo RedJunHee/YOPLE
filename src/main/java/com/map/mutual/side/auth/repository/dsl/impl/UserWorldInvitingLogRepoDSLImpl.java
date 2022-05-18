@@ -52,7 +52,8 @@ public class UserWorldInvitingLogRepoDSLImpl implements UserWorldInvitingLogRepo
                         QWorldEntity.worldEntity.worldName,
                         log.seq,
                         log.userSuid,
-                        log.worldUserCode
+                        log.worldUserCode,
+                        QWorldEntity.worldEntity.worldId
                         ))
                 .from(log)
                 .innerJoin(QUserEntity.userEntity)

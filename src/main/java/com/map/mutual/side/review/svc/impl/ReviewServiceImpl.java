@@ -184,7 +184,7 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewDto.ReviewWithInviterDto getReview(Long reviewId, Long worldId) throws YOPLEServiceException {
         ReviewDto.ReviewWithInviterDto reviewDto;
         try {
-            reviewDto = reviewRepo.findByReviewWithInviter(reviewId, worldId);
+            reviewDto = reviewRepo.qFindReview(reviewId, worldId);
         } catch (YOPLEServiceException e) {
             throw e;
         }
@@ -193,7 +193,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<ReviewDto.MyReview> myReviews() throws YOPLEServiceException {
-        return reviewRepo.findMyReviewsBySuid();
+        return reviewRepo.qFindMyReviewsBySuid();
 
     }
 
@@ -260,7 +260,7 @@ public class ReviewServiceImpl implements ReviewService {
             }
 
             if (!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)) {
-                String reviewOwnerFcmToken = reviewRepo.findByReviewOwnerFcmToken(reviewId);
+                String reviewOwnerFcmToken = reviewRepo.qFindReviewOwnerFcmToken(reviewId);
                 fcmService.sendNotificationToken(reviewOwnerFcmToken, FCMConstant.MSGType.C, userInfoDto.getSuid(), worldId, reviewId);
             }
 
@@ -291,5 +291,8 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
-
+    @Override
+    public ReviewDto.preReview getPreReview(Long reviewId) throws YOPLEServiceException {
+        return reviewRepo.qFindPreReview(reviewId);
+    }
 }

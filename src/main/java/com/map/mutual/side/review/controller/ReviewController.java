@@ -141,6 +141,17 @@ public class ReviewController {
         return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
     }
 
+    @GetMapping("/pre/review")
+    public ResponseEntity<ResponseJsonObject> getPreReview(@RequestParam Long reviewId) throws YOPLEServiceException {
+        ResponseJsonObject responseJsonObject;
+
+        ReviewDto.preReview result = reviewService.getPreReview(reviewId);
+        responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+        responseJsonObject.setData(result);
+
+        return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+    }
+
 
     /**
      * 내가 쓴 Reviews 조회

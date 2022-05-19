@@ -40,7 +40,7 @@ public class ReviewDto {
     public ReviewDto(UserEntity userEntity, String content, String imageUrls, Long reviewId) {
         this.userSuid = userEntity.getSuid();
         this.content = content;
-        if(imageUrls != null) {
+        if (imageUrls != null) {
             this.imageUrls = imageUrls.split(",");
         } else {
             this.imageUrls = new String[0];
@@ -50,7 +50,7 @@ public class ReviewDto {
 
     @QueryProjection
     public ReviewDto(String imageUrls, Long reviewId) {
-        if(imageUrls != null) {
+        if (imageUrls != null) {
             this.imageUrls = imageUrls.split(",");
         } else {
             this.imageUrls = new String[0];
@@ -71,8 +71,8 @@ public class ReviewDto {
         @QueryProjection
         public MyReview(Long reviewId, String imageUrls, String placeName, LocalDateTime createDt) {
             this.reviewId = reviewId;
-            if(imageUrls != null) {
-                if(imageUrls.split(",").length >= 2) {
+            if (imageUrls != null) {
+                if (imageUrls.split(",").length >= 2) {
                     this.imageUrl = imageUrls.split(",")[0];
                 } else {
                     this.imageUrl = imageUrls;
@@ -90,7 +90,7 @@ public class ReviewDto {
     @Setter
     public static class ReviewWithInviterDto {
         private Long reviewId;
-        private String userid;
+        private String userId;
         private String inviterUserId;
         private String content;
         private String[] imageUrls;
@@ -110,12 +110,12 @@ public class ReviewDto {
         }
 
         @QueryProjection
-        public ReviewWithInviterDto(Long reviewId, String content, String imageUrls , String userid, String inviterUserId, LocalDateTime createDt) {
+        public ReviewWithInviterDto(Long reviewId, String content, String imageUrls, String userId, String inviterUserId, LocalDateTime createDt) {
             this.reviewId = reviewId;
-            this.userid = userid;
+            this.userId = userId;
             this.inviterUserId = inviterUserId;
             this.content = content;
-            if(imageUrls != null) {
+            if (imageUrls != null) {
                 this.imageUrls = imageUrls.split(",");
             } else {
                 this.imageUrls = new String[0];
@@ -124,5 +124,33 @@ public class ReviewDto {
 
         }
 
+    }
+
+    @NoArgsConstructor
+    @Builder
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class preReview {
+        private Long reviewId;
+        private String placeId;
+        private String placeName;
+        private List<Long> worldList;
+        private String[] imageUrls;
+        private String content;
+
+        @QueryProjection
+        public preReview(Long reviewId, String placeId, String placeName, String imageUrls, String content) {
+            this.reviewId = reviewId;
+            this.placeId = placeId;
+            this.placeName = placeName;
+//            this.worldList = worldList;
+            if (imageUrls != null) {
+                this.imageUrls = imageUrls.split(",");
+            } else {
+                this.imageUrls = new String[0];
+            }
+            this.content = content;
+        }
     }
 }

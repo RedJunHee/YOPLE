@@ -16,7 +16,8 @@ import java.util.List;
  *
  */
 public interface ReviewRepoDSL {
-    ReviewDto.ReviewWithInviterDto findByReviewWithInviter(Long reviewId, Long worldId) throws YOPLEServiceException;
-    String findByReviewOwnerFcmToken(Long reviewId);
-    List<ReviewDto.MyReview> findMyReviewsBySuid();
+    ReviewDto.ReviewWithInviterDto qFindReview(Long reviewId, Long worldId) throws YOPLEServiceException;
+    String qFindReviewOwnerFcmToken(Long reviewId);
+    List<ReviewDto.MyReview> qFindMyReviewsBySuid();
+    ReviewDto.preReview qFindPreReview(Long reviewId);
 }

@@ -7,13 +7,12 @@ import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.review.model.dto.QReviewDto_MyReview;
 import com.map.mutual.side.review.model.dto.QReviewDto_ReviewWithInviterDto;
+import com.map.mutual.side.review.model.dto.QReviewDto_preReview;
 import com.map.mutual.side.review.model.dto.ReviewDto;
-import com.map.mutual.side.review.model.entity.EmojiStatusEntity;
-import com.map.mutual.side.review.model.entity.QPlaceEntity;
-import com.map.mutual.side.review.model.entity.QReviewEntity;
-import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
+import com.map.mutual.side.review.model.entity.*;
 import com.map.mutual.side.review.model.enumeration.EmojiType;
 import com.map.mutual.side.review.repository.EmojiStatusRepo;
+import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
 import com.map.mutual.side.review.repository.dsl.ReviewRepoDSL;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.querydsl.jpa.JPAExpressions;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * fileName       : ReviewRepoDSLImpl
@@ -40,15 +40,17 @@ import java.util.Objects;
 public class ReviewRepoDSLImpl implements ReviewRepoDSL {
     private final JPAQueryFactory jpaQueryFactory;
     private final EmojiStatusRepo emojiStatusRepo;
+    private final ReviewWorldMappingRepository reviewWorldMappingRepository;
 
-    public ReviewRepoDSLImpl(JPAQueryFactory jpaQueryFactory, EmojiStatusRepo emojiStatusRepo) {
+    public ReviewRepoDSLImpl(JPAQueryFactory jpaQueryFactory, EmojiStatusRepo emojiStatusRepo, ReviewWorldMappingRepository reviewWorldMappingRepository) {
         this.jpaQueryFactory = jpaQueryFactory;
         this.emojiStatusRepo = emojiStatusRepo;
+        this.reviewWorldMappingRepository = reviewWorldMappingRepository;
     }
 
 
     @Override
-    public ReviewDto.ReviewWithInviterDto findByReviewWithInviter(Long reviewId, Long worldId) throws YOPLEServiceException {
+    public ReviewDto.ReviewWithInviterDto qFindReview(Long reviewId, Long worldId) throws YOPLEServiceException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
@@ -111,7 +113,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
     }
 
     @Override
-    public String findByReviewOwnerFcmToken(Long reviewId) {
+    public String qFindReviewOwnerFcmToken(Long reviewId) {
         QReviewEntity qReview = new QReviewEntity("qReview");
         QUserEntity qUser1 = new QUserEntity("qUser1");
         String result = jpaQueryFactory
@@ -125,7 +127,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
     }
 
     @Override
-    public List<ReviewDto.MyReview> findMyReviewsBySuid() {
+    public List<ReviewDto.MyReview> qFindMyReviewsBySuid() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
@@ -142,6 +144,30 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                 .where(qReview.userEntity.suid.eq(userInfoDto.getSuid()))
                 .fetch();
 
+        return result;
+    }
+
+    @Override
+    public ReviewDto.preReview qFindPreReview(Long reviewId) {
+        QReviewEntity qReview = new QReviewEntity("qReview");
+        QPlaceEntity qPlaceEntity = new QPlaceEntity("qPlaceEntity");
+
+        List<Long> worldList = reviewWorldMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(reviewId).build()).stream().map(data -> data.getWorldEntity().getWorldId()).collect(Collectors.toList());
+
+        ReviewDto.preReview result = jpaQueryFactory.select(new QReviewDto_preReview(
+                qReview.reviewId,
+                qPlaceEntity.placeId,
+                qPlaceEntity.name,
+                qReview.imageUrl,
+                qReview.content))
+                .from(qReview)
+                .innerJoin(qPlaceEntity)
+                .on(qReview.placeEntity.placeId.eq(qPlaceEntity.placeId))
+                .where(qReview.reviewId.eq(reviewId))
+                .fetchOne();
+        if (result != null) {
+            result.setWorldList(worldList);
+        }
         return result;
     }
 }

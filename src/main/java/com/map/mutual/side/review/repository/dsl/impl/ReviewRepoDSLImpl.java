@@ -14,6 +14,7 @@ import com.map.mutual.side.review.model.enumeration.EmojiType;
 import com.map.mutual.side.review.repository.EmojiStatusRepo;
 import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
 import com.map.mutual.side.review.repository.dsl.ReviewRepoDSL;
+import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -152,7 +153,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         QReviewEntity qReview = new QReviewEntity("qReview");
         QPlaceEntity qPlaceEntity = new QPlaceEntity("qPlaceEntity");
 
-        List<Long> worldList = reviewWorldMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(reviewId).build()).stream().map(data -> data.getWorldEntity().getWorldId()).collect(Collectors.toList());
+        List<WorldDto> worldList = reviewWorldMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(reviewId).build()).stream().map(data -> WorldDto.builder().worldId(data.getWorldEntity().getId()).worldName(data.getWorldEntity().getWorldName()).build()).collect(Collectors.toList());
 
         ReviewDto.preReview result = jpaQueryFactory.select(new QReviewDto_preReview(
                 qReview.reviewId,

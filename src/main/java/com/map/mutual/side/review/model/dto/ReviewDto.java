@@ -1,6 +1,7 @@
 package com.map.mutual.side.review.model.dto;
 
 import com.map.mutual.side.auth.model.entity.UserEntity;
+import com.map.mutual.side.world.model.dto.WorldDto;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.*;
 
@@ -135,7 +136,7 @@ public class ReviewDto {
         private Long reviewId;
         private String placeId;
         private String placeName;
-        private List<Long> worldList;
+        private List<WorldDto> worldList;
         private String[] imageUrls;
         private String content;
 

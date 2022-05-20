@@ -16,16 +16,15 @@ import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
 import com.map.mutual.side.review.repository.dsl.ReviewRepoDSL;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
+import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
+import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,11 +41,13 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
     private final JPAQueryFactory jpaQueryFactory;
     private final EmojiStatusRepo emojiStatusRepo;
     private final ReviewWorldMappingRepository reviewWorldMappingRepository;
+    private final WorldUserMappingRepo worldUserMappingRepo;
 
-    public ReviewRepoDSLImpl(JPAQueryFactory jpaQueryFactory, EmojiStatusRepo emojiStatusRepo, ReviewWorldMappingRepository reviewWorldMappingRepository) {
+    public ReviewRepoDSLImpl(JPAQueryFactory jpaQueryFactory, EmojiStatusRepo emojiStatusRepo, ReviewWorldMappingRepository reviewWorldMappingRepository, WorldUserMappingRepo worldUserMappingRepo) {
         this.jpaQueryFactory = jpaQueryFactory;
         this.emojiStatusRepo = emojiStatusRepo;
         this.reviewWorldMappingRepository = reviewWorldMappingRepository;
+        this.worldUserMappingRepo = worldUserMappingRepo;
     }
 
 
@@ -54,6 +55,11 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
     public ReviewDto.ReviewWithInviterDto qFindReview(Long reviewId, Long worldId) throws YOPLEServiceException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+        Optional<WorldUserMappingEntity> entity = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId, userInfoDto.getSuid());
+        if (!entity.isPresent()) {
+            throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
+        }
 
         QReviewEntity qReview = new QReviewEntity("qReview");
         QReviewWorldMappingEntity qReviewWorldMappingEntity = new QReviewWorldMappingEntity("qReviewWorldMappingEntity");

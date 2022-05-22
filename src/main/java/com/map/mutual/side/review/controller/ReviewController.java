@@ -242,8 +242,8 @@ public class ReviewController {
     /**
      * TEST
      */
-    @PostMapping("/emojiCreate")
-    public ResponseEntity<ResponseJsonObject> emojiAddTest() {
+    @PostMapping("/emoji/update")
+    public ResponseEntity<ResponseJsonObject> emojiUpdate() {
         List<EmojiEntity> emojiEntities = new ArrayList<>();
         Arrays.stream(EmojiType.values()).forEach(data -> emojiEntities.add(EmojiEntity.builder()
                 .emojiId(data)

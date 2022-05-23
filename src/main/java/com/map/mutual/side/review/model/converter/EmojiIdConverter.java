@@ -24,7 +24,11 @@ public class EmojiIdConverter implements AttributeConverter<EmojiType, Long> {
     public Long convertToDatabaseColumn(EmojiType attribute) {
         System.out.println(attribute);
         if (Objects.isNull(attribute)) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            try {
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            } catch (YOPLEServiceException e) {
+                e.printStackTrace();
+            }
         }
         return attribute.getId();
     }
@@ -33,7 +37,11 @@ public class EmojiIdConverter implements AttributeConverter<EmojiType, Long> {
     @Override
     public EmojiType convertToEntityAttribute(Long dbData) {
         if (dbData == null) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            try {
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            } catch (YOPLEServiceException e) {
+                e.printStackTrace();
+            }
         }
         return EmojiType.findId(dbData);
     }

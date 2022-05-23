@@ -24,7 +24,12 @@ public class EmojiValueConverter implements AttributeConverter<EmojiType, String
     @Override
     public String convertToDatabaseColumn(EmojiType attribute) {
         if (Objects.isNull(attribute)) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            try {
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            } catch (YOPLEServiceException e) {
+                // TODO: 2022/05/08  수정하기. 
+                e.printStackTrace();
+            }
         }
         return attribute.getValue();
     }
@@ -32,7 +37,11 @@ public class EmojiValueConverter implements AttributeConverter<EmojiType, String
     @Override
     public EmojiType convertToEntityAttribute(String dbData) {
         if (StringUtils.isBlank(dbData)) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            try {
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            } catch (YOPLEServiceException e) {
+                e.printStackTrace();
+            }
         }
         return EmojiType.findValue(dbData);
     }

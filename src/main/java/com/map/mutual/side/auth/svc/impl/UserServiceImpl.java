@@ -6,10 +6,10 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
 import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
 import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
+import com.map.mutual.side.auth.model.dto.notification.EmojiNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
 import com.map.mutual.side.auth.model.dto.notification.WorldEntryNotiDto;
-import com.map.mutual.side.auth.model.dto.notification.EmojiNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 import com.map.mutual.side.auth.model.dto.report.ReviewReportDto;
 import com.map.mutual.side.auth.model.dto.report.UserReportDto;
@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import static org.jooq.lambda.Seq.seq;
 
 /**
  * fileName       : UserServiceImpl
@@ -112,13 +110,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UserInfoDto signUp(UserInfoDto user) {
+    public UserInfoDto signUp(UserInfoDto user) throws YOPLEServiceException {
         UserEntity userEntity = UserEntity.builder()
                 .suid(user.getSuid())
                 .userId(user.getUserId())
                 .name(user.getName())
                 .phone(user.getPhone())
-                .profileUrl(user.getProfileUrl()).build();
+                .profileUrl(user.getProfileUrl())
+                .profilePinUrl(user.getProfilePinUrl()).build();
 
         UserTOSEntity userTOSEntity = UserTOSEntity.builder()
                 .suid(user.getSuid())
@@ -146,7 +145,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public UserInfoDto findUser(String id, String phone, String suid)  {
+    public UserInfoDto findUser(String id, String phone, String suid) throws YOPLEServiceException {
         UserEntity userEntity;
         UserInfoDto userInfoDto;
 
@@ -212,10 +211,16 @@ public class UserServiceImpl implements UserService {
         // 월드 초대 코드 유효하지 않으면 WORLD_USER_CDOE_VALID_FAILED Exception Throw
         Long inviteWorldId = worldUserMappingRepo.exsistUserCodeInWorld(worldInvitationCode, userInfoDto.getSuid());
 
+
         if (inviteWorldId == null) {
             logger.error("해당 사용자가 이미 월드에 속해있습니다.");
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
         }
+
+        // 타인의 월드는 최대 20개 까지만 입장 가능.
+        Long worldCnt = worldUserMappingRepo.countAllByActiveWorlds(userInfoDto.getSuid());
+        if(worldCnt >= 20)
+            throw new YOPLEServiceException(ApiStatusCode.EXCEEDED_LIMITED_COUNT);
 
         // 3. 초대 수락한 월드 입장 처리
         WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
@@ -266,7 +271,7 @@ public class UserServiceImpl implements UserService {
 
         //1. 토큰에 저장된 SUID 사용자가 없을 경우. Exception.
         UserEntity userEntity = userInfoRepo.findById(suid)
-                        .orElseThrow( ()-> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR) );
+                        .orElseThrow( ()-> new YOPLEServiceException(ApiStatusCode.UNAUTHORIZED) );
 
         // 2. 응답 객체 설정
         UserInfoDto userInfoDto = UserInfoDto.builder()
@@ -307,7 +312,7 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl) {
+    public UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl, String profilePinUrl) throws YOPLEServiceException {
 
         // 1. 사용자 SUID 가져오기.
         UserEntity userEntity = userInfoRepo.findById(suid)
@@ -317,10 +322,15 @@ public class UserServiceImpl implements UserService {
         if(StringUtil.isNullOrEmpty(userId) == false)
             userEntity.setUserId(userId);
 
-        if(StringUtil.isNullOrEmpty(profileUrl) == false)
+        if(StringUtil.isNullOrEmpty(profileUrl) == false) {
             userEntity.setProfileUrl(profileUrl);
+            userEntity.setProfilePinUrl(profilePinUrl);
+        }
 
-        if(userInfoRepo.findByUserId(userId) != null)
+        UserEntity idUser = userInfoRepo.findByUserId(userId);
+
+        // id 사용자가 있고, 해당 사용자가 아닌 경우.
+        if(idUser != null && idUser.getSuid().equals(suid) == false)
             throw new YOPLEServiceException(ApiStatusCode.USER_ID_OVERLAPS);
 
         // 3. 사용자 프로필 정보 수정.
@@ -331,6 +341,7 @@ public class UserServiceImpl implements UserService {
                 .userId(userEntity.getUserId())
                 .name(userEntity.getName())
                 .profileUrl(userEntity.getProfileUrl())
+                .profilePinUrl(userEntity.getProfilePinUrl())
                 .build();
 
         // 5. 리턴.
@@ -348,6 +359,9 @@ public class UserServiceImpl implements UserService {
     public void userLogout(String suid) {
 
         JWTRefreshTokenLogEntity jwtRefreshTokenLogEntity = JWTRefreshTokenLogEntity.builder().userSuid(suid).build();
+
+        // 이미 저장된 객체
+        jwtRefreshTokenLogEntity.isPersist();
 
         jwtRepo.delete(jwtRefreshTokenLogEntity);
 
@@ -524,10 +538,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) {
+    public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) throws YOPLEServiceException {
 
         // 초대하기인지 수락하기인지 분기
-
         Optional<UserWorldInvitingLogEntity> inviteLog = userWorldInvitingLogRepo.findById(invited.getInviteNumber());
 
         //초대장이 존재하지 않는 경우.
@@ -543,12 +556,13 @@ public class UserServiceImpl implements UserService {
         // 1. 초대장 조회하기, 유효성 체크,
         // 2. 월드 입장 처리
         if(invited.getIsAccept().equals("Y")){
-            inviteLog.get().inviteAccept();
-            userWorldInvitingLogRepo.save(inviteLog.get());
 
-            //월드에 참여하기 서비스 사용
-            return JoinWorld(invited.getWorldUserCode());
+                //월드에 참여하기 서비스 사용
+                WorldDto world =  JoinWorld(invited.getWorldUserCode());
+                inviteLog.get().inviteAccept();
+                userWorldInvitingLogRepo.save(inviteLog.get());
 
+                return world;
         }else {
         //거절
         // 1. 초대장 거절처리.
@@ -558,7 +572,6 @@ public class UserServiceImpl implements UserService {
         }
 
     }
-
 
     /**
      * Description : 사용자 신고하기.
@@ -587,7 +600,7 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-21] - 조 준 희 - Create
      */
     @Override
-    public void block(String suid, UserBlockDto userBlockDto) {
+    public void block(String suid, UserBlockDto userBlockDto) throws YOPLEServiceException {
 
         // 이미 차단된 유저인지 조회.
         if( userBlockLogRepo.existsByUserSuidAndBlockSuidAndIsBlocking(suid, userBlockDto.getBlockSuid(), "Y"))
@@ -612,7 +625,7 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-21] - 조 준 희 - Create
      */
     @Override
-    public void blockCancel(String suid, Long blockId) {
+    public void blockCancel(String suid, Long blockId) throws YOPLEServiceException {
 
         UserBlockLogEntity log = userBlockLogRepo.findById(blockId)
                                                 .orElseThrow(()-> new YOPLEServiceException(ApiStatusCode.FORBIDDEN));

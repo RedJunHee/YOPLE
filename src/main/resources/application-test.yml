@@ -17,15 +17,7 @@ spring:
     username: SA
     password: rkwhr485!@
   
-
-  mvc:
-    view:
-      prefix: /WEB-INF/jsp/
-      suffix: .jsp
-  output:
-    ansi:
-      enabled: always
-      
+    
 server:
   port: 3333
 

@@ -6,6 +6,7 @@ import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.review.model.dto.PlaceDetailDto;
 import com.map.mutual.side.review.model.dto.QPlaceDetailDto_PlaceDetailInReview;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
+import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
 import com.map.mutual.side.review.repository.dsl.PlaceRepoDSL;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -42,6 +43,7 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
 
         QReviewEntity qReview = new QReviewEntity("qReview");
         QUserEntity qUser = new QUserEntity("qUser");
+        QReviewWorldMappingEntity qReviewWorldMappingEntity = new QReviewWorldMappingEntity("qReviewWorldMappingEntity");
         QUserBlockLogEntity qUserBlockLog = new QUserBlockLogEntity("qUserBlockLog");
 
 
@@ -52,9 +54,11 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
                 qReview.createTime
                 ))
                 .from(qReview)
-                .join(qUser)
+                .innerJoin(qUser)
                 .on(qReview.userEntity.suid.eq(qUser.suid))
-                .where(qReview.userEntity.suid.notIn(JPAExpressions.select(qUserBlockLog.blockSuid).from(qUserBlockLog).where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid()))))
+                .innerJoin(qReviewWorldMappingEntity)
+                .on(qReview.reviewId.eq(qReviewWorldMappingEntity.reviewEntity.reviewId))
+                .where(qReview.userEntity.suid.notIn(JPAExpressions.select(qUserBlockLog.blockSuid).from(qUserBlockLog).where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid()))).and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId)))
                 .orderBy(qReview.createTime.desc())
                 .fetch();
         return results;

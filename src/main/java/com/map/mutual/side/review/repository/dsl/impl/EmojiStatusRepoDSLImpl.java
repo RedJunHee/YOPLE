@@ -60,17 +60,16 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
      -- 각 이모지 이력은 차단상태에서 쌓인건지 나온다.
      -- 안 쌓인 것들  뽑아서 그룹핑으로 1건 처리한다.
      INSERT INTO #EMOJI_NOTIS
-     SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, MIN(e.CREATE_DT)
-     FROM  EMOJI_STATUS e
+     SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT, b.*
+     FROM  EMOJI_STATUS_NOTI e
      LEFT JOIN REVIEW r
      ON r.REVIEW_ID = e.REVIEW_ID
      LEFT JOIN #BLOCK b
-     ON  b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT
-     WHERE e.CREATE_DT BETWEEN  '1999-01-01' AND '2022-05-06' AND  r.USER_SUID = 'YO2022042527090787' --AND BLOCK_SUID IS NULL
-     GROUP BY e.WORLD_ID, e.REVIEW_ID , e.USER_SUID
+     ON  e.USER_SUID = b.BLOCK_SUID AND b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT
+     WHERE e.CREATE_DT BETWEEN  '1999-01-01' AND '2022-05-06' AND  r.USER_SUID = 'YO2022042527090787' AND BLOCK_SUID IS NULL
 
      SELECT notis.REVIEW_ID, notis.WORLD_ID,
-     u.[USER_ID], w.NAME, place.PLACE_ID, place.X, place.Y, notis.CREATE_DT
+     u.[USER_ID],u.PROFILE_URL, w.NAME, place.PLACE_ID, place.X, place.Y, notis.CREATE_DT
      FROM #EMOJI_NOTIS notis
      LEFT JOIN REVIEW r
      ON notis.REVIEW_ID = r.REVIEW_ID
@@ -114,27 +113,32 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
 
                  // 이모지 이력의 최초 1회만 해당하는 알림으로 MIN(이모지 시간)으로 차단 아닌 상태에서 달린 이모지 처음꺼 시간 가져옴.
                 "INSERT INTO #EMOJI_NOTIS\n" +
-                "SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, MIN(e.CREATE_DT) \n" +
-                "  FROM  EMOJI_STATUS e\n" +
+                "SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT \n" +
+                "  FROM  EMOJI_STATUS_NOTI e\n" +
                 " INNER JOIN REVIEW r\n" +
                 "    ON r.REVIEW_ID = e.REVIEW_ID\n" +
                 "  LEFT JOIN #BLOCK b\n" +
-                "    ON  b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT\n" +
+                "    ON  e.USER_SUID = b.BLOCK_SUID AND b.START_DT <= e.CREATE_DT  AND e.CREATE_DT <= b.END_DT\n" +
                 " WHERE e.CREATE_DT BETWEEN  ? AND ? AND  r.USER_SUID = ? AND BLOCK_SUID IS NULL\n" +
-                " GROUP BY e.WORLD_ID, e.REVIEW_ID , e.USER_SUID \n" +
 
                 "  SELECT notis.REVIEW_ID, notis.WORLD_ID, \n" +
-                "        u.[USER_ID], w.NAME, place.PLACE_ID, place.X, place.Y, notis.CREATE_DT\n" +
+                "        u.[USER_ID], " +
+                 "      u.PROFILE_URL, " +
+                        "w.NAME, " +
+                        "place.PLACE_ID, " +
+                        "place.X, " +
+                        "place.Y, " +
+                        "notis.CREATE_DT\n" +
                 "   FROM #EMOJI_NOTIS notis\n" +
-                "  LEFT JOIN REVIEW r\n" +
-                "    ON notis.REVIEW_ID = r.REVIEW_ID\n" +
-                "  LEFT JOIN PLACE place\n" +
-                "    ON place.PLACE_ID = r.PLACE_ID\n" +
-                "  LEFT JOIN USER_INFO u\n" +
-                "    ON notis.USER_SUID = u.SUID\n" +
-                "  LEFT JOIN WORLD w\n" +
-                "    ON notis.WORLD_ID = w.WORLD_ID " +
-                " ORDER BY notis.CREATE_DT DESC \n" +
+                "  INNER JOIN REVIEW r\n" +
+                "     ON notis.REVIEW_ID = r.REVIEW_ID\n" +
+                "  INNER JOIN PLACE place\n" +
+                "     ON place.PLACE_ID = r.PLACE_ID\n" +
+                "  INNER JOIN USER_INFO u\n" +
+                "     ON notis.USER_SUID = u.SUID\n" +
+                "  INNER JOIN WORLD w\n" +
+                "     ON notis.WORLD_ID = w.WORLD_ID " +
+                "  ORDER BY notis.CREATE_DT DESC \n" +
 
                 "DROP TABLE #BLOCK \n" +
                 "DROP TABLE #EMOJI_NOTIS";
@@ -150,16 +154,17 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
         for(Object[] obj : result){
 
             Timestamp notidate = new Timestamp(0);
-            if( obj[7] instanceof Timestamp )
-                notidate= (Timestamp)obj[7];
+            if( obj[8] instanceof Timestamp )
+                notidate= (Timestamp)obj[8];
 
-            notis.add(EmojiNotiDto.builder().reviewId(Long.parseLong(obj[0].toString()))
+            notis.add(EmojiNotiDto.builder().reviewId(Long.parseLong( obj[0].toString()))
                             .worldId(Long.parseLong(obj[1].toString()))
                             .userId(obj[2].toString())
-                            .worldName(obj[3].toString())
-                            .placeId(obj[4].toString())
-                            .x(BigDecimalParser.parse(obj[5].toString()))
-                            .y(BigDecimalParser.parse(obj[6].toString()))
+                            .userProfileUrl( (obj[3] == null ) ? null : obj[3].toString()) // 프로필 사진은 Optional Column
+                            .worldName(obj[4].toString())
+                            .placeId(obj[5].toString())
+                            .x(BigDecimalParser.parse(obj[6].toString()))
+                            .y(BigDecimalParser.parse(obj[7].toString()))
                             .notiDate( notidate.toLocalDateTime() )
                     .build());
         }

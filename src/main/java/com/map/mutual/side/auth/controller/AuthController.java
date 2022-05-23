@@ -93,11 +93,12 @@ public class AuthController {
 
             smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
 
-        }
-        catch(Exception e){
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+
+        }catch(Exception e){
+            logger.error("SMS 인증번호 요청하기 ERROR : " + e.getMessage());
             throw e;
         }
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
     /**
@@ -138,6 +139,7 @@ public class AuthController {
 
         }catch(YOPLEServiceException yopleServiceException)
         {
+            logger.error("SMS 인증번호 요청하기 ERROR : " + yopleServiceException.getResponseJsonObject().getMeta().getErrorMsg());
             throw yopleServiceException;
         }
         catch(Exception e){
@@ -173,9 +175,11 @@ public class AuthController {
 
         }catch(YOPLEServiceException e)
         {
+            logger.error("액세스 토큰 갱신하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
         }catch(Exception e)
         {
+            logger.error("액세스 토큰 갱신하기 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -207,9 +211,11 @@ public class AuthController {
 
         }catch(YOPLEServiceException e)
         {
+            logger.error("리프레시 토큰 갱신하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
             throw e;
         }catch(Exception e)
         {
+            logger.error("리프레시 토큰 갱신하기 ERROR : " + e.getMessage());
             throw e;
         }
     }

@@ -15,7 +15,11 @@ public class BooleanTypeConverter implements AttributeConverter<BooleanType, Str
     @Override
     public String convertToDatabaseColumn(BooleanType attribute) {
         if (Objects.isNull(attribute)) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            try {
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            } catch (YOPLEServiceException e) {
+                e.printStackTrace();
+            }
         }
         return attribute.getStatus();
     }
@@ -23,7 +27,11 @@ public class BooleanTypeConverter implements AttributeConverter<BooleanType, Str
     @Override
     public BooleanType convertToEntityAttribute(String dbData) {
         if (StringUtils.isBlank(dbData)) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            try {
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            } catch (YOPLEServiceException e) {
+                e.printStackTrace();
+            }
         }
         return BooleanType.find(dbData);
     }

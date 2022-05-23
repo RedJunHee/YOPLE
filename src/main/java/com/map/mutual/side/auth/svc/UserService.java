@@ -22,13 +22,13 @@ import java.util.List;
  *
  */
 public interface UserService {
-    UserInfoDto findUser(String id, String phone, String suid) ;
+    UserInfoDto findUser(String id, String phone, String suid) throws YOPLEServiceException;
     List<UserInWorld> worldUsers(long worldId, String suid) throws Exception;
 
     //2. 월드에 참여하기.
-    WorldDto JoinWorld( String worldinvitationCode);
-    UserInfoDto userDetails(String suid);
-    UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl);
+    WorldDto JoinWorld( String worldinvitationCode) throws YOPLEServiceException;
+    UserInfoDto userDetails(String suid) throws YOPLEServiceException;
+    UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl, String profilePinUrl) throws YOPLEServiceException;
     void userLogout(String suid);
     UserInfoDto signUp(UserInfoDto user) throws Exception;
 
@@ -72,7 +72,7 @@ public interface UserService {
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
-    WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid);
+    WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) throws YOPLEServiceException;
 
     /**
      * Description : 사용자 신고하기.
@@ -89,7 +89,7 @@ public interface UserService {
      * Author      : 조 준 희
      * History     : [2022-04-21] - 조 준 희 - Create
      */
-    void block(String suid, UserBlockDto userBlockDto);
+    void block(String suid, UserBlockDto userBlockDto) throws YOPLEServiceException;
     /**
      * Description : 사용자 차단해지하기.
      * - 없는 차단 이력 요청할 경우 FORBIDDEN
@@ -98,7 +98,7 @@ public interface UserService {
      * Author      : 조 준 희
      * History     : [2022-04-21] - 조 준 희 - Create
      */
-    void blockCancel(String suid, Long blockId);
+    void blockCancel(String suid, Long blockId) throws YOPLEServiceException;
 
     /**
      * Description : 사용자 차단리스트 조회

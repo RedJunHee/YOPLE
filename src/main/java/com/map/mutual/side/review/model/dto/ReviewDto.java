@@ -136,16 +136,19 @@ public class ReviewDto {
         private Long reviewId;
         private String placeId;
         private String placeName;
+        private String placeAddress;
+        private String placeRoadAddress;
         private List<WorldDto> worldList;
         private String[] imageUrls;
         private String content;
 
         @QueryProjection
-        public preReview(Long reviewId, String placeId, String placeName, String imageUrls, String content) {
+        public preReview(Long reviewId, String placeId, String placeName, String placeAddress, String placeRoadAddress, String imageUrls, String content) {
             this.reviewId = reviewId;
             this.placeId = placeId;
             this.placeName = placeName;
-//            this.worldList = worldList;
+            this.placeAddress = placeAddress;
+            this.placeRoadAddress = placeRoadAddress;
             if (imageUrls != null) {
                 this.imageUrls = imageUrls.split(",");
             } else {

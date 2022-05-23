@@ -4,6 +4,7 @@ package com.map.mutual.side.common.exception.handler;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.exception.YOPLETransactionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import javax.validation.ConstraintDefinitionException;
 import javax.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 
@@ -75,8 +75,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     // 사용자 정의 예외
-    @ExceptionHandler(YOPLEServiceException.class)
+    @ExceptionHandler({YOPLEServiceException.class})
     public ResponseEntity<ResponseJsonObject> handleYOPLEServiceException(YOPLEServiceException ex) {
+        logger.debug("YOPLEServiceExceptionHandler : " + ex.getMessage());
+        // HttpStatus 200 정상적인 응답이지만 서비스 응답코드는 ex.getResponseJsonObject에 담김.
+        return new ResponseEntity<>(ex.getResponseJsonObject(), HttpStatus.OK);
+    }
+    @ExceptionHandler({YOPLETransactionException.class})
+    public ResponseEntity<ResponseJsonObject> handleYOPLETranServiceException(YOPLETransactionException ex) {
         logger.debug("YOPLEServiceExceptionHandler : " + ex.getMessage());
         // HttpStatus 200 정상적인 응답이지만 서비스 응답코드는 ex.getResponseJsonObject에 담김.
         return new ResponseEntity<>(ex.getResponseJsonObject(), HttpStatus.OK);

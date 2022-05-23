@@ -5,6 +5,7 @@ import com.map.mutual.side.auth.model.entity.QUserBlockLogEntity;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.exception.YOPLETransactionException;
 import com.map.mutual.side.review.model.dto.QReviewDto_MyReview;
 import com.map.mutual.side.review.model.dto.QReviewDto_ReviewWithInviterDto;
 import com.map.mutual.side.review.model.dto.QReviewDto_preReview;
@@ -52,7 +53,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
 
 
     @Override
-    public ReviewDto.ReviewWithInviterDto qFindReview(Long reviewId, Long worldId) throws YOPLEServiceException {
+    public ReviewDto.ReviewWithInviterDto qFindReview(Long reviewId, Long worldId) throws YOPLEServiceException, YOPLETransactionException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
@@ -91,8 +92,14 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                 .where(qReviewWorldMappingEntity.reviewEntity.reviewId.eq(reviewId)
                         .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
                         .and(qWorldUserMappingEntity1.worldEntity.worldId.eq(worldId))
+                        .and(qWorldUserMappingEntity2.worldEntity.worldId.eq(worldId))
                         .and(qReview.userEntity.suid.notIn(JPAExpressions.select(qUserBlockLog.blockSuid).from(qUserBlockLog).where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid())))))
                 .fetchOne();
+
+        if (result == null) {
+//            throw new YOPLETransactionException(ApiStatusCode.THIS_REVIEW_IS_BLOCK_USERS_REVIEW);
+            throw new YOPLEServiceException(ApiStatusCode.THIS_REVIEW_IS_BLOCK_USERS_REVIEW);
+        }
 
         //Emoji 끌어오기.
         List<ReviewDto.ReviewWithInviterDto.TempEmoji> emojis = new ArrayList<>();
@@ -111,9 +118,6 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
 
                 emojis.add(emoji);
             }
-        }
-        if (result == null) {
-            throw new YOPLEServiceException(ApiStatusCode.THIS_REVIEW_IS_BLOCK_USERS_REVIEW);
         }
         result.setEmoji(emojis);
         return result;
@@ -164,6 +168,8 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         ReviewDto.preReview result = jpaQueryFactory.select(new QReviewDto_preReview(
                 qReview.reviewId,
                 qPlaceEntity.placeId,
+                qPlaceEntity.address,
+                qPlaceEntity.roadAddress,
                 qPlaceEntity.name,
                 qReview.imageUrl,
                 qReview.content))

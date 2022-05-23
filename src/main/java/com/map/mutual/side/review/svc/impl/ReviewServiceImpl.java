@@ -292,7 +292,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDto.preReview getPreReview(Long reviewId) throws YOPLEServiceException {
+    public ReviewDto.preReview getPreReview(Long reviewId) {
         return reviewRepo.qFindPreReview(reviewId);
     }
 }

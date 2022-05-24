@@ -240,7 +240,7 @@ public class ReviewController {
 
 
     /**
-     * TEST
+     * TEST=====================================================================================================================================
      */
     @PostMapping("/emoji/update")
     public ResponseEntity<ResponseJsonObject> emojiUpdate() {
@@ -255,10 +255,6 @@ public class ReviewController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-
-    /**
-     * TEST
-     */
     @PostMapping("/upload")
     public ResponseEntity<ResponseJsonObject> upload(@RequestPart MultipartFile file, @RequestParam String tempReview) throws IOException {
 

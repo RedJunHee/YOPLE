@@ -103,6 +103,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/user/report/**").authenticated()              // 사용자 신고하기.
                 .antMatchers(HttpMethod.POST,"/user/block/**").authenticated()               // 사용자 차단하기.
                 .antMatchers(HttpMethod.POST,"/user/review/report/**").authenticated()       // 리뷰 신고하기.
+//                .antMatchers(HttpMethod.DELETE,"/user/withdrawal").authenticated()            // 유저 탈퇴하기.
 
                 // world
                 .antMatchers(HttpMethod.POST,"/world/world/**").authenticated() // 월드 생성하기.

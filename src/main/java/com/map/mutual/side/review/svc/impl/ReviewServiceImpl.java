@@ -56,8 +56,31 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional(rollbackFor = {Exception.class})
     public ReviewDto createReview(ReviewPlaceDto dto) throws YOPLEServiceException {
+        if (dto.getPlace() != null && !placeRepo.findById(dto.getPlace().getPlaceId()).isPresent()) {
+            PlaceEntity placeEntity = PlaceEntity.builder()
+                    .placeId(dto.getPlace().getPlaceId())
+                    .name(dto.getPlace().getName())
+                    .address(dto.getPlace().getAddress())
+                    .roadAddress(dto.getPlace().getRoadAddress())
+                    .categoryGroupCode(dto.getPlace().getCategoryGroupCode())
+                    .categoryGroupName(dto.getPlace().getCategoryGroupName())
+                    .x(dto.getPlace().getX())
+                    .y(dto.getPlace().getY())
+                    .build();
+
+            placeRepo.save(placeEntity);
+        }
+
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
+        if(reviewRepo.existsByUserEntityAndPlaceEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build(),
+                PlaceEntity.builder().placeId(dto.getPlace().getPlaceId()).build())) {
+            throw new YOPLEServiceException(ApiStatusCode.THIS_PLACE_IN_REVIEW_IS_ALREADY_EXIST);
+        }
+
+
         ReviewDto result;
         ReviewEntity reviewEntity;
         if (dto.getReview().getImageUrls() == null) {

@@ -1,6 +1,8 @@
 package com.map.mutual.side.auth.svc;
 
-import com.map.mutual.side.auth.model.dto.*;
+import com.map.mutual.side.auth.model.dto.UserInWorld;
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.auth.model.dto.WorldInviteAccept;
 import com.map.mutual.side.auth.model.dto.block.UserBlockDto;
 import com.map.mutual.side.auth.model.dto.block.UserBlockedDto;
 import com.map.mutual.side.auth.model.dto.notification.NotiDto;
@@ -30,6 +32,7 @@ public interface UserService {
     UserInfoDto userDetails(String suid) throws YOPLEServiceException;
     UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl, String profilePinUrl) throws YOPLEServiceException;
     void userLogout(String suid);
+    void userWithdrawal() throws YOPLEServiceException;
     UserInfoDto signUp(UserInfoDto user) throws Exception;
 
     /**

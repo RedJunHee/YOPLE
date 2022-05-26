@@ -107,10 +107,10 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public void deleteFcmToken(UserInfoDto userInfoDto) throws YOPLEServiceException {
+    public void deleteFcmToken(String userSuid) throws YOPLEServiceException {
         List<FcmTopicEntity> fcmTopicEntities;
 
-        UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+        UserEntity userEntity = userInfoRepo.findBySuid(userSuid);
 
         if (userEntity.getFcmToken() != null) {
             userEntity.setFcmToken(FCMConstant.EXPIRED);

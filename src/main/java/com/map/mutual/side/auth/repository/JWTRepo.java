@@ -11,4 +11,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface JWTRepo extends JpaRepository<JWTRefreshTokenLogEntity, String> {
     JWTRefreshTokenLogEntity findOneByUserSuid(String suid);
+    void deleteByUserSuid(String suid);
 }

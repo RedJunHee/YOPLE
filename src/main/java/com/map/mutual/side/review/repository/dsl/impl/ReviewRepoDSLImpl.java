@@ -93,7 +93,13 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                         .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
                         .and(qWorldUserMappingEntity1.worldEntity.worldId.eq(worldId))
                         .and(qWorldUserMappingEntity2.worldEntity.worldId.eq(worldId))
-                        .and(qReview.userEntity.suid.notIn(JPAExpressions.select(qUserBlockLog.blockSuid).from(qUserBlockLog).where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid())))))
+                        .and(qReview.userEntity.suid
+                                .notIn(JPAExpressions
+                                        .select(qUserBlockLog.blockSuid)
+                                        .from(qUserBlockLog)
+                                        .where(qUserBlockLog.userSuid
+                                                .eq(userInfoDto.getSuid())
+                                                .and(qUserBlockLog.isBlocking.eq("Y"))))))
                 .fetchOne();
 
         if (result == null) {
@@ -153,6 +159,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                 .innerJoin(qPlaceEntity)
                 .on(qReview.placeEntity.placeId.eq(qPlaceEntity.placeId))
                 .where(qReview.userEntity.suid.eq(userInfoDto.getSuid()))
+                .orderBy(qReview.createTime.desc())
                 .fetch();
 
         return result;

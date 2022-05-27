@@ -66,6 +66,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // enable h2-console
                 .and()
                 .headers()
+
+
+                .xssProtection()//xss 필터 추가
+                .and()
+                .contentSecurityPolicy("script-src 'self'")
+
+
+                .and()
                 .frameOptions()
                 .sameOrigin()       // 동일 도메인에서는 iframe 접근 가능
 

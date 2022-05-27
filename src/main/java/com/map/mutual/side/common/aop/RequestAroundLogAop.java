@@ -49,7 +49,7 @@ public class RequestAroundLogAop {
 
     //  execution(* com.map.mutual.side.*.controller 하위 패키지 내에
     //   *Controller 클래스의 모든 메서드 Around => Pointcut 설정
-    @Around(value = "execution(* com.map.mutual.side.*.controller..*Controller.*(..))")
+    @Around(value = "execution(* com.map.mutual.side.*.controller..*Controller.*(..)) || execution(* com.map.mutual.side.common.fcmmsg.controller..*Controller.*(..)) " )
     public Object ApiLog(ProceedingJoinPoint joinPoint) throws Throwable { // 파라미터 : 프록시 대상 객체의 메서드를 호출할 때 사용
 
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();

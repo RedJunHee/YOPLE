@@ -93,7 +93,13 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                         .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
                         .and(qWorldUserMappingEntity1.worldEntity.worldId.eq(worldId))
                         .and(qWorldUserMappingEntity2.worldEntity.worldId.eq(worldId))
-                        .and(qReview.userEntity.suid.notIn(JPAExpressions.select(qUserBlockLog.blockSuid).from(qUserBlockLog).where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid())))))
+                        .and(qReview.userEntity.suid
+                                .notIn(JPAExpressions
+                                        .select(qUserBlockLog.blockSuid)
+                                        .from(qUserBlockLog)
+                                        .where(qUserBlockLog.userSuid
+                                                .eq(userInfoDto.getSuid())
+                                                .and(qUserBlockLog.isBlocking.eq("Y"))))))
                 .fetchOne();
 
         if (result == null) {
@@ -145,14 +151,15 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         QReviewEntity qReview = new QReviewEntity("qReview");
         QPlaceEntity qPlaceEntity = new QPlaceEntity("qPlaceEntity");
         List<ReviewDto.MyReview> result = jpaQueryFactory.select(new QReviewDto_MyReview(
-                qReview.reviewId,
-                qReview.imageUrl,
-                qPlaceEntity.name,
-                qReview.createTime))
+                        qReview.reviewId,
+                        qReview.imageUrl,
+                        qPlaceEntity.name,
+                        qReview.createTime))
                 .from(qReview)
                 .innerJoin(qPlaceEntity)
                 .on(qReview.placeEntity.placeId.eq(qPlaceEntity.placeId))
                 .where(qReview.userEntity.suid.eq(userInfoDto.getSuid()))
+                .orderBy(qReview.createTime.desc())
                 .fetch();
 
         return result;
@@ -166,13 +173,13 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         List<WorldDto> worldList = reviewWorldMappingRepository.findAllByReviewEntity(ReviewEntity.builder().reviewId(reviewId).build()).stream().map(data -> WorldDto.builder().worldId(data.getWorldEntity().getId()).worldName(data.getWorldEntity().getWorldName()).build()).collect(Collectors.toList());
 
         ReviewDto.preReview result = jpaQueryFactory.select(new QReviewDto_preReview(
-                qReview.reviewId,
-                qPlaceEntity.placeId,
-                qPlaceEntity.address,
-                qPlaceEntity.roadAddress,
-                qPlaceEntity.name,
-                qReview.imageUrl,
-                qReview.content))
+                        qReview.reviewId,
+                        qPlaceEntity.placeId,
+                        qPlaceEntity.name,
+                        qPlaceEntity.address,
+                        qPlaceEntity.roadAddress,
+                        qReview.imageUrl,
+                        qReview.content))
                 .from(qReview)
                 .innerJoin(qPlaceEntity)
                 .on(qReview.placeEntity.placeId.eq(qPlaceEntity.placeId))

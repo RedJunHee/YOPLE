@@ -6,7 +6,6 @@ import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.review.model.dto.*;
 import com.map.mutual.side.review.model.entity.EmojiEntity;
-import com.map.mutual.side.review.model.entity.PlaceEntity;
 import com.map.mutual.side.review.model.enumeration.EmojiType;
 import com.map.mutual.side.review.repository.EmojiRepo;
 import com.map.mutual.side.review.repository.PlaceRepo;
@@ -80,20 +79,7 @@ public class ReviewController {
         if (dto.getReview().getWorldList() == null || dto.getReview().getWorldList().isEmpty()) {
             throw new YOPLEServiceException(ApiStatusCode.WORLD_LIST_IS_NULL);
         }
-        if (dto.getPlace() != null && !placeRepo.findById(dto.getPlace().getPlaceId()).isPresent()) {
-            PlaceEntity placeEntity = PlaceEntity.builder()
-                    .placeId(dto.getPlace().getPlaceId())
-                    .name(dto.getPlace().getName())
-                    .address(dto.getPlace().getAddress())
-                    .roadAddress(dto.getPlace().getRoadAddress())
-                    .categoryGroupCode(dto.getPlace().getCategoryGroupCode())
-                    .categoryGroupName(dto.getPlace().getCategoryGroupName())
-                    .x(dto.getPlace().getX())
-                    .y(dto.getPlace().getY())
-                    .build();
 
-            placeRepo.save(placeEntity);
-        }
         reviewService.createReview(dto);
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
@@ -240,7 +226,7 @@ public class ReviewController {
 
 
     /**
-     * TEST
+     * TEST=====================================================================================================================================
      */
     @PostMapping("/emoji/update")
     public ResponseEntity<ResponseJsonObject> emojiUpdate() {
@@ -255,10 +241,6 @@ public class ReviewController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-
-    /**
-     * TEST
-     */
     @PostMapping("/upload")
     public ResponseEntity<ResponseJsonObject> upload(@RequestPart MultipartFile file, @RequestParam String tempReview) throws IOException {
 

@@ -16,6 +16,7 @@ public interface WorldUserMappingRepo extends JpaRepository<WorldUserMappingEnti
     Optional<WorldUserMappingEntity> findOneByWorldIdAndUserSuid(Long worldId, String userSuid);
     Optional<WorldUserMappingEntity> findOneByWorldUserCode(String worldUserCode);
     Optional<WorldUserMappingEntity> findTop1ByUserSuidOrderByAccessTimeDesc(String userSuid);
+    void deleteByUserSuid(String suid);
 
     @Query("SELECT COUNT(e.userSuid) FROM WorldUserMappingEntity e WHERE e.userSuid = :suid AND e.worldUserCode <> e.worldinvitationCode")
     Long countAllByActiveWorlds(@Param(value = "suid") String userSuid);

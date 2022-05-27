@@ -270,18 +270,18 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    @Transactional(rollbackFor = {Exception.class})
-    public void addEmoji(Long reviewId, Long worldId, Long emojiId) throws YOPLEServiceException {
+    @Transactional(rollbackFor = {YOPLETransactionException.class})
+    public void addEmoji(Long reviewId, Long worldId, Long emojiId) throws YOPLETransactionException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         try {
 
             EmojiEntity emojiEntity = emojiRepo.findByEmojiId(EmojiType.findId(emojiId));
             if (!emojiEntity.getEmojiStatus().equals(EmojiType.findActiveType(EmojiType.findId(emojiId).getActiveType()))) {
-                throw new YOPLEServiceException(ApiStatusCode.NOT_USABLE_EMOJI);
+                throw new YOPLETransactionException(ApiStatusCode.NOT_USABLE_EMOJI);
             }
             if (emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewIdAndEmojiEntity(userInfoDto.getSuid(), worldId, reviewId, emojiEntity)) {
-                throw new YOPLEServiceException(ApiStatusCode.ALREADY_EMOJI_ADDED);
+                throw new YOPLETransactionException(ApiStatusCode.ALREADY_EMOJI_ADDED);
             }
 
             if (!emojiStatusRepo.existsByUserSuidAndWorldIdAndReviewId(userInfoDto.getSuid(), worldId, reviewId)) {
@@ -307,12 +307,12 @@ public class ReviewServiceImpl implements ReviewService {
                     .build();
             emojiStatusRepo.save(emojiStatusEntity);
 
-        } catch (YOPLEServiceException e) {
+        } catch (YOPLETransactionException e) {
             throw e;
         } catch (InterruptedException e) {
-            throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+            throw new YOPLETransactionException(ApiStatusCode.PARAMETER_CHECK_FAILED);
         } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            throw new YOPLETransactionException(ApiStatusCode.SYSTEM_ERROR);
         }
     }
 

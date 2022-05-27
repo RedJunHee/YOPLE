@@ -40,6 +40,7 @@ public enum ApiStatusCode {
     ,INVITE_NOT_VALID(434,"Invite Not Valid.", "초대장이 유효하지 않습니다.", true)
     ,REGISTRY_FCM_TOPIC_FAIL (440, "Topic 추가를 실패했습니다.", "Topic 추가를 실패했습니다.", true)
     ,UNSUBSCRIPTION_FCM_TOPIC_FAIL (441, "Topic 제거를  실패했습니다.", "Topic 제거를 실패했습니다.", true)
+    ,SEND_TO_FCM_FAILED (442, "FCM 전송을 실패했습니다.", "FCM 전송을 실패했습니다.", true)
     ,USER_TOS_INFO_VALID_FAILED (490, "TOS 정보 체크 실패.", "TOS 정보 체크 실패.",true)
     ,SYSTEM_ERROR(599,"System Error.", "시스템오류.",true)
     ;

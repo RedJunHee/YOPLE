@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -249,14 +248,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
 
         // 5. 월드에 참여된 사용자들에게 알림 전송
-        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid());
-        response.thenAccept(d -> {
-            if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
-                logger.info(d.getDesc());
-            } else {
-                logger.error(d.getDesc());
-            }
-        });
+        fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid());
 
         // 6. 참여한 월드 정보 리턴.
         return WorldDto.builder().worldId(world.getWorldId())

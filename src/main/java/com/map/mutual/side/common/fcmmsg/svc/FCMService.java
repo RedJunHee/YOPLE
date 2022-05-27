@@ -6,11 +6,13 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
+import com.map.mutual.side.common.entity.ApiLog;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
 import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
+import com.map.mutual.side.common.repository.LogRepository;
 import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldRepo;
@@ -23,9 +25,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * fileName       : FCMService
@@ -48,6 +50,8 @@ public class FCMService {
 
     @Autowired
     private WorldRepo worldRepo;
+    @Autowired
+    private LogRepository logRepository;
 
     public ResponseEntity<ResponseJsonObject> generateToken(String token) throws YOPLEServiceException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -134,10 +138,13 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException, YOPLEServiceException {
-        String body;
+    public void sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException, YOPLEServiceException {
+        StopWatch stopWatch = new StopWatch();
+        long executeTimer;
+
+        String body = "";
         Map<String, String> msgData = new HashMap<>();
-        try {
+            stopWatch.start();
             switch (msgType) {
                 case A:
                     String aUserId = userInfoRepo.findBySuid(userSuid).getUserId();
@@ -159,17 +166,19 @@ public class FCMService {
                     msgData.put("worldId", String.valueOf(worldId));
                     msgData.put("userSuid", CryptUtils.AES_Encode(userSuid));
                     msgData.put("reviewId", String.valueOf(reviewId));
-
-
                     break;
                 default:
-                    log.error("[FCM]잘못된 알림 타입 입니다.");
-                    return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+                    executeTimer = stopWatch.getTotalTimeMillis();
+                    ApiLog apiLog = ApiLog.builder()
+                            .suid("")
+                            .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                            .apiDesc("[FCM]Fail to Send User : "+ userSuid)
+                            .apiStatus('N')
+                            .processTime((float) (executeTimer*0.001))
+                            .build();
+                    logRepository.save(apiLog);
+                    throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
             }
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-        }
-
 
         Notification notification = Notification.builder()
                 .setTitle(FCMConstant.YOPLE)
@@ -183,22 +192,31 @@ public class FCMService {
                 .build();
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
+            executeTimer = stopWatch.getTotalTimeMillis();
+            ApiLog apiLog = ApiLog.builder()
+                    .suid("")
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Success to Send User : "+ userSuid)
+                    .apiStatus('Y')
+                    .processTime((float) (executeTimer*0.001))
+                    .build();
+            logRepository.save(apiLog);
         } catch (FirebaseMessagingException e) {
-            return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+            throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
-        return CompletableFuture.completedFuture(FCMConstant.ResultType.SUCCESS);
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) throws YOPLEServiceException {
+    public void sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) throws YOPLEServiceException {
+        StopWatch stopWatch = new StopWatch();
+        long executeTimer;
+
         String body;
         String decodedSuid;
-        try {
-            decodedSuid = CryptUtils.AES_Decode(userSuid);
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-        }
+        decodedSuid = CryptUtils.AES_Decode(userSuid);
         Map<String, String> msgData = new HashMap<>();
+
+        stopWatch.start();
         switch (msgType) {
             case B:
                 String userId = userInfoRepo.findBySuid(decodedSuid).getUserId();
@@ -211,8 +229,16 @@ public class FCMService {
                 msgData.put("userSuid", userSuid);
                 break;
             default:
-                log.error("[FCM]잘못된 알림 타입 입니다.");
-                return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+                executeTimer = stopWatch.getTotalTimeMillis();
+                ApiLog apiLog = ApiLog.builder()
+                        .suid("")
+                        .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                        .apiDesc("[FCM]Fail to Send World : "+ worldId)
+                        .apiStatus('N')
+                        .processTime((float) (executeTimer*0.001))
+                        .build();
+                logRepository.save(apiLog);
+                throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
 
         Notification notification = Notification.builder()
@@ -228,11 +254,19 @@ public class FCMService {
 
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
+            executeTimer = stopWatch.getTotalTimeMillis();
+            ApiLog apiLog = ApiLog.builder()
+                    .suid("")
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Success to Send World : "+ worldId)
+                    .apiStatus('Y')
+                    .processTime((float) (executeTimer*0.001))
+                    .build();
+            logRepository.save(apiLog);
 
         } catch (FirebaseMessagingException e) {
-            return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+            throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
-        return CompletableFuture.completedFuture(FCMConstant.ResultType.SUCCESS);
     }
 
 //    private void updateFcmToken(String userSuid, String newToken)  {

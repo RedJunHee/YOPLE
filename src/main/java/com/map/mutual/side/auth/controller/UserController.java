@@ -40,7 +40,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * fileName       : UserController
@@ -389,14 +388,7 @@ public class UserController {
 
                 // TODO: 2022/04/21 msgData에 값(payLoad)이 뭐가 들어갈 지 프론트와 논의.
                 // 알림 전송
-                CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationToken(fcmToken, FCMConstant.MSGType.A, userToken.getSuid(), userWorldInvitionDto.getWorldId(), null);
-                response.thenAccept(d -> {
-                    if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
-                        logger.info(d.getDesc());
-                    } else {
-                        logger.error(d.getDesc());
-                    }
-                });
+                fcmService.sendNotificationToken(fcmToken, FCMConstant.MSGType.A, userToken.getSuid(), userWorldInvitionDto.getWorldId(), null);
             } else if (StringUtil.isNullOrEmpty(userWorldInvitionDto.getPhone()) == false) {
                 // TODO: 2022/04/17   유저의 핸드폰 번호 or ID 핸드폰 번호로 일단 개발진행
                 userService.unSignedUserWorldInviting(userToken.getSuid(), userWorldInvitionDto.getPhone(), userWorldInvitionDto.getWorldId());

@@ -63,7 +63,8 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
                         select(qUserBlockLog.blockSuid)
                         .from(qUserBlockLog)
                         .where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid()).and(qUserBlockLog.isBlocking.eq("Y"))))
-                        .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId)))
+                        .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
+                        .and(qReview.placeEntity.placeId.eq(placeId)))
                 .orderBy(qReview.createTime.desc())
                 .fetch();
         return results;

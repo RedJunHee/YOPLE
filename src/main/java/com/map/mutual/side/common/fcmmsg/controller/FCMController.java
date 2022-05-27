@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 /**
  * fileName       : FCMController
  * author         : kimjaejung
@@ -31,8 +33,8 @@ public class FCMController {
     private FCMService fcmService;
 
     @PostMapping("/generate")
-    public ResponseEntity<ResponseJsonObject> generateToken(@RequestBody String token) throws YOPLEServiceException {
-        return fcmService.generateToken(token);
+    public ResponseEntity<ResponseJsonObject> generateToken(@RequestBody Map<String, String> token) throws YOPLEServiceException {
+        return fcmService.generateToken(token.get("token"));
     }
 
 

@@ -45,7 +45,7 @@ public class ReviewEntity extends TimeEntity implements Persistable<Long> {
     @Column(name="CONTENT", nullable = false, columnDefinition = "VARCHAR(1000)")
     private String content;
 
-    @Column(name="IMG_URL", columnDefinition = "VARCHAR(100)")
+    @Column(name="IMG_URL", columnDefinition = "VARCHAR(1000)")
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)

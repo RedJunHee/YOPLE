@@ -58,7 +58,12 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
                 .on(qReview.userEntity.suid.eq(qUser.suid))
                 .innerJoin(qReviewWorldMappingEntity)
                 .on(qReview.reviewId.eq(qReviewWorldMappingEntity.reviewEntity.reviewId))
-                .where(qReview.userEntity.suid.notIn(JPAExpressions.select(qUserBlockLog.blockSuid).from(qUserBlockLog).where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid()))).and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId)))
+                .where(qReview.userEntity.suid.notIn
+                                (JPAExpressions.
+                        select(qUserBlockLog.blockSuid)
+                        .from(qUserBlockLog)
+                        .where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid()).and(qUserBlockLog.isBlocking.eq("Y"))))
+                        .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId)))
                 .orderBy(qReview.createTime.desc())
                 .fetch();
         return results;

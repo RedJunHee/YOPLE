@@ -4,6 +4,7 @@ import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.exception.YOPLETransactionException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.common.utils.CryptUtils;
@@ -54,7 +55,7 @@ public class ReviewServiceImpl implements ReviewService {
     private EmojiStatusNotiRepo emojiStatusNotiRepo;
 
     @Override
-    @Transactional(rollbackFor = {Exception.class})
+    @Transactional(rollbackFor = {RuntimeException.class})
     public ReviewDto createReview(ReviewPlaceDto dto) throws YOPLEServiceException {
         if (dto.getPlace() != null && !placeRepo.findById(dto.getPlace().getPlaceId()).isPresent()) {
             PlaceEntity placeEntity = PlaceEntity.builder()
@@ -77,7 +78,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         if(reviewRepo.existsByUserEntityAndPlaceEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build(),
                 PlaceEntity.builder().placeId(dto.getPlace().getPlaceId()).build())) {
-            throw new YOPLEServiceException(ApiStatusCode.THIS_PLACE_IN_REVIEW_IS_ALREADY_EXIST);
+            throw new YOPLETransactionException(ApiStatusCode.THIS_PLACE_IN_REVIEW_IS_ALREADY_EXIST);
         }
 
 
@@ -103,7 +104,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 
     @Override
-    @Transactional(rollbackFor = {Exception.class})
+    @Transactional(rollbackFor = {RuntimeException.class})
     public ReviewDto updateReview(ReviewDto reviewDto) throws YOPLEServiceException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
@@ -111,9 +112,9 @@ public class ReviewServiceImpl implements ReviewService {
         try {
             ReviewEntity entity = reviewRepo.findByReviewId(reviewDto.getReviewId());
             if (entity == null) {
-                throw new YOPLEServiceException(ApiStatusCode.CONTENT_NOT_FOUND);
+                throw new YOPLETransactionException(ApiStatusCode.CONTENT_NOT_FOUND);
             } else if (!entity.getUserEntity().getSuid().equals(userInfoDto.getSuid())) {
-                throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
+                throw new YOPLETransactionException(ApiStatusCode.FORBIDDEN);
             } else {
 
                 if (reviewDto.getImageUrls() != null) {
@@ -123,11 +124,12 @@ public class ReviewServiceImpl implements ReviewService {
                 result = saveReviewAndMappings(reviewDto, entity);
             }
         } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            throw new YOPLETransactionException(ApiStatusCode.SYSTEM_ERROR);
         }
         return result;
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class})
     public ReviewDto saveReviewAndMappings(ReviewDto reviewDto, ReviewEntity entity) throws YOPLEServiceException {
         ReviewEntity returnedReview;
         returnedReview = reviewRepo.save(entity);

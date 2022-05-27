@@ -172,7 +172,7 @@ public class FCMService {
                     ApiLog apiLog = ApiLog.builder()
                             .suid("")
                             .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                            .apiDesc("[FCM]Fail to Send User : "+ userSuid)
+                            .apiDesc("[FCM]Fail to Send Token : "+ targetFcmToken)
                             .apiStatus('N')
                             .processTime((float) (executeTimer*0.001))
                             .build();
@@ -196,7 +196,7 @@ public class FCMService {
             ApiLog apiLog = ApiLog.builder()
                     .suid("")
                     .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                    .apiDesc("[FCM]Success to Send User : "+ userSuid)
+                    .apiDesc("[FCM]Success to Send Token : "+ targetFcmToken)
                     .apiStatus('Y')
                     .processTime((float) (executeTimer*0.001))
                     .build();
@@ -233,7 +233,7 @@ public class FCMService {
                 ApiLog apiLog = ApiLog.builder()
                         .suid("")
                         .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                        .apiDesc("[FCM]Fail to Send World : "+ worldId)
+                        .apiDesc("[FCM]Fail to Send Topic : "+ worldId)
                         .apiStatus('N')
                         .processTime((float) (executeTimer*0.001))
                         .build();
@@ -258,7 +258,7 @@ public class FCMService {
             ApiLog apiLog = ApiLog.builder()
                     .suid("")
                     .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                    .apiDesc("[FCM]Success to Send World : "+ worldId)
+                    .apiDesc("[FCM]Success to Send Topic : "+ worldId)
                     .apiStatus('Y')
                     .processTime((float) (executeTimer*0.001))
                     .build();

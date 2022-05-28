@@ -53,6 +53,7 @@ public class FCMService {
     @Autowired
     private LogRepository logRepository;
 
+    @Async
     public ResponseEntity<ResponseJsonObject> generateToken(String token) throws YOPLEServiceException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
@@ -168,6 +169,7 @@ public class FCMService {
                     msgData.put("reviewId", String.valueOf(reviewId));
                     break;
                 default:
+                    stopWatch.stop();
                     executeTimer = stopWatch.getTotalTimeMillis();
                     ApiLog apiLog = ApiLog.builder()
                             .suid("")
@@ -192,6 +194,8 @@ public class FCMService {
                 .build();
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
+
+            stopWatch.stop();
             executeTimer = stopWatch.getTotalTimeMillis();
             ApiLog apiLog = ApiLog.builder()
                     .suid("")
@@ -229,6 +233,7 @@ public class FCMService {
                 msgData.put("userSuid", userSuid);
                 break;
             default:
+                stopWatch.stop();
                 executeTimer = stopWatch.getTotalTimeMillis();
                 ApiLog apiLog = ApiLog.builder()
                         .suid("")
@@ -254,6 +259,8 @@ public class FCMService {
 
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
+
+            stopWatch.stop();
             executeTimer = stopWatch.getTotalTimeMillis();
             ApiLog apiLog = ApiLog.builder()
                     .suid("")

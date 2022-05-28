@@ -39,7 +39,8 @@ public class FCMController {
 
     @PostMapping("/generate")
     public ResponseEntity<ResponseJsonObject> generateToken(@RequestBody Map<String, String> token) throws YOPLEServiceException {
-        return fcmService.generateToken(token.get("token"));
+        fcmService.generateToken(token.get("token"));
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
 

@@ -41,6 +41,8 @@ public enum ApiStatusCode {
     ,REGISTRY_FCM_TOPIC_FAIL (440, "Topic 추가를 실패했습니다.", "Topic 추가를 실패했습니다.", true)
     ,UNSUBSCRIPTION_FCM_TOPIC_FAIL (441, "Topic 제거를  실패했습니다.", "Topic 제거를 실패했습니다.", true)
     ,SEND_TO_FCM_FAILED (442, "FCM 전송을 실패했습니다.", "FCM 전송을 실패했습니다.", true)
+    ,GENERATE_FAILED_TO_TOKEN (443, "FCM 갱신을 실패했습니다.", "FCM 갱신을 실패했습니다.", true)
+    ,FAIL_DELETE_FCM_TOKEN (444, "FCM 토큰 제거를 실패했습니다.", "FCM 토큰 제거를 실패했습니다.", true)
     ,USER_TOS_INFO_VALID_FAILED (490, "TOS 정보 체크 실패.", "TOS 정보 체크 실패.",true)
     ,SYSTEM_ERROR(599,"System Error.", "시스템오류.",true)
     ;

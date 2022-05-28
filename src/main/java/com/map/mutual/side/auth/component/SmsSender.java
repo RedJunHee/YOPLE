@@ -112,13 +112,12 @@ public class SmsSender {
             executeTimer = stopWatch.getTotalTimeMillis();
             ApiLog apiLog = ApiLog.builder()
                     .suid("")
-                    .apiName(Thread.currentThread().getName())
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
                     .apiDesc("[SEND]Fail to "+sendPhoneNum+" [REASON]"+e.getMessage())
                     .apiStatus('N')
                     .processTime(executeTimer)
                     .build();
             logRepository.save(apiLog);
-            logger.error("Error : {}", e.getMessage());
         }
         if (resultCode == 202) {
             stopWatch.stop();
@@ -136,7 +135,7 @@ public class SmsSender {
             executeTimer = stopWatch.getTotalTimeMillis();
             ApiLog apiLog = ApiLog.builder()
                     .suid("")
-                    .apiName(Thread.currentThread().getName())
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
                     .apiDesc("[SEND]Fail to "+sendPhoneNum+" [ResultCode] : "+resultCode)
                     .apiStatus('N')
                     .processTime(executeTimer)

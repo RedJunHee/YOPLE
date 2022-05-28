@@ -50,6 +50,12 @@ public class FCMController {
         log.info(info.getName());
         log.info(info.getProfileUrl());
     }
+    @PostMapping("/testP")
+    public ResponseEntity<ResponseJsonObject> teststs(@RequestParam  String params) throws YOPLEServiceException {
+        log.info(params);
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+
+    }
 
     @PostMapping("/testT")
     public ResponseEntity<ResponseJsonObject> tests(@RequestParam String token,

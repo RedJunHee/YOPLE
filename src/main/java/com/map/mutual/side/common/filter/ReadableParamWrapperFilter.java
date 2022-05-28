@@ -1,16 +1,16 @@
 package com.map.mutual.side.common.filter;
 
+import com.map.mutual.side.common.utils.YOPLEUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.ContentType;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
+
+import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -19,7 +19,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.servlet.*;
 /**
  * Class       : ReadableParamWrapperFilter
  * Author      : 조 준 희
@@ -67,7 +66,6 @@ public class ReadableParamWrapperFilter implements Filter {
                 this.rawData = IOUtils.toByteArray(is); //
 
                 String collect = this.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-
                 //body가 비었을 경우.
                 if(StringUtils.isEmpty(collect)){
                     return ;
@@ -92,13 +90,14 @@ public class ReadableParamWrapperFilter implements Filter {
                     while(iterator.hasNext()){
                         String key = (String) iterator.next();
                         String value= jsonObject.get(key).toString().replace("\"","\\\"");
-                        setParameter(key,value);
+                        setParameter(key,YOPLEUtils.ClearXSS(value));
                     }
                 }
             }catch(Exception e)
             {
                 logger.error("ReadableParamWrapper init error");
             }
+
 
         }
 
@@ -122,10 +121,18 @@ public class ReadableParamWrapperFilter implements Filter {
         public String getParameter(String name) {
             String[] paramArray = getParameterValues(name);
             if (paramArray != null && paramArray.length > 0) {
-                return paramArray[0];
+                return YOPLEUtils.ClearXSS(paramArray[0]);
             } else {
                 return null;
             }
+        }
+
+        @Override
+        public String getHeader(String name) {
+            String value = super.getHeader(name);
+            if (value == null)
+                return null;
+            return YOPLEUtils.ClearXSS(value);
         }
 
         @Override
@@ -146,6 +153,13 @@ public class ReadableParamWrapperFilter implements Filter {
             if (dummyParamValue != null) {
                 result = new String[dummyParamValue.length];
                 System.arraycopy(dummyParamValue, 0, result, 0, dummyParamValue.length);
+            }
+            if(result != null) {
+                int index = 0;
+                for (String value : result) {
+                    result[index]  = YOPLEUtils.ClearXSS(value);
+                    index++;
+                }
             }
             return result;
         }
@@ -189,7 +203,6 @@ public class ReadableParamWrapperFilter implements Filter {
         public BufferedReader getReader() {
             return new BufferedReader(new InputStreamReader(this.getInputStream(), this.encoding));
         }
-
 
     }
 }

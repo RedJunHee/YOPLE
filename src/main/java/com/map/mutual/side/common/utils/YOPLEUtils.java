@@ -2,7 +2,6 @@ package com.map.mutual.side.common.utils;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomUtils;
-import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.validation.Errors;
 
 import java.io.IOException;
@@ -100,7 +99,15 @@ public class YOPLEUtils {
 
     }
 
-
+    public static String ClearXSS(String value) {
+        value = value.replaceAll("<", "").replaceAll(">", "");
+        value = value.replaceAll("\\(", "").replaceAll("\\)", "");
+        value = value.replaceAll("'", "");
+        value = value.replaceAll("eval\\((.*)\\)", "");
+        value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']", "\"\"");
+        value = value.replaceAll("script", "");
+        return value;
+    }
 
 
 }

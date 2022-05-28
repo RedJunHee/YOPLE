@@ -3,11 +3,12 @@ package com.map.mutual.side.common.aop;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.common.entity.ApiLog;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
+import com.map.mutual.side.common.entity.ApiLog;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.svc.LogService;
+import com.map.mutual.side.common.utils.YOPLEUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -53,7 +54,8 @@ public class RequestAroundLogAop {
     public Object ApiLog(ProceedingJoinPoint joinPoint) throws Throwable { // 파라미터 : 프록시 대상 객체의 메서드를 호출할 때 사용
 
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String  inputParam = getWrapperParamJson(request.getParameterMap());
+        String inputParam = getWrapperParamJson(request.getParameterMap());
+        inputParam = YOPLEUtils.ClearXSS(inputParam);
         String  outputMessage = "" ;
         char apiStatus = 'Y';
         String methodName = "";

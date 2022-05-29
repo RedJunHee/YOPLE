@@ -18,6 +18,9 @@ import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
@@ -36,6 +39,8 @@ import static org.jooq.lambda.tuple.Tuple.tuple;
 
 @Repository
 public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
+
+    private Logger logger = LogManager.getLogger(WorldUserMappingRepoDSLImpl.class);
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -159,6 +164,9 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 .orderBy(QReviewWorldMappingEntity.reviewWorldMappingEntity.reviewEntity.reviewId.count().desc())
                 .fetch();
 
+
+
+
         // 2. 월드 참여자들 조회. (초대자 포함.)
         List<UserInWorld> userInfoInWorld = jpaQueryFactory
                 .select(new QUserInWorld(userA.suid,
@@ -166,6 +174,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                         userA.name,
                         userA.profileUrl,
                         userB.userId,
+                        userB.profileUrl,
                         // 월드에 참여 중인 사용자SUID와 초대자SUID가 같다면 Host사용자
                         new CaseBuilder().when(mapA.userSuid.eq(mapB.userSuid)).then("Y").otherwise("N")))
                 .from(userA)
@@ -189,12 +198,15 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                                     .map(review -> { // select
                                                         long reviewCount = 0l;
 
-                                                        if(review == null)
-                                                            reviewCount = 0l;
-                                                        else if(user.getSuid().equals(suid))  // "나" 자기 자신인 경우. 최상단.
+
+                                                        if(user.getSuid().equals(suid))  // "나" 자기 자신인 경우. 최상단.
                                                             reviewCount = 9999l;
                                                         else if(user.getIsHost().equals("Y")) // 월드 host 인 경우 2번째 우선순위
                                                             reviewCount= 9998l;
+                                                        else if(review == null)
+                                                            reviewCount = 0l;
+                                                        else
+                                                            reviewCount = review.get(1,Long.class);
 
                                                         return tuple(user, reviewCount);
                                                     })
@@ -202,6 +214,8 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                 .sorted( Comparator.comparingLong( v -> Long.parseLong(v.v2.toString()))).reverse() // order by
                                 .map(v -> v.v1) //select
                                 .collect(Collectors.toList());
+
+
 
         return list;
     }

@@ -12,4 +12,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface UserTOSRepo extends JpaRepository<UserTOSEntity, String> {
+    void deleteBySuid(String suid);
 }

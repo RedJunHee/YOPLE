@@ -689,6 +689,8 @@ public class UserServiceImpl implements UserService {
 
         worldUserMappingRepo.deleteByUserSuid(userInfoDto.getSuid());
 
+        userTOSRepo.deleteBySuid(userInfoDto.getSuid());
+
         userInfoRepo.deleteBySuid(userInfoDto.getSuid());
     }
 }

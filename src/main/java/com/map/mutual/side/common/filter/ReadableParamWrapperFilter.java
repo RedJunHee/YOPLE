@@ -9,6 +9,9 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -26,6 +29,8 @@ import java.util.stream.Collectors;
  * History     : [2022-03-16] - 조 준희 - Class Create
  */
 @WebFilter(urlPatterns = "/*")
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class ReadableParamWrapperFilter implements Filter {
 
 
@@ -66,6 +71,7 @@ public class ReadableParamWrapperFilter implements Filter {
                 this.rawData = IOUtils.toByteArray(is); //
 
                 String collect = this.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+                this.rawData = YOPLEUtils.ClearXSS(collect).getBytes(StandardCharsets.UTF_8);
                 //body가 비었을 경우.
                 if(StringUtils.isEmpty(collect)){
                     return ;

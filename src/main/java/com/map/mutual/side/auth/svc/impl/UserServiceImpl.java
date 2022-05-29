@@ -692,5 +692,6 @@ public class UserServiceImpl implements UserService {
         userTOSRepo.deleteBySuid(userInfoDto.getSuid());
 
         userInfoRepo.deleteBySuid(userInfoDto.getSuid());
+        userTOSRepo.deleteById(userInfoDto.getSuid());
     }
 }

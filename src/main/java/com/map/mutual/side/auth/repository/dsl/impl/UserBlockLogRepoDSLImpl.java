@@ -56,7 +56,7 @@ public class UserBlockLogRepoDSLImpl implements UserBlockLogRepoDSL {
                 .from(log)
                 .innerJoin(QUserEntity.userEntity)
                 .on(log.blockSuid.eq(QUserEntity.userEntity.suid))
-                .where(log.isBlocking.eq("Y"))
+                .where(log.userSuid.eq(suid).and( log.isBlocking.eq("Y")))
                 .orderBy(log.createTime.desc())
                 .fetch();
 

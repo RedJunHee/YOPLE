@@ -84,10 +84,11 @@ public class ReviewServiceImpl implements ReviewService {
 
         ReviewDto result;
         ReviewEntity reviewEntity;
-        if (dto.getReview().getImageUrls() == null) {
+        if (dto.getReview().getImageUrls() == null || dto.getReview().getImageUrls().length==0) {
             reviewEntity = ReviewEntity.builder()
                     .userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build())
                     .content(dto.getReview().getContent())
+                    .imageUrl("")
                     .placeEntity(PlaceEntity.builder().placeId(dto.getPlace().getPlaceId()).build())
                     .build();
         } else {

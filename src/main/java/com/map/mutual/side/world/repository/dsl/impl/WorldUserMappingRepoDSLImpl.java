@@ -294,12 +294,14 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         // 3. 한번에 조회가 되어야함.
         List<WorldEntryNotiDto> notis = new ArrayList<>();
 
+
+        // 내가 참여 중인 월드리스트.
         String sql = "CREATE TABLE #MY_WORLD ( \n" +
                 "WORLD_ID BIGINT , \n" +
                 "ENTRY_DATE DATETIME \n" +
                 ") \n" +
 
-                // 사용자가 참여하고있는 월드와 참여 날짜를 가져옴.
+                // 1. 사용자가 참여하고 있는 월드 + 최근 입장한 시간을 가져온다.
                 "INSERT INTO #MY_WORLD \n"+
                 "SELECT B.WORLD_ID, CREATE_DT\n" +
                 "  FROM WORLD_USER_MAPPING A\n" +
@@ -312,17 +314,22 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 "    ON A.WORLD_ID = B.WORLD_ID\n" +
                 " WHERE A.USER_SUID = ? \n" +
 
+
                 "CREATE TABLE #BLOCK(\n" +
                 "    BLOCK_SUID VARCHAR(18),\n" +
                         "    START_DT DATETIME,\n" +
                         "    END_DT DATETIME\n" +
                         ")\n" +
 
+                // 2. 차단 리스트에서 사용자가 차단한 목록을 전부 가져온다. 과거 데이터 포함.
                 "INSERT INTO #BLOCK\n" +
                 "SELECT BLOCK_SUID, CREATE_DT, CASE WHEN IS_BLOCKING = 'Y' THEN '2999-01-01' ELSE UPDATE_DT END\n" +
                 "  FROM USER_BLOCK_LOG \n" +
                 " WHERE USER_SUID = ? \n" +
 
+
+                // 3. 내가 입장 한 월드 이후에 입장한 사용자들 입장로그에 유저데이터 + 월드데이터 추가
+                // +++ 차단 리스트에 해당하는 유저 입장 로그 중  차단 기간내에 속한 것은 필터링 한다.
                 "SELECT u.[USER_ID], u.PROFILE_URL, w.NAME, other.CREATE_DT \n" +
                 "  FROM #MY_WORLD as my \n" +
                 " INNER JOIN WORLD_JOIN_LOG as other \n" +
@@ -332,10 +339,12 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 "    ON other.USER_SUID = u.SUID \n" +
                 " INNER JOIN WORLD w \n" +
                 "    ON my.WORLD_ID = w.WORLD_ID \n" +
-                "  LEFT JOIN #BLOCK b\n" +
-                "    ON  b.START_DT <= other.CREATE_DT  AND other.CREATE_DT >= b.END_DT\n" +
+                "  LEFT JOIN #BLOCK b\n" +   // 내가 차단한 유저 로그.
+                "    ON  other.USER_SUID = b.BLOCK_SUID AND  other.CREATE_DT BETWEEN b.START_DT AND b.END_DT\n" +
                 " WHERE b.BLOCK_SUID IS NULL \n" +
 
+
+                // 4. 임시 테이블 삭제.
                 "  DROP TABLE #MY_WORLD \n " +
                 " DROP TABLE #BLOCK ";
 

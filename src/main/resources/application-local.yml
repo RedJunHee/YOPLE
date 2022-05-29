@@ -13,7 +13,7 @@ spring:
     database: SQL_SERVER
   datasource:
     driverclassname: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    url: jdbc:sqlserver://person.jjhserverworld.pe.kr:49153;instanceName=SpringApplication;DatabaseName=INITDB
+    url: jdbc:sqlserver://person.jjhserverworld.pe.kr:49153;instanceName=SpringApplication;DatabaseName=CMS_DEV
     username: SA
     password: mutual#!12
   

@@ -6,6 +6,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 /** Class       : User (Model)
  *  Author      : 조 준 희
@@ -44,6 +45,14 @@ public class UserEntity extends CreateDtEntity implements Persistable<String> {
 
     @Column(name="FCM_TOKEN", columnDefinition = "VARCHAR(170)")
     private String fcmToken;
+
+    @Column(name="NOTI_CHECK_DT", columnDefinition = "DATETIME", nullable = false)
+    private LocalDateTime notiCheckDt ;
+
+    public void updateNotiCheckDt()
+    {
+        notiCheckDt = LocalDateTime.now();
+    }
 
     @Override
     public String getId() {

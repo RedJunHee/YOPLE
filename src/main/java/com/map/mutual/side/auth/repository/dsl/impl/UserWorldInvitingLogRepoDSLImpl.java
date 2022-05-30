@@ -31,6 +31,31 @@ public class UserWorldInvitingLogRepoDSLImpl implements UserWorldInvitingLogRepo
     }
 
 
+    /**
+     * Description : 월드 초대 알림 최신건 있는지 여부.
+     * Name        : existsNewNoti
+     * Author      : 조 준 희
+     * History     : [2022/05/30] - 조 준 희 - Create
+     */
+    @Override
+    public boolean existsNewNoti(String suid, LocalDateTime searchLocalDateTime) {
+        QUserWorldInvitingLogEntity log = new QUserWorldInvitingLogEntity("log");
+
+        boolean existsYN = false;
+
+        // 존재 한다면 True 존재하지 않다면 False
+        existsYN = jpaQueryFactory.select (log.userSuid)
+                        .from(log)
+                        .where(log.userSuid.eq(suid)
+                               .and(log.createTime.after(searchLocalDateTime))
+                                .and(log.invitingStatus.eq("-")))
+                        .fetchFirst() != null ;
+
+        return existsYN;
+    }
+
+
+
 
     /**
      * Description : 월드 초대 알림 메시지 조회

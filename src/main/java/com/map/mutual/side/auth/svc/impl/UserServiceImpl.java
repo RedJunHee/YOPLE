@@ -131,7 +131,7 @@ public class UserServiceImpl implements UserService {
                 .name(user.getName())
                 .phone(user.getPhone())
                 .profileUrl(user.getProfileUrl())
-                .profilePinUrl(user.getProfilePinUrl()).build();
+                .profilePinUrl(user.getProfilePinUrl()).notiCheckDt(LocalDateTime.now()).build();
 
         UserTOSEntity userTOSEntity = UserTOSEntity.builder()
                 .suid(user.getSuid())
@@ -297,6 +297,7 @@ public class UserServiceImpl implements UserService {
                 .userId(userEntity.getUserId())
                 .name(userEntity.getName())
                 .profileUrl(userEntity.getProfileUrl())
+                .notiCheckDt(userEntity.getNotiCheckDt())
                 .build();
 
         // 3. 리턴.
@@ -714,4 +715,64 @@ public class UserServiceImpl implements UserService {
 
         userInfoRepo.deleteBySuid(userInfoDto.getSuid());
     }
+
+    /**
+     * Description : 유저의 독바 알림 갱신 시간 최신화.
+     * Name        : notiCheckDtUpdate
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @Override
+    public void notiCheckDtUpdate(String suid) throws YOPLEServiceException{
+
+        UserEntity user = userInfoRepo.findById(suid).orElseThrow( () -> {
+
+            YOPLEServiceException e = new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            e.getResponseJsonObject().getMeta().setMsg("존재하지 않는 사용자입니다.");
+            return e;
+        });
+
+        // 현재 시간으로 갱신
+        user.updateNotiCheckDt();
+
+        // 저장.
+        userInfoRepo.save(user);
+
+    }
+
+    /**
+     * Description : 유저의 독바 알림 최신 여부 확인
+     * Name        : newNotiCheck
+     * Author      : 조 준 희
+     * History     : [2022-04-21] - 조 준 희 - Create
+     */
+    @Override
+    public boolean newNotiCheck(String suid) throws YOPLEServiceException{
+
+        // 체크 순서는  최신 알림이 있을 것 같은 순서로 진행.
+
+        UserEntity user = userInfoRepo.findById(suid).orElseThrow( () -> {
+
+            YOPLEServiceException e = new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            e.getResponseJsonObject().getMeta().setMsg("존재하지 않는 사용자입니다.");
+            return e;
+        });
+
+        // 1. 월드 입장 알림 체크
+        if( worldUserMappingRepo.existsNewNoti(suid, user.getNotiCheckDt()) == true )
+            return true;
+
+        // 2. 이모지 알림 체크
+        if( userWorldInvitingLogRepo.existsNewNoti(suid, user.getNotiCheckDt()) == true)
+            return true;
+
+        // 3. 월드 초대 알림 체크
+        if(emojiStatusRepo.existsNewNoti(suid, user.getNotiCheckDt()) == true)
+            return true;
+
+        return false;
+
+    }
+
+
 }

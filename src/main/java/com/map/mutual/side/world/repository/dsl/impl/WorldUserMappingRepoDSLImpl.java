@@ -8,6 +8,7 @@ import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.common.utils.YOPLEUtils;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
+import com.map.mutual.side.world.model.entity.QWorldJoinLogEntity;
 import com.map.mutual.side.world.repository.dsl.WorldUserMappingRepoDSL;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -271,6 +272,32 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     }
 
     /**
+     * Description : 월드 입장 알림 최신건 있는지 여부.
+     * Name        : existsNewNoti
+     * Author      : 조 준 희
+     * History     : [2022/05/30] - 조 준 희 - Create
+     */
+    @Override
+    public boolean existsNewNoti(String suid, LocalDateTime searchLocalDateTime) {
+
+        QWorldUserMappingEntity map = new QWorldUserMappingEntity("map");
+        QWorldJoinLogEntity joinLog = new QWorldJoinLogEntity("joinLog");
+
+
+        boolean existsYN = false;
+        existsYN = jpaQueryFactory.select(joinLog.worldId)
+                                    .from(map)
+                                    .innerJoin(joinLog)
+                                    .on(map.worldId.eq(joinLog.worldId))
+                                    .where(map.userSuid.eq(suid)
+                                            .and(joinLog.createTime.after(searchLocalDateTime)))
+                                    .fetchFirst() != null;
+
+
+        return existsYN;
+    }
+
+    /**
      * Description : 월드에 입장하였습니다 알림 조회
      *
      * -- 사용자가 입장되어있는 월드
@@ -303,9 +330,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     @Override
     public List<WorldEntryNotiDto> WorldEntryNotiList(String suid) {
 
-        // 1. 참여중인 월드만 조회가 되어야함.
-        // 2. 월드별로 참여 중인 사용자 카운트를 알아야함.
-        // 3. 한번에 조회가 되어야함.
+
         List<WorldEntryNotiDto> notis = new ArrayList<>();
 
 

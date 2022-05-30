@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
       naming:
         physical-strategy: com.map.mutual.side.common.config.JPANamingConfig
     open-in-view: true
@@ -9,18 +9,54 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.SQLServer2012Dialect
     database: SQL_SERVER
   datasource:
-    driverclassname: org.h2.Driver
-    url: jdbc:h2:tcp://localhost/~/test
+    driverclassname: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    url: jdbc:sqlserver://person.jjhserverworld.pe.kr:49153;instanceName=SpringApplication;DatabaseName=INITDB
     username: SA
-    password: rkwhr485!@
-  
-    
+    password: mutual#!12
+
+
 server:
   port: 3333
 
+
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
 #fcm:
 #  message:
 #    api: https://fcm.googleapis.com/v1/projects/yople-42384/messages:send
+
+
+#spring:
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
+#      naming:
+#        physical-strategy: com.map.mutual.side.common.config.JPANamingConfig
+#    open-in-view: true
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+#        dialect: org.hibernate.dialect.H2Dialect
+#    database: SQL_SERVER
+#  datasource:
+#    driverclassname: org.h2.Driver
+#    url: jdbc:h2:tcp://localhost/~/test
+#    username: SA
+#    password: rkwhr485!@
+#
+#
+#server:
+#  port: 3333
+#
+##fcm:
+##  message:
+##    api: https://fcm.googleapis.com/v1/projects/yople-42384/messages:send

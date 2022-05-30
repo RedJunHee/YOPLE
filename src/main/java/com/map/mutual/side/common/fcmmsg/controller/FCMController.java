@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * fileName       : FCMController
@@ -38,7 +39,7 @@ public class FCMController {
     private FCMService fcmService;
 
     @PostMapping("/generate")
-    public ResponseEntity<ResponseJsonObject> generateToken(@RequestBody Map<String, String> token) throws YOPLEServiceException {
+    public ResponseEntity<ResponseJsonObject> generateToken(@RequestBody Map<String, String> token) throws YOPLEServiceException, ExecutionException, InterruptedException {
         fcmService.generateToken(token.get("token"));
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }

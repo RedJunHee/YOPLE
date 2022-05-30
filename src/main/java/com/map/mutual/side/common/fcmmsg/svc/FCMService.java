@@ -26,6 +26,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * fileName       : FCMService
@@ -52,10 +54,12 @@ public class FCMService {
     private LogRepository logRepository;
 
     @Async
-    public void generateToken(String token) throws YOPLEServiceException {
+    public void generateToken(String token) throws YOPLEServiceException, ExecutionException, InterruptedException {
         long executeTimer;
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
+
+        CompletableFuture<Boolean> registry = new CompletableFuture<>();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
@@ -66,12 +70,28 @@ public class FCMService {
             userEntity.setFcmToken(token);
             userInfoRepo.save(userEntity);
         } else if (userEntity.getFcmToken().equals(token)) {
+            return;
         } else if (userEntity.getFcmToken().equals(FCMConstant.EXPIRED)) {
-            registryFcmToken(userEntity, token);
+            registry =  CompletableFuture.supplyAsync(() -> {
+                boolean result = false;
+                try {
+                    result =  registryFcmToken(userEntity, token);
+                } catch (YOPLEServiceException e) {
+                }
+                return result;
+            });
+
         } else if (!userEntity.getFcmToken().equals(token)) {
             List<FcmTopicEntity> fcmTopicEntity = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
             fcmTopicRepository.deleteAll(fcmTopicEntity);
-            registryFcmToken(userEntity, token);
+             registry = CompletableFuture.supplyAsync(() -> {
+                boolean result = false;
+                try {
+                    result =  registryFcmToken(userEntity, token);
+                } catch (YOPLEServiceException e) {
+                }
+                return result;
+            });
         } else {
             stopWatch.stop();
             executeTimer = stopWatch.getTotalTimeMillis();
@@ -87,17 +107,29 @@ public class FCMService {
         }
         stopWatch.stop();
         executeTimer = stopWatch.getTotalTimeMillis();
-        ApiLog apiLog = ApiLog.builder()
-                .suid(userInfoDto.getSuid())
-                .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                .apiDesc("[FCM]Success To Generate FCM Token : " + userInfoDto.getSuid())
-                .apiStatus('Y')
-                .processTime((float) (executeTimer * 0.001))
-                .build();
-        logRepository.save(apiLog);
+        if(registry.get()) {
+            ApiLog apiLog = ApiLog.builder()
+                    .suid(userInfoDto.getSuid())
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Success To Generate FCM Token : " + userInfoDto.getSuid())
+                    .apiStatus('Y')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+        } else {
+            ApiLog apiLog = ApiLog.builder()
+                    .suid(userInfoDto.getSuid())
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Fail To Generate FCM Token : " + userInfoDto.getSuid())
+                    .apiStatus('N')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+            throw new YOPLEServiceException(ApiStatusCode.GENERATE_FAILED_TO_TOKEN);
+        }
     }
 
-    private void registryFcmToken(UserEntity userEntity, String token) throws YOPLEServiceException {
+    private boolean registryFcmToken(UserEntity userEntity, String token) throws YOPLEServiceException {
         List<FcmTopicEntity> fcmTopicEntities = new ArrayList<>();
         try {
 
@@ -109,7 +141,6 @@ public class FCMService {
                 worldUserMappingEntities.forEach(data -> {
                     try {
                         TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
-                        log.info(response);
                     } catch (FirebaseMessagingException e) {
                         try {
                             throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);
@@ -125,6 +156,7 @@ public class FCMService {
         } catch (Exception e) {
             throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
         }
+        return true;
     }
 
     @Async(value = "YOPLE-Executor")

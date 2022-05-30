@@ -40,6 +40,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * fileName       : UserController
@@ -417,7 +418,7 @@ public class UserController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world/user")
-    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6, message = "인증 코드는 6자리 입니다.") String worldinvitationCode) throws YOPLEServiceException {
+    public ResponseEntity<ResponseJsonObject> inviteJoinWorld(@RequestParam("worldinvitationCode") @Valid @Size(min = 6, max = 6, message = "인증 코드는 6자리 입니다.") String worldinvitationCode) throws YOPLEServiceException, ExecutionException, InterruptedException {
         try {
 
             WorldDto joinedWorld = userService.JoinWorld(worldinvitationCode);

@@ -67,10 +67,11 @@ public class FCMService {
             return;
         } else if (userEntity.getFcmToken().equals(FCMConstant.EXPIRED)) {
             registry =  CompletableFuture.supplyAsync(() -> {
-                boolean result = false;
+                boolean result;
                 try {
                     result =  registryFcmToken(userEntity, token);
                 } catch (YOPLEServiceException e) {
+                    return false;
                 }
                 return result;
             });
@@ -79,10 +80,11 @@ public class FCMService {
             List<FcmTopicEntity> fcmTopicEntity = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
             fcmTopicRepository.deleteAll(fcmTopicEntity);
              registry = CompletableFuture.supplyAsync(() -> {
-                boolean result = false;
+                boolean result;
                 try {
                     result =  registryFcmToken(userEntity, token);
                 } catch (YOPLEServiceException e) {
+                    return false;
                 }
                 return result;
             });
@@ -274,7 +276,7 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public void sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) throws YOPLEServiceException {
+    public Boolean sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) throws YOPLEServiceException {
         StopWatch stopWatch = new StopWatch();
         long executeTimer;
 
@@ -335,6 +337,7 @@ public class FCMService {
         } catch (FirebaseMessagingException e) {
             throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
+        return true;
     }
 
 //    private void updateFcmToken(String userSuid, String newToken)  {

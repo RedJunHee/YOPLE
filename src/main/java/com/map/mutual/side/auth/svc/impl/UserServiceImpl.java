@@ -18,6 +18,7 @@ import com.map.mutual.side.auth.repository.*;
 import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.exception.YOPLETransactionException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
 import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
@@ -53,6 +54,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -210,7 +213,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public WorldDto JoinWorld(String worldInvitationCode) throws YOPLEServiceException {
+    public WorldDto JoinWorld(String worldInvitationCode) throws YOPLEServiceException, ExecutionException, InterruptedException {
 
         // 1. 사용자 SUID 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -251,16 +254,27 @@ public class UserServiceImpl implements UserService {
         WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
                 .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
 
-        // 5. 월드에 참여된 사용자들에게 알림 전송
-        fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid());
+        // 5. 월드에 참여된 사용자들에게 알림 전송 ---동기처리---
+        CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                return fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid());
+            } catch (YOPLEServiceException e) {
+                return false;
+            }
+        });
 
         // 6. 월드에 참여.
-        String fcmToken = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
-        fcmTopicRepository.save(FcmTopicEntity.builder().worldId(inviteWorldId).fcmToken(fcmToken).build());
+        if (completableFuture.get()) {
+            String fcmToken = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
+            fcmTopicRepository.save(FcmTopicEntity.builder().worldId(inviteWorldId).fcmToken(fcmToken).build());
+
+            return WorldDto.builder().worldId(world.getWorldId())
+                    .worldName(world.getWorldName())
+                    .worldDesc(world.getWorldDesc()).build();
+        } else {
+            throw new YOPLETransactionException(ApiStatusCode.FAIL_JOIN_WORLD);
+        }
         // 7. 참여한 월드 정보 리턴.
-        return WorldDto.builder().worldId(world.getWorldId())
-                .worldName(world.getWorldName())
-                .worldDesc(world.getWorldDesc()).build();
 
     }
 
@@ -541,7 +555,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) throws YOPLEServiceException {
+    public WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) throws YOPLEServiceException, ExecutionException, InterruptedException {
 
         // 초대하기인지 수락하기인지 분기
         Optional<UserWorldInvitingLogEntity> inviteLog = userWorldInvitingLogRepo.findById(invited.getInviteNumber());

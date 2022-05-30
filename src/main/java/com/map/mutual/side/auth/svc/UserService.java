@@ -12,6 +12,7 @@ import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.world.model.dto.WorldDto;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * fileName       : UserService
@@ -28,7 +29,7 @@ public interface UserService {
     List<UserInWorld> worldUsers(long worldId, String suid) throws Exception;
 
     //2. 월드에 참여하기.
-    WorldDto JoinWorld( String worldinvitationCode) throws YOPLEServiceException;
+    WorldDto JoinWorld( String worldinvitationCode) throws YOPLEServiceException, ExecutionException, InterruptedException;
     UserInfoDto userDetails(String suid) throws YOPLEServiceException;
     UserInfoDto userInfoUpdate(String suid, String userId, String profileUrl, String profilePinUrl) throws YOPLEServiceException;
     void userLogout(String suid);
@@ -75,7 +76,7 @@ public interface UserService {
      * Author      : 조 준 희
      * History     : [2022/04/17] - 조 준 희 - Create
      */
-    WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) throws YOPLEServiceException;
+    WorldDto inviteJoinWorld(WorldInviteAccept invited, String suid) throws YOPLEServiceException, ExecutionException, InterruptedException;
 
     /**
      * Description : 사용자 신고하기.

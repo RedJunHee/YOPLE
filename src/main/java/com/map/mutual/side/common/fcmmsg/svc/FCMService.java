@@ -235,7 +235,7 @@ public class FCMService {
                 stopWatch.stop();
                 executeTimer = stopWatch.getTotalTimeMillis();
                 ApiLog apiLog = ApiLog.builder()
-                        .suid("")
+                        .suid(userSuid)
                         .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
                         .apiDesc("[FCM]Fail to Send Token : " + targetFcmToken)
                         .apiStatus('N')
@@ -261,7 +261,7 @@ public class FCMService {
             stopWatch.stop();
             executeTimer = stopWatch.getTotalTimeMillis();
             ApiLog apiLog = ApiLog.builder()
-                    .suid("")
+                    .suid(userSuid)
                     .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
                     .apiDesc("[FCM]Success to Send Token : " + targetFcmToken)
                     .apiStatus('Y')
@@ -279,14 +279,12 @@ public class FCMService {
         long executeTimer;
 
         String body;
-        String decodedSuid;
-        decodedSuid = CryptUtils.AES_Decode(userSuid);
         Map<String, String> msgData = new HashMap<>();
 
         stopWatch.start();
         switch (msgType) {
             case B:
-                String userId = userInfoRepo.findBySuid(decodedSuid).getUserId();
+                String userId = userInfoRepo.findBySuid(userSuid).getUserId();
                 String worldName = worldRepo.findByWorldId(worldId).getWorldName();
                 body = worldName
                         + "에 "

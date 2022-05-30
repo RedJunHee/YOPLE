@@ -2,19 +2,21 @@ package com.map.mutual.side.world.svc.impl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
-import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
-import com.map.mutual.side.world.model.dto.WorldAuthResponseDto;
-import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
-import com.map.mutual.side.world.repository.WorldJoinLogRepo;
-import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
+import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
 import com.map.mutual.side.common.utils.YOPLEUtils;
+import com.map.mutual.side.review.repository.ReviewWorldMappingRepository;
+import com.map.mutual.side.world.model.dto.WorldAuthResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
+import com.map.mutual.side.world.model.entity.WorldJoinLogEntity;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
+import com.map.mutual.side.world.repository.WorldJoinLogRepo;
 import com.map.mutual.side.world.repository.WorldRepo;
+import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.map.mutual.side.world.svc.WorldService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -38,18 +41,20 @@ public class WorldServiceImpl implements WorldService {
     private UserInfoRepo userInfoRepo;
     private ReviewWorldMappingRepository reviewWorldMappingRepo;
     private WorldJoinLogRepo worldJoinLogRepo;
+    private FcmTopicRepository fcmTopicRepository;
 
     @Autowired
     public WorldServiceImpl(WorldRepo worldRepo, WorldUserMappingRepo worldUserMappingRepo
             , ModelMapper modelMapper, UserInfoRepo userInfoRepo
             , ReviewWorldMappingRepository reviewWorldMappingRepo
-    , WorldJoinLogRepo worldJoinLogRepo) {
+    , WorldJoinLogRepo worldJoinLogRepo, FcmTopicRepository fcmTopicRepository) {
         this.worldRepo = worldRepo;
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.modelMapper = modelMapper;
         this.userInfoRepo = userInfoRepo;
         this.reviewWorldMappingRepo = reviewWorldMappingRepo;
         this.worldJoinLogRepo = worldJoinLogRepo;
+        this.fcmTopicRepository = fcmTopicRepository;
     }
 
 
@@ -98,12 +103,15 @@ public class WorldServiceImpl implements WorldService {
         // 6. 월드 매핑 저장.
         worldUserMappingRepo.save(worldUserMappingEntity);
 
-        // 7. 월드 입장 처리
+        // 7. 월드 입장 처리, fcm topic에 추가
         WorldJoinLogEntity join = WorldJoinLogEntity.builder().worldId(createWorld.getWorldId())
                 .userSuid(userInfoDto.getSuid())
                 .build();
 
         worldJoinLogRepo.save(join);
+
+        String fcmToken = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
+        fcmTopicRepository.save(FcmTopicEntity.builder().fcmToken(fcmToken).worldId(createWorld.getWorldId()).build());
 
         // 8. 생성된 월드 정보 DTO 생성.
         WorldDto createdWorld = WorldDto.builder().worldId(createWorld.getWorldId())

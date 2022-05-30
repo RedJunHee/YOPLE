@@ -275,7 +275,6 @@ public class FCMService {
         }
     }
 
-    @Async(value = "YOPLE-Executor")
     public Boolean sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) throws YOPLEServiceException {
         StopWatch stopWatch = new StopWatch();
         long executeTimer;

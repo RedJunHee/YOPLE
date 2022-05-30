@@ -55,7 +55,6 @@ public class SmsSender {
     @Autowired
     private LogRepository logRepository;
 
-    @Async(value = "YOPLE-Executor")
     public void sendAuthMessage(String sendPhoneNum, String smsAuthNum) throws IOException {
         int resultCode = 0;
         long executeTimer;

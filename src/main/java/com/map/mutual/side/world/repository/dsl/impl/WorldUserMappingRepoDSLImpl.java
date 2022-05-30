@@ -18,6 +18,9 @@ import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
@@ -36,6 +39,8 @@ import static org.jooq.lambda.tuple.Tuple.tuple;
 
 @Repository
 public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
+
+    private Logger logger = LogManager.getLogger(WorldUserMappingRepoDSLImpl.class);
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -159,6 +164,9 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 .orderBy(QReviewWorldMappingEntity.reviewWorldMappingEntity.reviewEntity.reviewId.count().desc())
                 .fetch();
 
+
+
+
         // 2. 월드 참여자들 조회. (초대자 포함.)
         List<UserInWorld> userInfoInWorld = jpaQueryFactory
                 .select(new QUserInWorld(userA.suid,
@@ -166,6 +174,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                         userA.name,
                         userA.profileUrl,
                         userB.userId,
+                        userB.profileUrl,
                         // 월드에 참여 중인 사용자SUID와 초대자SUID가 같다면 Host사용자
                         new CaseBuilder().when(mapA.userSuid.eq(mapB.userSuid)).then("Y").otherwise("N")))
                 .from(userA)
@@ -189,12 +198,15 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                                     .map(review -> { // select
                                                         long reviewCount = 0l;
 
-                                                        if(review == null)
-                                                            reviewCount = 0l;
-                                                        else if(user.getSuid().equals(suid))  // "나" 자기 자신인 경우. 최상단.
+
+                                                        if(user.getSuid().equals(suid))  // "나" 자기 자신인 경우. 최상단.
                                                             reviewCount = 9999l;
                                                         else if(user.getIsHost().equals("Y")) // 월드 host 인 경우 2번째 우선순위
                                                             reviewCount= 9998l;
+                                                        else if(review == null)
+                                                            reviewCount = 0l;
+                                                        else
+                                                            reviewCount = review.get(1,Long.class);
 
                                                         return tuple(user, reviewCount);
                                                     })
@@ -202,6 +214,8 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                                 .sorted( Comparator.comparingLong( v -> Long.parseLong(v.v2.toString()))).reverse() // order by
                                 .map(v -> v.v1) //select
                                 .collect(Collectors.toList());
+
+
 
         return list;
     }
@@ -294,12 +308,14 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
         // 3. 한번에 조회가 되어야함.
         List<WorldEntryNotiDto> notis = new ArrayList<>();
 
+
+        // 내가 참여 중인 월드리스트.
         String sql = "CREATE TABLE #MY_WORLD ( \n" +
                 "WORLD_ID BIGINT , \n" +
                 "ENTRY_DATE DATETIME \n" +
                 ") \n" +
 
-                // 사용자가 참여하고있는 월드와 참여 날짜를 가져옴.
+                // 1. 사용자가 참여하고 있는 월드 + 최근 입장한 시간을 가져온다.
                 "INSERT INTO #MY_WORLD \n"+
                 "SELECT B.WORLD_ID, CREATE_DT\n" +
                 "  FROM WORLD_USER_MAPPING A\n" +
@@ -312,17 +328,22 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 "    ON A.WORLD_ID = B.WORLD_ID\n" +
                 " WHERE A.USER_SUID = ? \n" +
 
+
                 "CREATE TABLE #BLOCK(\n" +
                 "    BLOCK_SUID VARCHAR(18),\n" +
                         "    START_DT DATETIME,\n" +
                         "    END_DT DATETIME\n" +
                         ")\n" +
 
+                // 2. 차단 리스트에서 사용자가 차단한 목록을 전부 가져온다. 과거 데이터 포함.
                 "INSERT INTO #BLOCK\n" +
                 "SELECT BLOCK_SUID, CREATE_DT, CASE WHEN IS_BLOCKING = 'Y' THEN '2999-01-01' ELSE UPDATE_DT END\n" +
                 "  FROM USER_BLOCK_LOG \n" +
                 " WHERE USER_SUID = ? \n" +
 
+
+                // 3. 내가 입장 한 월드 이후에 입장한 사용자들 입장로그에 유저데이터 + 월드데이터 추가
+                // +++ 차단 리스트에 해당하는 유저 입장 로그 중  차단 기간내에 속한 것은 필터링 한다.
                 "SELECT u.[USER_ID], u.PROFILE_URL, w.NAME, other.CREATE_DT \n" +
                 "  FROM #MY_WORLD as my \n" +
                 " INNER JOIN WORLD_JOIN_LOG as other \n" +
@@ -332,10 +353,12 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 "    ON other.USER_SUID = u.SUID \n" +
                 " INNER JOIN WORLD w \n" +
                 "    ON my.WORLD_ID = w.WORLD_ID \n" +
-                "  LEFT JOIN #BLOCK b\n" +
-                "    ON  b.START_DT <= other.CREATE_DT  AND other.CREATE_DT >= b.END_DT\n" +
+                "  LEFT JOIN #BLOCK b\n" +   // 내가 차단한 유저 로그.
+                "    ON  other.USER_SUID = b.BLOCK_SUID AND  other.CREATE_DT BETWEEN b.START_DT AND b.END_DT\n" +
                 " WHERE b.BLOCK_SUID IS NULL \n" +
 
+
+                // 4. 임시 테이블 삭제.
                 "  DROP TABLE #MY_WORLD \n " +
                 " DROP TABLE #BLOCK ";
 

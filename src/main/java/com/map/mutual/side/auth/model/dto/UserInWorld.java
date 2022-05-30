@@ -15,6 +15,7 @@ public class UserInWorld {
     private String name;
     private String profileUrl;
     private String invitee;
+    private String inviteProfileUrl;
     private String isHost;
 
 
@@ -27,12 +28,13 @@ public class UserInWorld {
 
     @Builder
     @QueryProjection
-    public UserInWorld(String suid, String userId, String name, String profileUrl, String invitee, String isHost) {
+    public UserInWorld(String suid, String userId, String name, String profileUrl, String invitee, String inviteProfileUrl, String isHost) {
         this.suid = suid;
         this.userId = userId;
         this.name = name;
         this.profileUrl = profileUrl;
         this.invitee = invitee;
+        this.inviteProfileUrl = inviteProfileUrl;
         this.isHost = isHost;
     }
 }

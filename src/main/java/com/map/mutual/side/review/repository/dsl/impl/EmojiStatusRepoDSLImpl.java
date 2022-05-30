@@ -111,6 +111,10 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
                 "  FROM USER_BLOCK_LOG \n" +
                 " WHERE USER_SUID = ? \n" +
 
+                // 자기 자신의 이모지 알림은 차단하기 위해 차단리스트에 사용자 추가.
+                "INSERT INTO #BLOCK \n" +
+                 "VALUES (? ,'2000-01-01','2999-01-01') \n" +
+
                  // 이모지 이력의 최초 1회만 해당하는 알림으로 MIN(이모지 시간)으로 차단 아닌 상태에서 달린 이모지 처음꺼 시간 가져옴.
                 "INSERT INTO #EMOJI_NOTIS\n" +
                 "SELECT e.WORLD_ID, e.REVIEW_ID , e.USER_SUID, e.CREATE_DT \n" +
@@ -145,9 +149,10 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
 
          Query nativeQuery = entityManager.createNativeQuery(sql)
                                 .setParameter(1, suid)
-                                .setParameter(2,LocalDateTime.now().minusWeeks(12))
-                                .setParameter(3, LocalDateTime.now())
-                                .setParameter(4, suid);
+                                .setParameter(2, suid)
+                                .setParameter(3,LocalDateTime.now().minusWeeks(12))
+                                .setParameter(4, LocalDateTime.now())
+                                .setParameter(5, suid);
 
         List<Object[]> result =  nativeQuery.getResultList();
 

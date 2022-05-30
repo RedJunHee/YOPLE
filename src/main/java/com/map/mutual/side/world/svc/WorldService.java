@@ -1,5 +1,6 @@
 package com.map.mutual.side.world.svc;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.world.model.dto.WorldAuthResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
@@ -11,7 +12,7 @@ public interface WorldService {
 
     void updateWorld(WorldDto worldDto) throws YOPLEServiceException;    // 월드 수정하기
 
-    WorldDto createWolrd(WorldDto worldDto) throws YOPLEServiceException;    // 월드 생성하기.
+    WorldDto createWolrd(WorldDto worldDto) throws YOPLEServiceException, FirebaseMessagingException;    // 월드 생성하기.
 
     List<WorldDto> getWorldList(String suid, String isDetails); // 참여 중인 월드 리스트 조회
     List<WorldDto> getWorldOfReivew (Long reviewId, String suid);   // 리뷰가 등록된 월드 조회

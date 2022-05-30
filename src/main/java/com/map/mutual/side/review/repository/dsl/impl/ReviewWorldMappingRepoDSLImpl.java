@@ -1,5 +1,6 @@
 package com.map.mutual.side.review.repository.dsl.impl;
 
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.review.model.dto.PlaceDto;
 import com.map.mutual.side.review.model.dto.PlaceRangeDto;
 import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
@@ -11,6 +12,8 @@ import com.map.mutual.side.world.model.entity.WorldEntity;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -61,6 +64,9 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
 
     @Override
     public List<PlaceDto.PlaceSimpleDto> findRangePlaces(PlaceRangeDto placeRangeDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
         List<PlaceDto.PlaceSimpleDto> result = new ArrayList<>();
 
         String sql = "SELECT p.PLACE_ID , p.NAME, p.X , p.Y , ui.PROFILE_PIN_URL, subrow.CREATE_DT" +
@@ -70,7 +76,8 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
                 " FROM REVIEW_WORLD_MAPPING m" +
                 " INNER JOIN REVIEW r" +
                 "  ON m.REVIEW_ID = r.REVIEW_ID" +
-                " WHERE WORLD_ID = "+ placeRangeDto.getWorldId() +
+                " WHERE (r.USER_SUID not in ( SELECT UBL.BLOCK_SUID FROM USER_BLOCK_LOG UBL WHERE UBL.USER_SUID=\'"+ userInfoDto.getSuid() + "\' AND UBL.IS_BLOCKING='Y'))" +
+                " AND WORLD_ID = "+ placeRangeDto.getWorldId() +
                 ") as subrow " +
                 "LEFT JOIN PLACE p " +
                 "ON p.PLACE_ID = subrow.PLACE_ID " +

@@ -1,7 +1,7 @@
 package com.map.mutual.side.world.controller;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -9,7 +9,6 @@ import com.map.mutual.side.world.model.dto.WorldAuthResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.dto.WorldDto;
 import com.map.mutual.side.world.svc.WorldService;
-import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,7 @@ public class WorldController {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @PostMapping(value = "/world")
-    public ResponseEntity<ResponseJsonObject> createWorld(@RequestBody WorldDto worldDto) throws YOPLEServiceException {
+    public ResponseEntity<ResponseJsonObject> createWorld(@RequestBody WorldDto worldDto) throws YOPLEServiceException, FirebaseMessagingException {
         try{
             // 1. 월드 바로 생성하기.
             WorldDto createdWorld = worldService.createWolrd(worldDto);

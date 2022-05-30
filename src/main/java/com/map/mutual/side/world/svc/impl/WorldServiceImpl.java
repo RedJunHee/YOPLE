@@ -1,9 +1,13 @@
 package com.map.mutual.side.world.svc.impl;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
 import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
 import com.map.mutual.side.common.utils.YOPLEUtils;
@@ -28,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,7 +71,7 @@ public class WorldServiceImpl implements WorldService {
      */
     @Override
     @Transactional
-    public WorldDto createWolrd(WorldDto worldDto) throws YOPLEServiceException {
+    public WorldDto createWolrd(WorldDto worldDto) throws YOPLEServiceException, FirebaseMessagingException {
 
         // 1. 사용자 SUID 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -112,6 +117,7 @@ public class WorldServiceImpl implements WorldService {
 
         String fcmToken = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
         fcmTopicRepository.save(FcmTopicEntity.builder().fcmToken(fcmToken).worldId(createWorld.getWorldId()).build());
+        FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(fcmToken), String.valueOf(createWorld.getWorldId()));
 
         // 8. 생성된 월드 정보 DTO 생성.
         WorldDto createdWorld = WorldDto.builder().worldId(createWorld.getWorldId())

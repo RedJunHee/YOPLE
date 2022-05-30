@@ -19,6 +19,8 @@ import com.map.mutual.side.auth.svc.UserService;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
+import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
+import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.common.utils.YOPLEUtils;
@@ -82,6 +84,7 @@ public class UserServiceImpl implements UserService {
     private EmojiStatusRepo emojiStatusRepo;
     private ReviewRepo reviewRepo;
     private ReviewWorldMappingRepository reviewWorldMappingRepository;
+    private FcmTopicRepository fcmTopicRepository;
 
     @Autowired
     public UserServiceImpl(WorldUserMappingRepo worldUserMappingRepo, UserInfoRepo userInfoRepo
@@ -90,7 +93,7 @@ public class UserServiceImpl implements UserService {
             , FCMService fcmService, SmsSender smsSender, WorldJoinLogRepo worldJoinLogRepo
             , UserBlockLogRepo userBlockLogRepo, UserReportLogRepo userReportLogRepo
             , ReviewReportLogRepo reviewReportLogRepo, EmojiStatusRepo emojiStatusRepo, ReviewRepo reviewRepo
-    , ReviewWorldMappingRepository reviewWorldMappingRepository) {
+    , ReviewWorldMappingRepository reviewWorldMappingRepository, FcmTopicRepository fcmTopicRepository) {
         this.worldUserMappingRepo = worldUserMappingRepo;
         this.userInfoRepo = userInfoRepo;
         this.modelMapper = modelMapper;
@@ -107,6 +110,7 @@ public class UserServiceImpl implements UserService {
         this.emojiStatusRepo = emojiStatusRepo;
         this.reviewRepo = reviewRepo;
         this.reviewWorldMappingRepository = reviewWorldMappingRepository;
+        this.fcmTopicRepository = fcmTopicRepository;
     }
 
     /**
@@ -250,7 +254,10 @@ public class UserServiceImpl implements UserService {
         // 5. 월드에 참여된 사용자들에게 알림 전송
         fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid());
 
-        // 6. 참여한 월드 정보 리턴.
+        // 6. 월드에 참여.
+        String fcmToken = userInfoRepo.findBySuid(userInfoDto.getSuid()).getFcmToken();
+        fcmTopicRepository.save(FcmTopicEntity.builder().worldId(inviteWorldId).fcmToken(fcmToken).build());
+        // 7. 참여한 월드 정보 리턴.
         return WorldDto.builder().worldId(world.getWorldId())
                 .worldName(world.getWorldName())
                 .worldDesc(world.getWorldDesc()).build();

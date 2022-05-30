@@ -19,7 +19,6 @@ import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.world.model.dto.WorldDto;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,7 +30,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;

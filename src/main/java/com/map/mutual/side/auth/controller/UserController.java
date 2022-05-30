@@ -19,6 +19,7 @@ import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.svc.FCMService;
 import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.world.model.dto.WorldDto;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -452,6 +453,9 @@ public class UserController {
 
             NotiDto notis = userService.notificationList(userToken.getSuid());
 
+            // 유저의 독바 알림 갱신 시간 최신화.
+            userService.notiCheckDtUpdate(userToken.getSuid());
+
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(notis);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -671,7 +675,6 @@ public class UserController {
 
     }
 
-
     /**
      * 17. 회원탈퇴
      *
@@ -686,5 +689,43 @@ public class UserController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
+
+    /**
+     * Description : 18. 최신 알림 여부 확인
+     * Name        : newNotiCheck
+     * Author      : 조 준 희
+     * History     : [2022-04-06] - 조 준 희 - Create
+     */
+    @GetMapping("/newNotiCheck")
+    public ResponseEntity<ResponseJsonObject> newNotiCheck() throws YOPLEServiceException {
+
+        try {
+            ResponseJsonObject responseJsonObject;
+
+            // 1. 토큰에서 사용자 SUID 정보 조회
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserInfoDto userToken = (UserInfoDto) authentication.getPrincipal();
+
+            // 2. 독바 최신 알림 있는지 여부 체크
+            Boolean newNotiYN = userService.newNotiCheck(userToken.getSuid());
+
+            // 3. 응답 생성.
+            Map<String, Object> responseMap = new HashMap<>();
+
+            responseMap.put("newNotiYN", (newNotiYN) ? "Y" : "N"  );
+
+            responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
+            responseJsonObject.setData(responseMap);
+
+            return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
+
+        } catch (YOPLEServiceException e) {
+            logger.error("사용자 상세정보 조회 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            throw e;
+        } catch(Exception e){
+            logger.error("최신 알림 여부 확인 ERROR : " + e.getMessage());
+            throw e;
+        }
+    }
 
 }

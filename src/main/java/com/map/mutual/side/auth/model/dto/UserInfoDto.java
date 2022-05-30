@@ -1,10 +1,12 @@
 package com.map.mutual.side.auth.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -29,6 +31,9 @@ public class UserInfoDto {
     private String profileUrl;
 
     private String profilePinUrl;
+
+    @JsonIgnore
+    private LocalDateTime notiCheckDt;
 
     @JsonProperty(value = "tos")
     @Valid

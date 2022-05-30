@@ -2,7 +2,10 @@ package com.map.mutual.side.review.repository.dsl.impl;
 
 import com.fasterxml.jackson.core.io.BigDecimalParser;
 import com.map.mutual.side.auth.model.dto.notification.EmojiNotiDto;
+import com.map.mutual.side.review.model.entity.QEmojiStatusNotiEntity;
 import com.map.mutual.side.review.repository.dsl.EmojiStatusRepoDSL;
+import com.map.mutual.side.world.model.entity.QWorldJoinLogEntity;
+import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -35,6 +38,26 @@ public class EmojiStatusRepoDSLImpl implements EmojiStatusRepoDSL {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    /**
+     * Description : 이모지 알림 최신건 있는지 여부.
+     * Name        : existsNewNoti
+     * Author      : 조 준 희
+     * History     : [2022/05/30] - 조 준 희 - Create
+     */
+    @Override
+    public boolean existsNewNoti(String suid, LocalDateTime searchLocalDateTime) {
+
+        QEmojiStatusNotiEntity notis = new QEmojiStatusNotiEntity("notis");
+
+        boolean existsYN = false;
+        existsYN = jpaQueryFactory.select(notis.userSuid)
+                .from(notis)
+                .where(notis.userSuid.eq(suid).and(notis.createTime.after(searchLocalDateTime)))
+                .fetchFirst() != null;
+
+        return existsYN;
+    }
 
     /**
      * Description :

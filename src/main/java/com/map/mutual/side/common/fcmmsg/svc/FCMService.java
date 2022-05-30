@@ -2,7 +2,6 @@ package com.map.mutual.side.common.fcmmsg.svc;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.entity.ApiLog;
@@ -20,8 +19,6 @@ import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -54,17 +51,14 @@ public class FCMService {
     private LogRepository logRepository;
 
     @Async
-    public void generateToken(String token) throws YOPLEServiceException, ExecutionException, InterruptedException {
+    public void generateToken(String suid, String token) throws YOPLEServiceException, ExecutionException, InterruptedException {
         long executeTimer;
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
         CompletableFuture<Boolean> registry = new CompletableFuture<>();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-        UserEntity userEntity;
-        userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+        UserEntity userEntity = userInfoRepo.findBySuid(suid);
 
         if (userEntity.getFcmToken() == null) {
             userEntity.setFcmToken(token);
@@ -96,9 +90,9 @@ public class FCMService {
             stopWatch.stop();
             executeTimer = stopWatch.getTotalTimeMillis();
             ApiLog apiLog = ApiLog.builder()
-                    .suid(userInfoDto.getSuid())
+                    .suid(suid)
                     .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                    .apiDesc("[FCM]Fail To Generate FCM Token : " + userInfoDto.getSuid())
+                    .apiDesc("[FCM]Fail To Generate FCM Token : " + suid)
                     .apiStatus('N')
                     .processTime((float) (executeTimer * 0.001))
                     .build();
@@ -109,18 +103,18 @@ public class FCMService {
         executeTimer = stopWatch.getTotalTimeMillis();
         if(registry.get()) {
             ApiLog apiLog = ApiLog.builder()
-                    .suid(userInfoDto.getSuid())
+                    .suid(suid)
                     .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                    .apiDesc("[FCM]Success To Generate FCM Token : " + userInfoDto.getSuid())
+                    .apiDesc("[FCM]Success To Generate FCM Token : " + suid)
                     .apiStatus('Y')
                     .processTime((float) (executeTimer * 0.001))
                     .build();
             logRepository.save(apiLog);
         } else {
             ApiLog apiLog = ApiLog.builder()
-                    .suid(userInfoDto.getSuid())
+                    .suid(suid)
                     .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                    .apiDesc("[FCM]Fail To Generate FCM Token : " + userInfoDto.getSuid())
+                    .apiDesc("[FCM]Fail To Generate FCM Token : " + suid)
                     .apiStatus('N')
                     .processTime((float) (executeTimer * 0.001))
                     .build();

@@ -115,7 +115,7 @@ public class ReviewDto {
             this.reviewId = reviewId;
             this.userId = userId;
             if(inviterUserId == null || inviterUserId.equals("")) {
-                this.inviterUserId = "...";
+                this.inviterUserId = " ";
             } else {
                 this.inviterUserId = inviterUserId;
             }

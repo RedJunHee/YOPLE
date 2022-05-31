@@ -87,8 +87,11 @@ public class UserController {
                 throw new YOPLEServiceException(ApiStatusCode.USER_TOS_INFO_VALID_FAILED);
             }
 
-            if (StringUtil.isNullOrEmpty(userInfoDto.getProfileUrl()) == false && StringUtil.isNullOrEmpty(userInfoDto.getProfilePinUrl()) == true)
-                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+            if (StringUtil.isNullOrEmpty(userInfoDto.getProfileUrl()) == false && StringUtil.isNullOrEmpty(userInfoDto.getProfilePinUrl()) == true) {
+                YOPLEServiceException e = new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
+                e.getResponseJsonObject().getMeta().setMsg("pin Image is null");
+                throw e;
+            }
 
             String suid = "YO";
             LocalDate date = LocalDate.now();

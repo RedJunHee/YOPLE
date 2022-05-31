@@ -76,7 +76,7 @@ public class ReviewServiceImpl implements ReviewService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-        if(reviewRepo.existsByUserEntityAndPlaceEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build(),
+        if (reviewRepo.existsByUserEntityAndPlaceEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build(),
                 PlaceEntity.builder().placeId(dto.getPlace().getPlaceId()).build())) {
             throw new YOPLETransactionException(ApiStatusCode.THIS_PLACE_IN_REVIEW_IS_ALREADY_EXIST);
         }
@@ -84,7 +84,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         ReviewDto result;
         ReviewEntity reviewEntity;
-        if (dto.getReview().getImageUrls() == null || dto.getReview().getImageUrls().length==0) {
+        if (dto.getReview().getImageUrls() == null || dto.getReview().getImageUrls().length == 0) {
             reviewEntity = ReviewEntity.builder()
                     .userEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build())
                     .content(dto.getReview().getContent())
@@ -238,6 +238,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public PlaceDetailDto placeDetail(String placeId, Long worldId) throws YOPLEServiceException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+
         PlaceDto placeDto;
         List<PlaceDetailDto.PlaceDetailInReview> placeDetailInReview;
         PlaceDetailDto result;
@@ -257,13 +260,27 @@ public class ReviewServiceImpl implements ReviewService {
                     .y(placeEntity.getY())
                     .build();
 
-            placeDetailInReview = placeRepo.findPlaceDetails(worldId, placeId);
+            placeDetailInReview = placeRepo.findPlaceDetailInReview(worldId, placeId, userInfoDto.getSuid());
             placeDetailInReview.sort(new PlaceDetailDto.PlaceDetailInReview.PlaceDetailInReviewComparatorByImageNum());
 
+            boolean isExistMyReview = reviewRepo.existsByUserEntityAndPlaceEntity(
+                    UserEntity.builder().suid(userInfoDto.getSuid()).build(),
+                    PlaceEntity.builder().placeId(placeId).build());
+
+
+            placeDetailInReview.forEach(data -> {
+                try {
+                    data.setSuid(CryptUtils.AES_Encode(data.getSuid()));
+                } catch (YOPLEServiceException e) {
+                    e.printStackTrace();
+                }
+            });
 
             result = PlaceDetailDto.builder()
                     .place(placeDto)
-                    .reviews(placeDetailInReview).build();
+                    .reviews(placeDetailInReview)
+                    .isExistMyReview(isExistMyReview ? 'Y' : 'N').build();
+
         } catch (YOPLEServiceException e) {
             throw e;
         }

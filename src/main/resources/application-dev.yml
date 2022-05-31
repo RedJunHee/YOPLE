@@ -18,6 +18,12 @@ spring:
     username: SA
     password: mutual#!12
 
+
+
+# [log4j2] log4j2 설정파일 config 파일 경로 지정.
+logging:
+  config: classpath:log4j2/log4j2-dev.yml
+
   mvc:
     view:
       prefix: /WEB-INF/jsp/

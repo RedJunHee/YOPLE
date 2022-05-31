@@ -42,9 +42,9 @@ public class AuthorizationCheckFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
             Authentication authentication = tokenProvider.getAccessAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);       // token에 authentication 정보 삽입
-            logger.debug("인증된 사용자 API Call( {} )", requestURI);
+            logger.debug(String.format("인증된 사용자 API Call( %-35d )", requestURI));
         } else {
-            logger.debug("인증되지 않은 사용자 API Call( {} ) :  accessToken : {} ",requestURI,jwt);
+            logger.debug(String.format("인증되지 않은 사용자 API Call( %-35d ) { accessToken : %d }\n",requestURI,jwt));
         }
 
         filterChain.doFilter(request, response);

@@ -3,13 +3,18 @@ server:
 
 
 
+
 jwt:
   header: Authorization
   #HS512 알고리즘을 사용할 것이기 때문에 512bit, 즉 64byte 이상의 secret key를 사용해야 한다.
   #echo "YOPLE-AES512-SecretKeyYOPLE-AES512-SecretKeyYOPLE-AES512-SecretKeyYOPLE-AES512-SecretKeyYOPLE-AES512-SecretKey"|base64
   secret: WU9QTEUtQUVTNTEyLVNlY3JldEtleVlPUExFLUFFUzUxMi1TZWNyZXRLZXlZT1BMRS1BRVM1MTItU2VjcmV0S2V5WU9QTEUtQUVTNTEyLVNlY3JldEtleVlPUExFLUFFUzUxMi1TZWNyZXRLZXk=
-  access-token-validity-in-seconds: 86800 # 1 Days
-  refresh-token-validity-in-seconds: 868000 # 10 Days
+  access-token-validity-in-seconds: 600 # 1 Days
+  refresh-token-validity-in-seconds: 1800 # 10 Days
 
 #"YOPLE-AES512-SecretKey"를 SHA256암호화 후 앞에서 32Byte
 aes-secret: 7BC19394C7DF9047349B25886954C9B8
+
+# log4j2 xml 설정파일.
+logging:
+  config: classpath:log4j2/log4j2-${spring.profiles.active}.xml

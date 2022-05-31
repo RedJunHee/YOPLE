@@ -4,7 +4,6 @@
 <Configuration status="info" monitorIntervalp="600">
     <!--공통 속성 설정 -->
     <Properties>
-        <Property name="logFileName">yople-log</Property>
         <Property name="consoleLayout">[YOPLE LOG] - [%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%c.class - %L Line] - %m%n</Property>
         <Property name="fileLayout">[%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%c.class - %L Line] - %m%n</Property>
     </Properties>
@@ -19,8 +18,8 @@
 
         <!-- error 정보 FILE 로그 Appender -->
         <RollingFile name="file_error"
-                     fileName="./logs/error/error.log"
-                     filePattern="./logs/error/error.%d{yyyy-MM-dd}.log">
+                     fileName="/var/log/yople/logs/error/error.log"
+                     filePattern="/var/log/yople/logs/error/error.%d{yyyy-MM-dd}.log">
             <PatternLayout pattern="${fileLayout}" />
             <!--LevelRangeFilter필터를 사용할때에 단일 level의 필터만 허용한다. -->
             <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
@@ -28,8 +27,8 @@
                 <TimeBasedTriggeringPolicy interval="1" />
             </Policies>
             <DefaultRolloverstrategy>
-                <Delete basePath="./logs/error" maxDepth="1">
-                    <IfLastModified age="2d" />  <!--10일 지난 로그는 삭제.-->
+                <Delete basePath="/var/log/yople/logs/error" maxDepth="1">
+                    <IfLastModified age="2d" />  <!--10일 지난 로그는 삭제. => 테스트 기간 2일-->
                 </Delete>
             </DefaultRolloverstrategy>
         </RollingFile>
@@ -37,18 +36,18 @@
 
         <!-- info 정보 FILE 로그 Appender -->
         <RollingFile name="file"
-                     fileName="./logs/api/api.log"
-                     filePattern="./logs/api/api.%d{yyyy-MM-dd}_%i.log">
+                     fileName="/var/log/yople/logs/api/api.log"
+                     filePattern="/var/log/yople/logs/api/api.%d{yyyy-MM-dd}_%i.log">
             <PatternLayout pattern="${fileLayout}" />
             <!--LevelRangeFilter필터를 사용할때에 단일 level의 필터만 허용한다. -->
             <LevelRangeFilter minLevel="info" maxLevel="info" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
-                <SizeBasedTriggeringPolicy size="1KB" />
+                <SizeBasedTriggeringPolicy size="10KB" />
                 <TimeBasedTriggeringPolicy interval="1" />
             </Policies>
             <DefaultRolloverstrategy>
-                <Delete basePath="./logs/api" maxDepth="1">
-                    <IfLastModified age="2d" />  <!--10일 지난 로그는 삭제.-->
+                <Delete basePath="/var/log/yople/logs/api" maxDepth="1">
+                    <IfLastModified age="2d" />  <!--10일 지난 로그는 삭제. => 테스트 기간 2일-->
                 </Delete>
             </DefaultRolloverstrategy>
         </RollingFile>
@@ -71,6 +70,6 @@
             <AppenderRef ref="file_error"/>
         </logger>
 
-        <Root level="debug"></Root>
+        <Root level="info"></Root>
     </Loggers>
 </Configuration>

@@ -139,7 +139,7 @@ public class AuthController {
 
         }catch(YOPLEServiceException yopleServiceException)
         {
-            logger.error("SMS 인증번호 요청하기 ERROR : " + yopleServiceException.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("SMS 인증번호 확인 요청하기 ERROR : " + yopleServiceException.getResponseJsonObject().getMeta().toString());
             throw yopleServiceException;
         }
         catch(Exception e){
@@ -175,7 +175,7 @@ public class AuthController {
 
         }catch(YOPLEServiceException e)
         {
-            logger.error("액세스 토큰 갱신하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("액세스 토큰 갱신하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e)
         {
@@ -211,7 +211,7 @@ public class AuthController {
 
         }catch(YOPLEServiceException e)
         {
-            logger.error("리프레시 토큰 갱신하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("리프레시 토큰 갱신하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e)
         {

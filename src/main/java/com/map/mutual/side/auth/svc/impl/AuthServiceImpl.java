@@ -103,7 +103,6 @@ public class AuthServiceImpl implements AuthService {
 
         }catch(YOPLEServiceException e)
         {
-            log.error("smsAuthNumber Response Failed : " + e.getMessage());
             throw e;
         }
 

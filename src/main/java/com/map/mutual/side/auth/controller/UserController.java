@@ -119,7 +119,7 @@ public class UserController {
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtTokenDto), HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("사용자 회원가입 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("사용자 회원가입 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("사용자 회원가입 ERROR : " + e.getMessage());
@@ -154,7 +154,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("사용자 로그아웃 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("사용자 로그아웃 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("사용자 로그아웃 ERROR : " + e.getMessage());
@@ -197,7 +197,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("사용자 상세정보 조회 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("사용자 상세정보 조회 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("사용자 상세정보 조회 ERROR : " + e.getMessage());
@@ -242,7 +242,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("사용자 프로필 수정 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("사용자 프로필 수정 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("사용자 프로필 수정 ERROR : " + e.getMessage());
@@ -283,7 +283,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("사용자 찾기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("사용자 찾기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("사용자 찾기 ERROR : " + e.getMessage());
@@ -348,7 +348,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("월드 참여자 리스트 ERROR :" + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("월드 참여자 리스트 ERROR :" + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("월드 참여자 리스트 실패 :" + e.getMessage());
@@ -402,7 +402,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("월드 사용자 초대하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("월드 사용자 초대하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("월드 사용자 초대하기 ERROR : " + e.getMessage());
@@ -427,7 +427,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("월드 참여하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("월드 참여하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("월드 참여하기 ERROR : " + e.getMessage());
@@ -459,7 +459,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("알림 조회하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("알림 조회하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("알림 조회하기 ERROR : " + e.getMessage());
@@ -507,7 +507,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("월드 초대 응답하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("월드 초대 응답하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("월드 초대 응답하기 ERROR : " + e.getMessage());
@@ -603,7 +603,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("사용자 차단하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("사용자 차단하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("사용자 차단하기 ERROR : " + e.getMessage());
@@ -664,7 +664,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("사용자 차단해제 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("사용자 차단해제 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch (Exception e) {
             logger.error("사용자 차단해제 ERROR : " + e.getMessage());
@@ -718,7 +718,7 @@ public class UserController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         } catch (YOPLEServiceException e) {
-            logger.error("사용자 상세정보 조회 ERROR : " + e.getResponseJsonObject().getMeta().getErrorType());
+            logger.error("사용자 상세정보 조회 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         } catch(Exception e){
             logger.error("최신 알림 여부 확인 ERROR : " + e.getMessage());

@@ -52,7 +52,7 @@ public enum ApiStatusCode {
     private int code;
     private String type;
     private String message;
-    private Boolean isErrorType;
+    private Boolean isErrorType;     // API 리턴으로 type, message 보낼지 여부 에러 타입이면 보냄.
 
     //Enum 생성자
     ApiStatusCode(int code, String type , String message,Boolean isErrorType) {

@@ -58,7 +58,7 @@ public class WorldController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 생성하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("월드 생성하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e){
             logger.error("월드 생성하기 ERROR : " + e.getMessage());
@@ -89,7 +89,7 @@ public class WorldController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 수정하기 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("월드 수정하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e){
             logger.error("월드 수정하기 ERROR : " + e.getMessage());
@@ -220,7 +220,7 @@ public class WorldController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 초대 코드 유효성 체크 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("월드 초대 코드 유효성 체크 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e){
             logger.error("월드 초대 코드 유효성 체크 ERROR : + " + e.getMessage());
@@ -256,7 +256,7 @@ public class WorldController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 입장 권한 체크 ERROR : " + e.getResponseJsonObject().getMeta().getErrorMsg());
+            logger.error("월드 입장 권한 체크 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e){
             logger.error("월드 입장 권한 체크 ERROR : + " + e.getMessage());

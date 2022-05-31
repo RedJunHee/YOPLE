@@ -58,6 +58,13 @@ public class ResponseJsonObject {
             return this.apiStatus.getMessage();
         }
 
+        @Override
+        public String toString() {
+            if(msg != null)
+                return this.apiStatus.getMessage() + "( "+ msg +" )";
+
+            return this.apiStatus.getMessage();
+        }
 
         /**
          * meta 생성자

@@ -70,7 +70,7 @@ public class JwtTokenProvider {
                     .setExpiration(validity)
                     .compact();
         }catch(Exception e) {
-            logger.debug("JWT Access Token 생성 Exception "+ e.getMessage());
+            logger.error("JWT Access Token 생성 Exception "+ e.toString());
             e.printStackTrace();
             throw e;
         }

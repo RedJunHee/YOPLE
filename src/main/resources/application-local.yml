@@ -5,10 +5,10 @@ spring:
       naming:
         physical-strategy: com.map.mutual.side.common.config.JPANamingConfig
     open-in-view: true
-    show-sql: true
+    show-sql: false # sql 보일지 표시
     properties:
       hibernate:
-        format_sql: true
+        #format_sql: true
         dialect: org.hibernate.dialect.SQLServer2012Dialect
     database: SQL_SERVER
   datasource:
@@ -21,16 +21,11 @@ spring:
 server:
   port: 3333
 
-
 # [log4j2] log4j2 설정파일 config 파일 경로 지정.
 logging:
-  config: classpath:log4j2/log4j2-local.yml
-  level:
-    org:
-      hibernate:
-        type:
-          descriptor:
-            sql: trace
+  config: classpath:log4j2/log4j2-local.xml
+
+
 #fcm:
 #  message:
 #    api: https://fcm.googleapis.com/v1/projects/yople-42384/messages:send

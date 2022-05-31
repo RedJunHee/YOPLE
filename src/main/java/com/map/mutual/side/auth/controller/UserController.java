@@ -173,6 +173,12 @@ public class UserController {
         ResponseJsonObject responseJsonObject;
 
         try {
+            //TRACE < DEBUG < INFO < WARN < ERROR < FATAL
+            logger.trace("trace");
+            logger.debug("error");
+            logger.info("info");
+            logger.warn("warn");
+            logger.error("error");
 
             // 1. 토큰에서 사용자 SUID 정보 조회
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -44,7 +44,7 @@ public class AuthorizationCheckFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);       // token에 authentication 정보 삽입
             logger.debug("인증된 사용자 API Call( {} )", requestURI);
         } else {
-            logger.debug("인증되지 않은 사용자 API Call( {} ) :  accessToken : {} ",jwt ,requestURI);
+            logger.debug("인증되지 않은 사용자 API Call( {} ) :  accessToken : {} ",requestURI,jwt);
         }
 
         filterChain.doFilter(request, response);

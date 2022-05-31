@@ -16,7 +16,11 @@ spring:
     url: jdbc:sqlserver://person.jjhserverworld.pe.kr:49153;instanceName=SpringApplication;DatabaseName=CMS_DEV
     username: SA
     password: mutual#!12
-  
+
+
+# log4j2 xml 설정파일.
+logging:
+  config: classpath:log4j2/log4j2-local.xml
 
 server:
   port: 3333

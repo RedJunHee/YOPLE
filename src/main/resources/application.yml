@@ -15,6 +15,3 @@ jwt:
 #"YOPLE-AES512-SecretKey"를 SHA256암호화 후 앞에서 32Byte
 aes-secret: 7BC19394C7DF9047349B25886954C9B8
 
-# log4j2 xml 설정파일.
-logging:
-  config: classpath:log4j2/log4j2-${spring.profiles.active}.xml

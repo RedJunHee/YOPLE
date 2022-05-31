@@ -17,5 +17,9 @@ spring:
     username: SA
     password: mutual#!12
 
+# log4j2 xml 설정파일.
+logging:
+  config: classpath:log4j2/log4j2-dev.xml
+
 server:
   port: 3333

@@ -114,7 +114,11 @@ public class ReviewDto {
         public ReviewWithInviterDto(Long reviewId, String content, String imageUrls, String userId, String inviterUserId, LocalDateTime createDt) {
             this.reviewId = reviewId;
             this.userId = userId;
-            this.inviterUserId = inviterUserId;
+            if(inviterUserId == null || inviterUserId.equals("")) {
+                this.inviterUserId = " ";
+            } else {
+                this.inviterUserId = inviterUserId;
+            }
             this.content = content;
             if (imageUrls != null) {
                 this.imageUrls = imageUrls.split(",");

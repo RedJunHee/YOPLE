@@ -1,18 +1,16 @@
 package com.map.mutual.side.review.repository.dsl.impl;
 
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.auth.model.entity.QUserBlockLogEntity;
 import com.map.mutual.side.auth.model.entity.QUserEntity;
 import com.map.mutual.side.review.model.dto.PlaceDetailDto;
 import com.map.mutual.side.review.model.dto.QPlaceDetailDto_PlaceDetailInReview;
 import com.map.mutual.side.review.model.entity.QReviewEntity;
 import com.map.mutual.side.review.model.entity.QReviewWorldMappingEntity;
+import com.map.mutual.side.review.repository.ReviewRepo;
 import com.map.mutual.side.review.repository.dsl.PlaceRepoDSL;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,16 +28,16 @@ import java.util.List;
 @Repository
 public class PlaceRepoDSLImpl implements PlaceRepoDSL {
     private final JPAQueryFactory jpaQueryFactory;
+    private final ReviewRepo reviewRepo;
     @Autowired
-    public PlaceRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
+    public PlaceRepoDSLImpl(JPAQueryFactory jpaQueryFactory, ReviewRepo reviewRepo) {
         this.jpaQueryFactory = jpaQueryFactory;
+        this.reviewRepo = reviewRepo;
     }
 
 
     @Override
-    public List<PlaceDetailDto.PlaceDetailInReview> findPlaceDetails(Long worldId, String placeId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+    public List<PlaceDetailDto.PlaceDetailInReview> findPlaceDetailInReview(Long worldId, String placeId, String suid) {
 
         QReviewEntity qReview = new QReviewEntity("qReview");
         QUserEntity qUser = new QUserEntity("qUser");
@@ -51,7 +49,8 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
                 qReview.reviewId,
                 qReview.imageUrl,
                 qUser.profileUrl,
-                qReview.createTime
+                qReview.createTime,
+                qReview.userEntity.userId
                 ))
                 .from(qReview)
                 .innerJoin(qUser)
@@ -62,11 +61,12 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
                                 (JPAExpressions.
                         select(qUserBlockLog.blockSuid)
                         .from(qUserBlockLog)
-                        .where(qUserBlockLog.userSuid.eq(userInfoDto.getSuid()).and(qUserBlockLog.isBlocking.eq("Y"))))
+                        .where(qUserBlockLog.userSuid.eq(suid).and(qUserBlockLog.isBlocking.eq("Y"))))
                         .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
                         .and(qReview.placeEntity.placeId.eq(placeId)))
                 .orderBy(qReview.createTime.desc())
                 .fetch();
+
         return results;
     }
 }

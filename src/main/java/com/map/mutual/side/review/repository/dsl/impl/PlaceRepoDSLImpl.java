@@ -50,7 +50,7 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
                 qReview.imageUrl,
                 qUser.profileUrl,
                 qReview.createTime,
-                qReview.userEntity.suid
+                qReview.userEntity.userId
                 ))
                 .from(qReview)
                 .innerJoin(qUser)

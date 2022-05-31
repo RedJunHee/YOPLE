@@ -33,12 +33,12 @@ public class PlaceDetailDto {
     @NoArgsConstructor
     public static class PlaceDetailInReview {
         private Long reviewId;
-        private String suid;
+        private String userId;
         private String[] imageUrls;
         private String profileUrl;
 
         @QueryProjection
-        public PlaceDetailInReview(Long reviewId, String imageUrls, String profileUrl, LocalDateTime createDt, String suid) {
+        public PlaceDetailInReview(Long reviewId, String imageUrls, String profileUrl, LocalDateTime createDt, String userId) {
             this.reviewId = reviewId;
             this.profileUrl = profileUrl;
             if (imageUrls != null) {
@@ -46,7 +46,7 @@ public class PlaceDetailDto {
             } else {
                 this.imageUrls = new String[0];
             }
-            this.suid = suid;
+            this.userId = userId;
         }
 
         public static class PlaceDetailInReviewComparatorByImageNum implements Comparator<PlaceDetailInReview> {

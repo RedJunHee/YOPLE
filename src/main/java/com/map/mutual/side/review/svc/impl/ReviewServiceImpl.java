@@ -268,13 +268,6 @@ public class ReviewServiceImpl implements ReviewService {
                     PlaceEntity.builder().placeId(placeId).build());
 
 
-            placeDetailInReview.forEach(data -> {
-                try {
-                    data.setSuid(CryptUtils.AES_Encode(data.getSuid()));
-                } catch (YOPLEServiceException e) {
-                    e.printStackTrace();
-                }
-            });
 
             result = PlaceDetailDto.builder()
                     .place(placeDto)

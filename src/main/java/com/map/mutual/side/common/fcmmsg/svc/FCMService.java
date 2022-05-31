@@ -1,7 +1,10 @@
 package com.map.mutual.side.common.fcmmsg.svc;
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.messaging.*;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.entity.ApiLog;
@@ -63,6 +66,7 @@ public class FCMService {
         if (userEntity.getFcmToken() == null) {
             userEntity.setFcmToken(token);
             userInfoRepo.save(userEntity);
+            registry.complete(true);
         } else if (userEntity.getFcmToken().equals(token)) {
             return;
         } else if (userEntity.getFcmToken().equals(FCMConstant.EXPIRED)) {
@@ -136,7 +140,7 @@ public class FCMService {
             if (!worldUserMappingEntities.isEmpty()) {
                 worldUserMappingEntities.forEach(data -> {
                     try {
-                        TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
+                        FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
                     } catch (FirebaseMessagingException e) {
                         try {
                             throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);

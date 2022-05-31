@@ -107,10 +107,6 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
         }
 
 
-        if (result.getInviterUserId() == null && result.getInviterUserId().equals("")) {
-            result.setInviterUserId("...");
-        }
-
         //Emoji 끌어오기.
         List<ReviewDto.ReviewWithInviterDto.TempEmoji> emojis = new ArrayList<>();
         List<EmojiStatusEntity> emojiStatusEntityList = emojiStatusRepo.findAllByReviewIdAndWorldId(reviewId, worldId);

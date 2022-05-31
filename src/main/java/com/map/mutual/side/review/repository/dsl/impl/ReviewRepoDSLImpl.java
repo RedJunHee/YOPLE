@@ -92,7 +92,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                 .where(qReviewWorldMappingEntity.reviewEntity.reviewId.eq(reviewId)
                         .and(qReviewWorldMappingEntity.worldEntity.worldId.eq(worldId))
                         .and(qWorldUserMappingEntity1.worldEntity.worldId.eq(worldId))
-                        .and(qWorldUserMappingEntity2.worldEntity.worldId.eq(worldId))
+//                        .and(qWorldUserMappingEntity2.worldEntity.worldId.eq(worldId))
                         .and(qReview.userEntity.suid
                                 .notIn(JPAExpressions
                                         .select(qUserBlockLog.blockSuid)
@@ -103,8 +103,12 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                 .fetchOne();
 
         if (result == null) {
-//            throw new YOPLETransactionException(ApiStatusCode.THIS_REVIEW_IS_BLOCK_USERS_REVIEW);
             throw new YOPLEServiceException(ApiStatusCode.THIS_REVIEW_IS_BLOCK_USERS_REVIEW);
+        }
+
+
+        if (result.getInviterUserId() == null && result.getInviterUserId().equals("")) {
+            result.setInviterUserId("...");
         }
 
         //Emoji 끌어오기.

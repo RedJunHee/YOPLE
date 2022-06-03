@@ -51,14 +51,21 @@ public class FCMController {
 
 
 
+
+
+
+
+
+
+    // TODO: 2022/05/31 삭제 -- TEST AREA ----
     @PostMapping("/test")
-    public void tests(@RequestBody  UserInfoDto info) throws YOPLEServiceException {
+    public ResponseEntity<ResponseJsonObject> tests(@RequestBody  UserInfoDto info)  {
         log.info(info.getName());
         log.info(info.getProfileUrl());
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(info), HttpStatus.OK);
     }
     @PostMapping("/testP")
-    public ResponseEntity<ResponseJsonObject> teststs(@RequestParam  String params) throws YOPLEServiceException {
-        log.info(params);
+    public ResponseEntity<ResponseJsonObject> teststs(@RequestParam  String params)  {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
 
     }

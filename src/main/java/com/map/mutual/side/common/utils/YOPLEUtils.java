@@ -100,12 +100,22 @@ public class YOPLEUtils {
     }
 
     public static String ClearXSS(String value) {
-        value = value.replaceAll("<", "").replaceAll(">", "");
-        value = value.replaceAll("\\(", "").replaceAll("\\)", "");
-        value = value.replaceAll("'", "");
+        value = value.replaceAll("<", "& lt;").replaceAll(">", "& gt;");
+        value = value.replaceAll("\\(", "& #40;").replaceAll("\\)", "& #41;");
+        value = value.replaceAll("'", "& #39;");
         value = value.replaceAll("eval\\((.*)\\)", "");
         value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']", "\"\"");
         value = value.replaceAll("script", "");
+
+        return value;
+    }
+    public static String DeClearXSS(String value) {
+        value = value.replaceAll("& lt;","<").replaceAll( "& gt;",">");
+        value = value.replaceAll( "& #40;", "\\(").replaceAll( "& #41;", "\\)");
+        value = value.replaceAll( "& #39;", "'");
+//        value = value.replaceAll( "\"\"", "[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']");
+//        value = value.replaceAll( "", "script");
+
         return value;
     }
 

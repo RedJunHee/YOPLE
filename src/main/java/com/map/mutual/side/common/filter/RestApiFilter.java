@@ -17,21 +17,26 @@ import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+
 /**
  * Class       : ReadableParamWrapperFilter
  * Author      : 조 준 희
  * Description : HttpServletWrapper로 요청 정보를 변경 + 필터로 래퍼클래스를 프로세스하게 만듬.
  * History     : [2022-03-16] - 조 준희 - Class Create
+ * History     : [2022-06-02] - 김재중 - Class 명 RestApiFilter 변경
+ *                            - Request, Response, Controller XSS 처리 적용
  */
 @WebFilter(urlPatterns = "/*")
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ReadableParamWrapperFilter implements Filter {
+public class RestApiFilter implements Filter {
 
 
     @Override
@@ -43,7 +48,19 @@ public class ReadableParamWrapperFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
         ReadableParamWrapper wrapper = new ReadableParamWrapper((HttpServletRequest) servletRequest);
-        filterChain.doFilter(wrapper, servletResponse);
+        HttpResponseWrapper responseWrapper = new HttpResponseWrapper((HttpServletResponse) servletResponse);
+
+        String responseMessage = responseWrapper.getDataStreamToString();
+        responseMessage = YOPLEUtils.DeClearXSS(responseMessage);
+        byte[] responseMessageBytes = responseMessage.getBytes(StandardCharsets.UTF_8);
+        int contentLength = responseMessageBytes.length;
+
+        servletResponse.setContentLength(contentLength);
+        servletResponse.getOutputStream().write(responseMessageBytes);
+        servletResponse.flushBuffer();
+
+        filterChain.doFilter(wrapper, responseWrapper);
+
     }
 
     @Override
@@ -58,49 +75,47 @@ public class ReadableParamWrapperFilter implements Filter {
         private Map<String, String[]> params = new HashMap<>();
 
 
-        public ReadableParamWrapper(HttpServletRequest request)  {
+        public ReadableParamWrapper(HttpServletRequest request) {
 
             super(request);
             this.params.putAll(request.getParameterMap()); // 원래의 파라미터 저장
 
             String charEncoding = request.getCharacterEncoding();
-            this.encoding = StringUtils.isBlank(charEncoding)? StandardCharsets.UTF_8 : Charset.forName(charEncoding);
+            this.encoding = StringUtils.isBlank(charEncoding) ? StandardCharsets.UTF_8 : Charset.forName(charEncoding);
 
-            try{
+            try {
                 InputStream is = request.getInputStream();
                 this.rawData = IOUtils.toByteArray(is); //
 
                 String collect = this.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
                 this.rawData = YOPLEUtils.ClearXSS(collect).getBytes(StandardCharsets.UTF_8);
                 //body가 비었을 경우.
-                if(StringUtils.isEmpty(collect)){
-                    return ;
+                if (StringUtils.isEmpty(collect)) {
+                    return;
                 }
 
                 //파일 업로드인 ContentType이 MULTIPART FORM일 경우 로깅 제외.
-                if(request.getContentType() != null && request.getContentType()
-                        .contains(ContentType.MULTIPART_FORM_DATA.getMimeType())){
+                if (request.getContentType() != null && request.getContentType()
+                        .contains(ContentType.MULTIPART_FORM_DATA.getMimeType())) {
                     return;
                 }
 
                 JSONParser jsonParser = new JSONParser();
                 Object parser = jsonParser.parse(collect);
 
-                if(parser instanceof JSONArray){
+                if (parser instanceof JSONArray) {
                     JSONArray jsonArray = (JSONArray) jsonParser.parse(collect);
-                    setParameter("requestArrayParam",jsonArray.toJSONString());
-                }
-                else{
+                    setParameter("requestArrayParam", jsonArray.toJSONString());
+                } else {
                     JSONObject jsonObject = (JSONObject) jsonParser.parse(collect);
                     Iterator iterator = jsonObject.keySet().iterator();
-                    while(iterator.hasNext()){
+                    while (iterator.hasNext()) {
                         String key = (String) iterator.next();
-                        String value= jsonObject.get(key).toString().replace("\"","\\\"");
-                        setParameter(key,YOPLEUtils.ClearXSS(value));
+                        String value = jsonObject.get(key).toString().replace("\"", "\\\"");
+                        setParameter(key, YOPLEUtils.ClearXSS(value));
                     }
                 }
-            }catch(Exception e)
-            {
+            } catch (Exception e) {
                 logger.error("ReadableParamWrapper init error");
             }
 
@@ -110,11 +125,12 @@ public class ReadableParamWrapperFilter implements Filter {
 
         /**
          * request 에 담긴 정보를 JSONObject 형태로 반환한다.
+         *
          * @param request
          * @return
          */
-        private  Map<String,String> getParams(HttpServletRequest request) {
-            Map<String,String> map = new HashMap<>();
+        private Map<String, String> getParams(HttpServletRequest request) {
+            Map<String, String> map = new HashMap<>();
             Enumeration<String> params = request.getParameterNames();
             while (params.hasMoreElements()) {
                 String param = params.nextElement();
@@ -123,6 +139,7 @@ public class ReadableParamWrapperFilter implements Filter {
             }
             return map;
         }
+
         @Override
         public String getParameter(String name) {
             String[] paramArray = getParameterValues(name);
@@ -160,10 +177,10 @@ public class ReadableParamWrapperFilter implements Filter {
                 result = new String[dummyParamValue.length];
                 System.arraycopy(dummyParamValue, 0, result, 0, dummyParamValue.length);
             }
-            if(result != null) {
+            if (result != null) {
                 int index = 0;
                 for (String value : result) {
-                    result[index]  = YOPLEUtils.ClearXSS(value);
+                    result[index] = YOPLEUtils.ClearXSS(value);
                     index++;
                 }
             }
@@ -211,4 +228,54 @@ public class ReadableParamWrapperFilter implements Filter {
         }
 
     }
+
+
+    //    response
+    public class HttpResponseWrapper extends HttpServletResponseWrapper {
+        ByteArrayOutputStream byteArrayOutputStream;
+        ResponseBodyServletOutputStream responseBodyServletOutputStream;
+
+        public HttpResponseWrapper(HttpServletResponse response) {
+            super(response);
+            byteArrayOutputStream = new ByteArrayOutputStream();
+        }
+
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+            if (responseBodyServletOutputStream == null) {
+                responseBodyServletOutputStream = new ResponseBodyServletOutputStream(byteArrayOutputStream);
+            }
+            return responseBodyServletOutputStream;
+        }
+
+        // Response Body Get
+        public String getDataStreamToString() {
+            return new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+        }
+
+        private class ResponseBodyServletOutputStream extends ServletOutputStream {
+
+            private final DataOutputStream outputStream;
+
+            public ResponseBodyServletOutputStream(OutputStream output) {
+                this.outputStream = new DataOutputStream(output);
+            }
+
+            @Override
+            public void write(int b) throws IOException {
+                outputStream.write(b);
+            }
+
+            @Override
+            public boolean isReady() {
+                return true;
+            }
+
+            @Override
+            public void setWriteListener(WriteListener listener) {
+            }
+        }
+
+    }
+
 }

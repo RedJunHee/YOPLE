@@ -49,7 +49,7 @@ public class FCMService {
     @Autowired
     private WorldRepo worldRepo;
 
-    public ResponseEntity<ResponseJsonObject> generateToken(String token) {
+    public ResponseEntity<ResponseJsonObject> generateToken(String token) throws YOPLEServiceException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
         UserEntity userEntity;
@@ -76,21 +76,25 @@ public class FCMService {
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private void registryFcmToken(UserEntity userEntity, String token) {
+    private void registryFcmToken(UserEntity userEntity, String token) throws YOPLEServiceException {
         List<FcmTopicEntity> fcmTopicEntities = new ArrayList<>();
         try {
 
             userEntity.setFcmToken(token);
             userInfoRepo.save(userEntity);
 
-            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(CryptUtils.AES_Decode(userEntity.getSuid()));
+            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(userEntity.getSuid());
             if (!worldUserMappingEntities.isEmpty()) {
                 worldUserMappingEntities.forEach(data -> {
                     try {
                         TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
                         log.info(response);
                     } catch (FirebaseMessagingException e) {
-                        throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);
+                        try {
+                            throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);
+                        } catch (YOPLEServiceException ex) {
+                            log.error(ex.getMessage());
+                        }
                     }
                     FcmTopicEntity fcmTopicEntity = FcmTopicEntity.builder().fcmToken(token).worldId(data.getWorldId()).build();
                     fcmTopicEntities.add(fcmTopicEntity);
@@ -102,33 +106,35 @@ public class FCMService {
         }
     }
 
-    public void deleteFcmToken(UserInfoDto userInfoDto) {
+    @Async(value = "YOPLE-Executor")
+    public void deleteFcmToken(UserInfoDto userInfoDto) throws YOPLEServiceException {
         List<FcmTopicEntity> fcmTopicEntities;
 
-        try {
-            UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+        UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
 
-            if (userEntity.getFcmToken() != null) {
-                userEntity.setFcmToken(FCMConstant.EXPIRED);
-                fcmTopicEntities = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
+        if (userEntity.getFcmToken() != null) {
+            userEntity.setFcmToken(FCMConstant.EXPIRED);
+            fcmTopicEntities = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
 
-                fcmTopicEntities.forEach(data -> {
+            fcmTopicRepository.deleteAll(fcmTopicEntities);
+            userInfoRepo.save(userEntity);
+
+            fcmTopicEntities.forEach(data -> {
+                try {
+                    FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).unsubscribeFromTopic(Collections.singletonList(data.getFcmToken()), String.valueOf(data.getWorldId()));
+                } catch (FirebaseMessagingException e) {
                     try {
-                        FirebaseMessaging.getInstance().unsubscribeFromTopic(Collections.singletonList(data.getFcmToken()), String.valueOf(data.getWorldId()));
-                    } catch (FirebaseMessagingException e) {
-                        throw new YOPLEServiceException(ApiStatusCode.UNSUBSCRIPTION_FCM_TOPIC_FAIL);
+                        throw new YOPLEServiceException(ApiStatusCode.UNSUBSCRIPTION_FCM_TOPIC_FAIL); // TODO: 2022/05/18 Error 나도 fcm store에는 문제가 없음. 토큰만 갱신할 지, 서비스 플로우 리팩토링 하기.
+                    } catch (YOPLEServiceException ex) {
+                        log.error(ex.getMessage());
                     }
-                });
-                fcmTopicRepository.deleteAll(fcmTopicEntities);
-                userInfoRepo.save(userEntity);
-            }
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+                }
+            });
         }
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException {
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException, YOPLEServiceException {
         String body;
         Map<String, String> msgData = new HashMap<>();
         try {
@@ -171,10 +177,10 @@ public class FCMService {
                 .build();
 
         Message message = Message.builder()
-                    .setToken(targetFcmToken)
-                    .setNotification(notification)
-                    .putAllData(msgData)
-                    .build();
+                .setToken(targetFcmToken)
+                .setNotification(notification)
+                .putAllData(msgData)
+                .build();
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
         } catch (FirebaseMessagingException e) {
@@ -184,7 +190,7 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) {
+    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) throws YOPLEServiceException {
         String body;
         String decodedSuid;
         try {
@@ -196,7 +202,7 @@ public class FCMService {
         switch (msgType) {
             case B:
                 String userId = userInfoRepo.findBySuid(decodedSuid).getUserId();
-                String worldName  = worldRepo.findByWorldId(worldId).getWorldName();
+                String worldName = worldRepo.findByWorldId(worldId).getWorldName();
                 body = worldName
                         + "에 "
                         + userId
@@ -215,10 +221,10 @@ public class FCMService {
                 .build();
 
         Message message = Message.builder()
-                    .setTopic(String.valueOf(worldId))
-                    .setNotification(notification)
-                    .putAllData(msgData)
-                    .build();
+                .setTopic(String.valueOf(worldId))
+                .setNotification(notification)
+                .putAllData(msgData)
+                .build();
 
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);

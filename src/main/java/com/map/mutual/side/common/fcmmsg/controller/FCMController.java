@@ -3,7 +3,6 @@ package com.map.mutual.side.common.fcmmsg.controller;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
-import com.map.mutual.side.auth.repository.UserInfoRepo;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -13,10 +12,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -38,21 +34,23 @@ public class FCMController {
     @Autowired
     private FCMService fcmService;
 
-    @Autowired
-    private UserInfoRepo userInfoRepo;
-
-    @PostMapping("/generateToken")
-    public ResponseEntity<ResponseJsonObject> generateToken(@RequestParam String token) {
+    @PostMapping("/generate")
+    public ResponseEntity<ResponseJsonObject> generateToken(@RequestBody String token) throws YOPLEServiceException {
         return fcmService.generateToken(token);
     }
+
+
+    // TODO: 2022/05/11 테스트 완료 후 아래 맵핑 리스트 삭제 예정
+
+
+
 
     @PostMapping("/test")
     public ResponseEntity<ResponseJsonObject> tests(@RequestParam String token,
                                                     @RequestParam String title,
-                                                    @RequestParam String body) {
+                                                    @RequestParam String body) throws YOPLEServiceException {
         try {
-            Notification notification = Notification.builder().setTitle(title).setBody(body).build();
-
+            Notification notification = Notification.builder().setTitle(title).setImage("https://i.ibb.co/30J0Z5L/Kakao-Talk-Image-2022-05-16-17-14-03.png").setBody(body).build();
             Message message = Message.builder()
                     .putData("data", "fcmMsgTest")
                     .setToken(token)
@@ -71,7 +69,7 @@ public class FCMController {
     @PostMapping("/sendNotification/topic")
     public void testTopic(@RequestParam FCMConstant.MSGType msgType,
                           @RequestParam Long worldId,
-                          @RequestParam String userId) {
+                          @RequestParam String userId) throws YOPLEServiceException {
         CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(msgType, worldId, userId);
         response.thenAccept(d -> {
             if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
@@ -85,7 +83,7 @@ public class FCMController {
     @PostMapping("/sendNotification/token")
     public void testToken(@RequestParam FCMConstant.MSGType msgType,
                           @RequestParam String userId,
-                          @RequestParam Long worldId) throws InterruptedException {
+                          @RequestParam Long worldId) throws InterruptedException, YOPLEServiceException {
         String token = "d-fw6-17tkDokesl9fmT6q:APA91bGQUn4OT1b3reXhqEcdzb4UCRFdUkCadoxdWtsCTz9YOhMdlelQoss_Vnrl1GKEsuMB-AOPm9y_padkMaa8duVvKERddBfn_mDdP29VlV9sWUO27XvUkPX3636m7DBjQi-ynyEV";
 
         CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationToken(token, msgType, userId, worldId, null);
@@ -101,13 +99,13 @@ public class FCMController {
 //
     @PostMapping("/subscribeTopic")
     public void testSubscribe(@RequestParam String token,
-                          @RequestParam String topic) throws FirebaseMessagingException {
+                          @RequestParam String topic) throws FirebaseMessagingException, YOPLEServiceException {
         try {
             TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), topic);
             if (!response.getErrors().isEmpty()) {
                 throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
             }
-        } catch (FirebaseMessagingException e) {
+        } catch (FirebaseMessagingException | YOPLEServiceException e) {
             throw e;
         }
     }

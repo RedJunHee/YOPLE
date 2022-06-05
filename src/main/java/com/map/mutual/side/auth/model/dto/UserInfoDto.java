@@ -28,6 +28,8 @@ public class UserInfoDto {
     // TODO: 2022/04/10 프로필 사진 경로 패턴 벨리데이션 추가 필요.
     private String profileUrl;
 
+    private String profilePinUrl;
+
     @JsonProperty(value = "tos")
     @Valid
     private UserTOSDto userTOSDto;

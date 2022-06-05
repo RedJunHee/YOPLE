@@ -39,6 +39,9 @@ public class UserEntity extends CreateDtEntity implements Persistable<String> {
     @Column(name="PROFILE_URL", columnDefinition = "VARCHAR(100)")
     private String profileUrl;
 
+    @Column(name="PROFILE_PIN_URL", columnDefinition = "VARCHAR(100)")
+    private String profilePinUrl;
+
     @Column(name="FCM_TOKEN", columnDefinition = "VARCHAR(170)")
     private String fcmToken;
 

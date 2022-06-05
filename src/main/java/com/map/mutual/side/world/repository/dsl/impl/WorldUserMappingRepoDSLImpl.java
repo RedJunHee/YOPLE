@@ -209,8 +209,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
     // 월드 초대 코드로 월드에 입장하려는 사용자 SUID가 월드에 이미 존재하는지 체크하는 쿼리.
     // 존재하면 null 존재하지않으면 [입장 worldId]
     @Override
-    public Long exsistUserCodeInWorld (String worldinvitationCode, String suid) throws YOPLEServiceException
-    {
+    public Long exsistUserCodeInWorld (String worldinvitationCode, String suid) throws YOPLEServiceException {
 
         Long worldId = jpaQueryFactory.select(QWorldUserMappingEntity.worldUserMappingEntity.worldId)
                 .from(QWorldUserMappingEntity.worldUserMappingEntity) // 월드초대 코드를 지닌 사용자의 월드정보를 알아낸다.
@@ -302,9 +301,16 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
 
                 // 사용자가 참여하고있는 월드와 참여 날짜를 가져옴.
                 "INSERT INTO #MY_WORLD \n"+
-                "SELECT WORLD_ID, CREATE_DT \n" +
-                "    FROM WORLD_JOIN_LOG  \n" +
-                "  WHERE USER_SUID = ? \n" +
+                "SELECT B.WORLD_ID, CREATE_DT\n" +
+                "  FROM WORLD_USER_MAPPING A\n" +
+                " INNER JOIN (\n" +
+                "    SELECT WORLD_ID ,  MAX(CREATE_DT) AS 'CREATE_DT'\n" +
+                "      FROM WORLD_JOIN_LOG\n" +
+                "     WHERE USER_SUID = ? \n" +
+                "     GROUP BY WORLD_ID\n" +
+                " ) B\n" +
+                "    ON A.WORLD_ID = B.WORLD_ID\n" +
+                " WHERE A.USER_SUID = ? \n" +
 
                 "CREATE TABLE #BLOCK(\n" +
                 "    BLOCK_SUID VARCHAR(18),\n" +
@@ -317,14 +323,14 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 "  FROM USER_BLOCK_LOG \n" +
                 " WHERE USER_SUID = ? \n" +
 
-                "SELECT u.[USER_ID],u.PROFILE_URL,w.NAME, other.CREATE_DT \n" +
+                "SELECT u.[USER_ID], u.PROFILE_URL, w.NAME, other.CREATE_DT \n" +
                 "  FROM #MY_WORLD as my \n" +
                 " INNER JOIN WORLD_JOIN_LOG as other \n" +
                 "    ON other.CREATE_DT > my.ENTRY_DATE " +
                 "   AND my.WORLD_ID = other.WORLD_ID \n" +
-                "  LEFT JOIN USER_INFO as u \n" +
+                " INNER JOIN USER_INFO as u \n" +
                 "    ON other.USER_SUID = u.SUID \n" +
-                "  LEFT JOIN WORLD w \n" +
+                " INNER JOIN WORLD w \n" +
                 "    ON my.WORLD_ID = w.WORLD_ID \n" +
                 "  LEFT JOIN #BLOCK b\n" +
                 "    ON  b.START_DT <= other.CREATE_DT  AND other.CREATE_DT >= b.END_DT\n" +
@@ -334,7 +340,8 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 " DROP TABLE #BLOCK ";
 
         Query nativeQuery  = entityManager.createNativeQuery(sql).setParameter(1,suid)
-                .setParameter(2,suid);
+                .setParameter(2,suid)
+                .setParameter(3,suid);
 
         List<Object[]> result =  nativeQuery.getResultList();
 
@@ -344,7 +351,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
                 notidate= (Timestamp)obj[3];
 
             notis.add(WorldEntryNotiDto.builder().userId( obj[0].toString())
-                    .userProfileUrl(obj[1].toString())
+                    .userProfileUrl( (obj[1] == null ) ? null :obj[1].toString()) // 프로필 사진은 Optional Column
                     .worldName(obj[2].toString())
                     .notiDate( notidate.toLocalDateTime() )
                     .build());

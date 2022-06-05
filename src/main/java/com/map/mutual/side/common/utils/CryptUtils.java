@@ -66,7 +66,7 @@ public class CryptUtils {
      * @return 평문을 AES256으로 암호화 후 Base64인코딩한 문자열
      * @throws Exception
      */
-    public static String AES_Encode(String text) {
+    public static String AES_Encode(String text) throws YOPLEServiceException {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
@@ -89,7 +89,7 @@ public class CryptUtils {
      * @return 복호화된 평문을 Base64인코딩한 문자열
      * @throws Exception
      */
-    public static String AES_Decode(String cipherText)  {
+    public static String AES_Decode(String cipherText) throws YOPLEServiceException {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");

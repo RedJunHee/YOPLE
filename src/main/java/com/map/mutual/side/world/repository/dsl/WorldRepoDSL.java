@@ -1,6 +1,7 @@
 package com.map.mutual.side.world.repository.dsl;
 
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.world.model.dto.WorldDetailResponseDto;
 import com.map.mutual.side.world.model.entity.WorldEntity;
 
@@ -11,5 +12,5 @@ import com.map.mutual.side.world.model.entity.WorldEntity;
  * History     : [2022-03-21] - 조 준희 - Class Create
  */
 public interface WorldRepoDSL {
-    WorldDetailResponseDto getWorldDetail(Long worldId, String requestUser);
+    WorldDetailResponseDto getWorldDetail(Long worldId, String requestUser) throws YOPLEServiceException;
 }

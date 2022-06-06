@@ -23,14 +23,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class HttpRequestWrapper extends HttpServletRequestWrapper {
-    private final Logger logger = LogManager.getLogger(HttpRequestWrapper.class);
+public class HttpRequestReadableParamWrapper extends HttpServletRequestWrapper {
+    private final Logger logger = LogManager.getLogger(HttpRequestReadableParamWrapper.class);
     private final Charset encoding;
     private byte[] rawData; // body
     private Map<String, String[]> params = new HashMap<>();
 
 
-    public HttpRequestWrapper(HttpServletRequest request) {
+    public HttpRequestReadableParamWrapper(HttpServletRequest request) {
 
         super(request);
         this.params.putAll(request.getParameterMap()); // 원래의 파라미터 저장

@@ -34,7 +34,7 @@ public class HttpServletFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
-        HttpRequestWrapper wrapper = new HttpRequestWrapper((HttpServletRequest) servletRequest);
+        HttpRequestReadableParamWrapper wrapper = new HttpRequestReadableParamWrapper((HttpServletRequest) servletRequest);
         HttpResponseWrapper responseWrapper = new HttpResponseWrapper((HttpServletResponse) servletResponse);
 
         filterChain.doFilter(wrapper, responseWrapper);

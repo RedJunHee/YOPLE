@@ -30,7 +30,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // 사용자 정의 예외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseJsonObject> handleException(Exception ex) {
-        logger.debug("RuntimeExceptionHandler : " + ex.getMessage());
+        logger.error(String.format("RuntimeExceptionHandler : %s \n StackTrace : " , ex.getMessage(), ex.getStackTrace())  );
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.BAD_REQUEST);
     }
 
@@ -44,7 +44,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // @RequestBody, @RequestHeader 유효성 실패.
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ResponseJsonObject> handleConstraintViolationException(ConstraintViolationException ex) {
-        logger.debug("파라미터 유효성 체크 실패. : " + ex.getMessage());
+        logger.error("파라미터 유효성 체크 실패. : " + ex.getMessage());
         ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
 
         if(ex.getConstraintViolations().isEmpty() == false)
@@ -65,7 +65,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   HttpStatus status, WebRequest request) {
 
             // "유효성 검사 실패 : " + ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-        logger.debug("파라미터 유효성 체크 실패. : " + ex.getMessage());
+        logger.error("파라미터 유효성 체크 실패. : " + ex.getMessage());
         ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
 
         if(ex.getBindingResult().hasErrors())
@@ -83,7 +83,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
     @ExceptionHandler({YOPLETransactionException.class})
     public ResponseEntity<ResponseJsonObject> handleYOPLETranServiceException(YOPLETransactionException ex) {
-        logger.debug("YOPLEServiceExceptionHandler : " + ex.getMessage());
+        logger.error("YOPLEServiceExceptionHandler : " + ex.getMessage());
         // HttpStatus 200 정상적인 응답이지만 서비스 응답코드는 ex.getResponseJsonObject에 담김.
         return new ResponseEntity<>(ex.getResponseJsonObject(), HttpStatus.OK);
     }

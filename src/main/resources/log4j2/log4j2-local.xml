@@ -5,8 +5,8 @@
     <!--공통 속성 설정 -->
     <Properties>
         <Property name="logFileName">yople-log</Property>
-        <Property name="consoleLayout">[YOPLE LOG] - [%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%c.class - %L Line] - %m%n</Property>
-        <Property name="fileLayout">[%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%c.class - %L Line] - %m%n</Property>
+        <Property name="consoleLayout">[YOPLE LOG] - [%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%F(%M) - %L Line] - %m%n</Property>
+        <Property name="fileLayout">[%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%F(%M) - %L Line] - %m%n</Property>
     </Properties>
 
     <!-- Log Appender 설정 -->
@@ -41,7 +41,7 @@
                      filePattern="./logs/api/api.%d{yyyy-MM-dd}_%i.log">
             <PatternLayout pattern="${fileLayout}" />
             <!--LevelRangeFilter필터를 사용할때에 단일 level의 필터만 허용한다. -->
-            <LevelRangeFilter minLevel="info" maxLevel="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <LevelRangeFilter minLevel="DEBUG" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="1KB" />
                 <TimeBasedTriggeringPolicy interval="1" />

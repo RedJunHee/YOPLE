@@ -32,7 +32,7 @@ build/
 
 
 ### 로컬 개발 logs 폴더
-!**/logs/
+/logs/
 
 ### VS Code ###
 .vscode/

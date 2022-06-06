@@ -89,8 +89,7 @@ public class JwtTokenProvider {
                     .setExpiration(validity)
                     .compact();
         }catch(Exception e) {
-            logger.debug("JWT Refresh Token 생성 Exception "+ e.getMessage());
-            e.printStackTrace();
+            logger.debug(" JWT Builder Error :  "+ e.getMessage());
             throw e;
         }
         return jwt;

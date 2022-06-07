@@ -11,6 +11,8 @@ import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
 import com.map.mutual.side.world.repository.dsl.WorldRepoDSL;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -22,7 +24,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public class WorldRepoDSLImpl implements WorldRepoDSL {
-
+    private final static Logger logger = LogManager.getLogger(WorldRepoDSLImpl.class);
     private final JPAQueryFactory jpaQueryFactory;
     @Autowired
     public WorldRepoDSLImpl(JPAQueryFactory jpaQueryFactory) {
@@ -62,11 +64,10 @@ public class WorldRepoDSLImpl implements WorldRepoDSL {
 
         // 없는 월드인 경우 권한없음
         if(worldDetailResponseDto == null) {
+            logger.error("존재하지 않는 월드의 상세정보 조회 시도.");
             throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
         }
-
         worldDetailResponseDto.setWorldUserCnt(worldUserCnt(worldId));
-
 
         return worldDetailResponseDto;
     }

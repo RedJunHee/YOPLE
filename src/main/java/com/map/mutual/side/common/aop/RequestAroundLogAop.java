@@ -141,7 +141,7 @@ public class RequestAroundLogAop {
             // 서비스 처리 시간 기록 종료
             stopWatch.stop();
 
-            logger.info(String.format(" %-35s API Call End - { suid :  }",request.getRequestURI(), suid ));
+            logger.info(String.format(" %-35s API Call End - { suid : %s}",request.getRequestURI(), suid ));
 
             //api 처리 정보 => INPUT + OUTPUT   ** Exception이 떨어졌을때 Exception정보도 담는지 확인 필요 함.
             apiResultDescription.append("\n[INPUT]").append(System.lineSeparator())

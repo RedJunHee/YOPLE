@@ -58,10 +58,10 @@ public class WorldController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 생성하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
+            logger.debug("월드 생성하기 Exception : {}", e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e){
-            logger.error("월드 생성하기 ERROR : " + e.getMessage());
+            logger.error("월드 생성하기 ERROR : {}", e.getMessage());
             throw e;
         }
     }
@@ -79,20 +79,17 @@ public class WorldController {
             // 1. 월드 수정하기.
             worldService.updateWorld(worldDto);
 
-            // TODO: 2022-04-06 월드 수정 후 수정 된 월드 정보를 응답 안해주고 있음. 체크 필요.
-
             // 2. 응답 생성.
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK);
-
 
             // 3. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 수정하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
+            logger.debug("월드 수정하기 Exception : {}", e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e){
-            logger.error("월드 수정하기 ERROR : " + e.getMessage());
+            logger.error("월드 수정하기 ERROR : {}", e.getMessage());
             throw e;
         }
     }
@@ -116,7 +113,6 @@ public class WorldController {
             // 2. 월드 상세정보 조회하기.
             worldDetail = worldService.getWorldDetail(worldId,userInfoDto.getSuid());
 
-
             // 3. 응답 생성.
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(worldDetail);
 
@@ -124,7 +120,7 @@ public class WorldController {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(Exception e){
-            logger.error("월드 상세정보 조회 ERROR : + " + e.getMessage());
+            logger.error("월드 상세정보 조회 ERROR : {}", e.getMessage());
             throw e;
         }
     }
@@ -139,26 +135,26 @@ public class WorldController {
     @GetMapping(value = "/user/worlds")
     public ResponseEntity<ResponseJsonObject> activityWorlds(@RequestParam(value = "isDetails", required = false, defaultValue = "N") @Valid @Pattern(regexp = "Y|N") String isDetails){
         try{
-            WorldDetailResponseDto worldDetail ;
 
-            // 2. 사용자 SUID 가져오기.
+            // 1. 사용자 SUID 가져오기.
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
 
-            // 3. 참여 중인 월드 리스트 조회하기.
+            // 2. 참여 중인 월드 리스트 조회하기.
             List<WorldDto> activityWorldDtoList = worldService.getWorldList(userInfoDto.getSuid(), isDetails);
 
+            logger.debug("현재 참여 중인 월드 카운트 : {}", activityWorldDtoList.stream().count());
 
-            // 4. 응답 객체 생성.
+            // 3. 응답 객체 생성.
             Map<String, Object> responseObj = new HashMap<>();
             responseObj.put("activityWorlds",activityWorldDtoList);
             ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(responseObj);
 
-            // 5. 리턴.
+            // 4. 리턴.
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         }catch(Exception e){
-            logger.error("참여 중인 월드 조회 ERROR : + " + e.getMessage());
+            logger.error("참여 중인 월드 조회 ERROR : {}", e.getMessage());
             throw e;
         }
 
@@ -173,7 +169,6 @@ public class WorldController {
     @GetMapping(value = "/review/worlds")
     public ResponseEntity<ResponseJsonObject> getWorldOfReivew(@RequestParam("reviewId") Long reviewId){
         try{
-
             ResponseJsonObject responseJsonObject;
 
             // 1. 사용자 SUID 가져오기
@@ -182,6 +177,7 @@ public class WorldController {
 
             // 2. 리뷰가 등록된 월드 리스트 조회.
             List<WorldDto> worlds = worldService.getWorldOfReivew(reviewId, userInfoDto.getSuid());
+            logger.debug("리뷰가 등록된 월드 카운트 : {}",worlds.stream().count());
 
             // 3. 응답 설정.
             Map<String, Object> response = new HashMap<>();
@@ -191,7 +187,7 @@ public class WorldController {
             // 4. 리턴.
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
         }catch(Exception e){
-            logger.error("리뷰가 등록된 월드 조회 ERROR : + " + e.getMessage());
+            logger.error("리뷰가 등록된 월드 조회 ERROR : {}", e.getMessage());
             throw e;
         }
 
@@ -220,10 +216,10 @@ public class WorldController {
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 초대 코드 유효성 체크 ERROR : " + e.getResponseJsonObject().getMeta().toString());
+            logger.debug("월드 초대 코드 유효성 체크 Exception : {}", e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e){
-            logger.error("월드 초대 코드 유효성 체크 ERROR : + " + e.getMessage());
+            logger.error("월드 초대 코드 유효성 체크 ERROR : {}", e.getMessage());
             throw e;
         }
     }
@@ -250,16 +246,16 @@ public class WorldController {
             if ((worldAuthResponseDto = worldService.authCheck(worldId, userInfoDto.getSuid())) != null)
                 responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(worldAuthResponseDto);
             else
-                responseJsonObject = ResponseJsonObject.withStatusCode(ApiStatusCode.FORBIDDEN);
+                throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN,"월드 입장 권한 없음.");
 
             // 3. 리턴.
             return new ResponseEntity<>(responseJsonObject, HttpStatus.OK);
 
         }catch(YOPLEServiceException e){
-            logger.error("월드 입장 권한 체크 ERROR : " + e.getResponseJsonObject().getMeta().toString());
+            logger.debug("월드 입장 권한 체크 Exception : {}", e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e){
-            logger.error("월드 입장 권한 체크 ERROR : + " + e.getMessage());
+            logger.error("월드 입장 권한 체크 ERROR : {}", e.getMessage());
             throw e;
         }
 

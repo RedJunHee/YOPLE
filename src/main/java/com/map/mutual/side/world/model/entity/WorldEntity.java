@@ -65,4 +65,14 @@ public class WorldEntity extends TimeEntity implements Persistable<Long> {
     public boolean isNew() {
         return getCreateTime() == null;
     }
+
+    @Override
+    public String toString() {
+        return "WorldEntity{" +
+                "worldId=" + worldId +
+                ", worldOwner='" + worldOwner + '\'' +
+                ", worldName='" + worldName + '\'' +
+                ", worldDesc='" + worldDesc + '\'' +
+                '}';
+    }
 }

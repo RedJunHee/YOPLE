@@ -26,4 +26,5 @@ public class NotiDto {
         this.topNoti = topNoti;
         this.middleNoti = middleNoti;
     }
+
 }

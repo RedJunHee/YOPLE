@@ -23,4 +23,13 @@ public class UserReportDto {
     public void suidChange(String decodingSuid){
         reportSuid = decodingSuid;
     }
+
+    @Override
+    public String toString() {
+        return "UserReportDto{" +
+                "reportSuid='" + reportSuid + '\'' +
+                ", reportTitle='" + reportTitle + '\'' +
+                ", reportDesc='" + reportDesc + '\'' +
+                '}';
+    }
 }

@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Class       : ReadableParamWrapperFilter
+ * Class       : HttpServletFilter
  * Author      : 조 준 희
  * Description : HttpServletWrapper로 요청 정보를 변경 + 필터로 래퍼클래스를 프로세스하게 만듬.
  * History     : [2022-03-16] - 조 준희 - Class Create

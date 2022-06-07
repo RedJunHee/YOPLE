@@ -338,7 +338,7 @@ public class FCMService {
             logRepository.save(apiLog);
 
         } catch (FirebaseMessagingException e) {
-            throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
+            throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED, e.getMessage());
         }
         return true;
     }

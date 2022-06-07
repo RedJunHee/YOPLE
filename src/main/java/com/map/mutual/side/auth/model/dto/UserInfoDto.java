@@ -39,5 +39,17 @@ public class UserInfoDto {
     @Valid
     private UserTOSDto userTOSDto;
 
-
+    @Override
+    public String toString() {
+        return "UserInfoDto{" +
+                "suid='" + suid + '\'' +
+                ", userId='" + userId + '\'' +
+                ", name='" + name + '\'' +
+                ", phone='" + phone + '\'' +
+                ", profileUrl='" + profileUrl + '\'' +
+                ", profilePinUrl='" + profilePinUrl + '\'' +
+                ", notiCheckDt=" + notiCheckDt +
+                ", userTOSDto=" + userTOSDto +
+                '}';
+    }
 }

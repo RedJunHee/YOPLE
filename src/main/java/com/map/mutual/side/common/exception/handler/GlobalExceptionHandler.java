@@ -30,21 +30,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // 사용자 정의 예외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseJsonObject> handleException(Exception ex) {
-        logger.error(String.format("RuntimeExceptionHandler : %s \n StackTrace : " , ex.getMessage(), ex.getStackTrace())  );
+        logger.error("RuntimeExceptionHandler : {} \n StackTrace : " , ex.getMessage(), ex.getStackTrace());
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.BAD_REQUEST);
     }
 
     // 로그인시 존재하지 않는 유저인 경우 발생하는 Exception
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ResponseJsonObject> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        logger.debug("UsernameNotFoundExceptionHandler : " + ex.getMessage());
+        logger.debug("UsernameNotFoundExceptionHandler : {}" , ex.getMessage());
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.USER_NOT_FOUND), HttpStatus.OK);
     }
 
     // @RequestBody, @RequestHeader 유효성 실패.
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ResponseJsonObject> handleConstraintViolationException(ConstraintViolationException ex) {
-        logger.error("파라미터 유효성 체크 실패. : " + ex.getMessage());
+        logger.error("파라미터 유효성 체크 실패. : {}" , ex.getMessage());
         ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
 
         if(ex.getConstraintViolations().isEmpty() == false)
@@ -65,7 +65,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   HttpStatus status, WebRequest request) {
 
             // "유효성 검사 실패 : " + ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-        logger.error("파라미터 유효성 체크 실패. : " + ex.getMessage());
+        logger.error("파라미터 유효성 체크 실패. : {}" , ex.getMessage());
         ResponseJsonObject response = ResponseJsonObject.withStatusCode(ApiStatusCode.PARAMETER_CHECK_FAILED);
 
         if(ex.getBindingResult().hasErrors())
@@ -77,13 +77,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // 사용자 정의 예외
     @ExceptionHandler({YOPLEServiceException.class})
     public ResponseEntity<ResponseJsonObject> handleYOPLEServiceException(YOPLEServiceException ex) {
-        logger.debug("YOPLEServiceExceptionHandler : " + ex.getMessage());
+        logger.debug("YOPLEServiceExceptionHandler : {}" , ex.getMessage());
         // HttpStatus 200 정상적인 응답이지만 서비스 응답코드는 ex.getResponseJsonObject에 담김.
         return new ResponseEntity<>(ex.getResponseJsonObject(), HttpStatus.OK);
     }
     @ExceptionHandler({YOPLETransactionException.class})
     public ResponseEntity<ResponseJsonObject> handleYOPLETranServiceException(YOPLETransactionException ex) {
-        logger.error("YOPLEServiceExceptionHandler : " + ex.getMessage());
+        logger.error("YOPLEServiceExceptionHandler : {}" ,ex.getMessage());
         // HttpStatus 200 정상적인 응답이지만 서비스 응답코드는 ex.getResponseJsonObject에 담김.
         return new ResponseEntity<>(ex.getResponseJsonObject(), HttpStatus.OK);
     }

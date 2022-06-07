@@ -7,6 +7,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
+import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -33,18 +34,15 @@ public class AuthorizationCheckFilter extends OncePerRequestFilter {
         this.tokenProvider = provider;
     }
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws BadCredentialsException,ServletException, IOException {
         String jwt = resolveToken(request);
-        String requestURI = request.getRequestURI();
 
         // token이 유효한지 확인
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
             Authentication authentication = tokenProvider.getAccessAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);       // token에 authentication 정보 삽입
-            logger.debug(String.format("인증된 사용자 API Call( %-35s )", requestURI));
-        } else {
-            logger.debug(String.format("인증되지 않은 사용자 API Call( %-35s ) { accessToken : %s }\n",requestURI,jwt));
         }
 
         filterChain.doFilter(request, response);

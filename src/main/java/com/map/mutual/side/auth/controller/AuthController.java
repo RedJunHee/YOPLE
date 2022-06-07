@@ -118,7 +118,7 @@ public class AuthController {
             UserEntity user = authService.findOneByPhone(smsAuthReqeustDTO.getPhone());
 
             if(user == null){
-                logger.debug(String.format("SMS 인증번호 확인 요청하기 : 사용자(%s)의 사용자 정보를 찾을 수 없음.",smsAuthReqeustDTO.getPhone()));
+                logger.debug("SMS 인증번호 확인 요청하기 : 사용자({})의 사용자 정보를 찾을 수 없음.",smsAuthReqeustDTO.getPhone());
                 throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
             }
 
@@ -137,17 +137,17 @@ public class AuthController {
             JwtTokenDto jwtToken = JwtTokenDto.builder().accessToken(accessJwt).refreshToken(refreshJwt).build();
 
 
-            logger.debug(String.format("SMS 인증번호 확인 요청하기 : 사용자(%s)의 정보 반환 - 액세스 토큰(%s), 리프레시 토큰(%s)",smsAuthReqeustDTO.getPhone(),accessJwt,refreshJwt ));
+            logger.debug("SMS 인증번호 확인 요청하기 : 사용자({})의 정보 반환 - 액세스 토큰({}), 리프레시 토큰({})",smsAuthReqeustDTO.getPhone(),accessJwt,refreshJwt );
 
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtToken),HttpStatus.OK);
 
         }catch(YOPLEServiceException yopleServiceException)
         {
-            logger.debug("SMS 인증번호 확인 요청하기 Exception : " + yopleServiceException.getResponseJsonObject().getMeta().toString());
+            logger.debug("SMS 인증번호 확인 요청하기 Exception : {}", yopleServiceException.getResponseJsonObject().getMeta().toString());
             throw yopleServiceException;
         }
         catch(Exception e){
-            logger.error(String.format("SMS 인증번호 확인 요청하기 ERROR : %s",e.getMessage()));
+            logger.error("SMS 인증번호 확인 요청하기 ERROR : {}",e.getMessage());
             throw e;
         }
     }
@@ -168,7 +168,7 @@ public class AuthController {
                 refreshToken = refreshToken.substring(7);           // "Bearer"를 제거한 accessToken 반환
             }
             else{
-                logger.debug(String.format("Access Token 갱신 : 리프레시 토큰 존재하지 않음. ( refresh token : %s)", refreshToken));
+                logger.debug("Access Token 갱신 : 리프레시 토큰 존재하지 않음. ( refresh token : {})", refreshToken);
                 refreshToken = null;
             }
 

@@ -124,7 +124,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UserInfoDto signUp(UserInfoDto user) throws YOPLEServiceException {
+    public UserInfoDto signUp(UserInfoDto user) throws YOPLEServiceException, RuntimeException{
         UserEntity userEntity = UserEntity.builder()
                 .suid(user.getSuid())
                 .userId(user.getUserId())
@@ -142,12 +142,16 @@ public class UserServiceImpl implements UserService {
                 .userInfoYn(user.getUserTOSDto().getUserInfoYN())
                 .build();
 
-        if (userInfoRepo.findOneByPhone(user.getPhone()) != null)
+        if (userInfoRepo.findOneByPhone(user.getPhone()) != null) {
+            logger.debug("회원가입 : 이미 가입된 사용자");
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_YOPLE_USER);
-
+        }
 
         userInfoRepo.save(userEntity);
         userTOSRepo.save(userTOSEntity);
+
+        logger.debug("회원가입 : 사용자 회원가입 완료 + TOS 정보 저장 완료");
+
         return user;
     }
 
@@ -225,14 +229,16 @@ public class UserServiceImpl implements UserService {
 
 
         if (inviteWorldId == null) {
-            logger.error("해당 사용자가 이미 월드에 속해있습니다.");
+            logger.error("사용자가 이미 월드에 속해있습니다.");
             throw new YOPLEServiceException(ApiStatusCode.ALREADY_WORLD_MEMEBER);
         }
 
         // 타인의 월드는 최대 20개 까지만 입장 가능.
         Long worldCnt = worldUserMappingRepo.countAllByActiveWorlds(userInfoDto.getSuid());
-        if (worldCnt >= 20)
+        if (worldCnt >= 20){
+            logger.debug("월드에 참여하기 : 월드 최대 입장 수 초과.");
             throw new YOPLEServiceException(ApiStatusCode.EXCEEDED_LIMITED_COUNT);
+        }
 
         // 3. 초대 수락한 월드 입장 처리
         WorldUserMappingEntity worldUserMappingEntity = WorldUserMappingEntity.builder()
@@ -252,9 +258,13 @@ public class UserServiceImpl implements UserService {
 
         // 4. 참여한 월드 정보 조회
         WorldEntity world = worldRepo.findById(worldUserMappingEntity.getWorldId())
-                .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
+                .orElseThrow(() -> {
+                    logger.error("월드에 참여하기 : 참여한 월드({})의 정보가 존재하지 않습니다. ",worldUserMappingEntity.getWorldId());
+                    return new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR, "참여한 월드의 정보가 존재하지 않습니다.");
+                });
 
         // 5. 월드에 참여된 사용자들에게 알림 전송 ---동기처리---
+        logger.debug("월드에 참여하기 : 월드에 참여된 사용자들 FCM 알림 전송 Start ");
         CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
             try {
                 return fcmService.sendNotificationTopic(FCMConstant.MSGType.B, world.getWorldId(), userInfoDto.getSuid());
@@ -262,6 +272,7 @@ public class UserServiceImpl implements UserService {
                 return false;
             }
         });
+        logger.debug("월드에 참여하기 : 월드에 참여된 사용자들 FCM 알림 전송 End ");
 
         // 6. 월드에 참여.
         if (completableFuture.get()) {
@@ -272,6 +283,7 @@ public class UserServiceImpl implements UserService {
                     .worldName(world.getWorldName())
                     .worldDesc(world.getWorldDesc()).build();
         } else {
+            logger.error("월드에 참여하기 : FCM 월드 사용자에게 알림전송 실패");
             throw new YOPLETransactionException(ApiStatusCode.FAIL_JOIN_WORLD);
         }
         // 7. 참여한 월드 정보 리턴.
@@ -290,7 +302,9 @@ public class UserServiceImpl implements UserService {
 
         //1. 토큰에 저장된 SUID 사용자가 없을 경우. Exception.
         UserEntity userEntity = userInfoRepo.findById(suid)
-                .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.UNAUTHORIZED));
+                .orElseThrow(() -> {
+                    logger.error("사용자 상세정보 조회 : 존재하지 않는 SUID로 상세정보 조회.");
+                    return new YOPLEServiceException(ApiStatusCode.UNAUTHORIZED);});
 
         // 2. 응답 객체 설정
         UserInfoDto userInfoDto = UserInfoDto.builder()
@@ -324,7 +338,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Description : 사용자 정보 수정.
+     * Description : 사용자 프로필 수정.
      * - 사용자 ID 이미 사용중이면, USER_ID_OVERLAPS 예외.
      * Name        : userInfoUpdate
      * Author      : 조 준 희
@@ -335,7 +349,10 @@ public class UserServiceImpl implements UserService {
 
         // 1. 사용자 SUID 가져오기.
         UserEntity userEntity = userInfoRepo.findById(suid)
-                .orElseThrow(() -> new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR));
+                .orElseThrow(() -> {
+                    logger.error("사용자 프로필 수정 : SUID ({})의 사용자 존재하지 않음.",suid );
+                    return new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR, String.format(" SUID (%s)의 사용자 존재하지 않음.",suid));
+                });
 
         // 2. 수정 요청 들어온 필드 설정.
         if (StringUtil.isNullOrEmpty(userId) == false)
@@ -349,8 +366,10 @@ public class UserServiceImpl implements UserService {
         UserEntity idUser = userInfoRepo.findByUserId(userId);
 
         // id 사용자가 있고, 해당 사용자가 아닌 경우.
-        if (idUser != null && idUser.getSuid().equals(suid) == false)
+        if (idUser != null && idUser.getSuid().equals(suid) == false) {
+            logger.error("사용자 프로필 수정 : ID 이미 사용중입니다. 프론트 ID 중복 방식 체크 필요.!!");
             throw new YOPLEServiceException(ApiStatusCode.USER_ID_OVERLAPS);
+        }
 
         // 3. 사용자 프로필 정보 수정.
         userInfoRepo.save(userEntity);
@@ -375,7 +394,7 @@ public class UserServiceImpl implements UserService {
      * History     : [2022-04-06] - 조 준 희 - Create
      */
     @Override
-    public void userLogout(String suid) {
+    public void userLogout(String suid) throws RuntimeException {
 
         JWTRefreshTokenLogEntity jwtRefreshTokenLogEntity = JWTRefreshTokenLogEntity.builder().userSuid(suid).build();
 
@@ -383,7 +402,6 @@ public class UserServiceImpl implements UserService {
         jwtRefreshTokenLogEntity.isPersist();
 
         jwtRepo.delete(jwtRefreshTokenLogEntity);
-
 
     }
 
@@ -501,6 +519,8 @@ public class UserServiceImpl implements UserService {
         for (InvitedNotiDto noti : invitedNotiList)
             noti.decodingSuid();
 
+
+
         List<WorldEntryNotiDto> worldEntryNotiList = worldUserMappingRepo.WorldEntryNotiList(suid).stream().sorted(
                 Comparator.comparing(v -> Timestamp.valueOf(((WorldEntryNotiDto) v).PushDate()).getTime()).reversed()
         ).collect(Collectors.toList());
@@ -509,6 +529,7 @@ public class UserServiceImpl implements UserService {
                 Comparator.comparing(v -> Timestamp.valueOf(((EmojiNotiDto) v).PushDate()).getTime()).reversed()
         ).collect(Collectors.toList());
 
+        logger.debug("알림 조회하기 : 월드 초대알림({}개), 월드 입장알림({}개), 리뷰 소식알림({}개)",invitedNotiList.stream().count(), worldEntryNotiList.stream().count(),emojiNotiDtos.stream().count());
         List<notificationDto> middleNoti = new ArrayList<>();
 
 
@@ -534,7 +555,7 @@ public class UserServiceImpl implements UserService {
         if (worldEntryNotiList.isEmpty() == false) {
             middleNoti.addAll(worldEntryNotiList);
         }
-
+        logger.debug("알림 조회하기 : Top 알림({}개), Middle 알림({}개)",invitedNotiList.stream().count(), middleNoti.stream().count());
 
         NotiDto notis = NotiDto.builder().topNoti(invitedNotiList.stream().collect(Collectors.toList()))
                 .middleNoti(middleNoti).
@@ -567,6 +588,7 @@ public class UserServiceImpl implements UserService {
         if (inviteLog.get().getTargetSuid().equals(suid) == false                   // 초대대상 SUID 비교.
                 || inviteLog.get().getUserSuid().equals(invited.getUserSuid()) == false // 초대자 SUID 비교
                 || inviteLog.get().getWorldUserCode().equals(invited.getWorldUserCode()) == false) {  // 월드 초대 코드 비교.
+            logger.error("월드 초대에 응답하기 : 초대장 정보가 유효하지 않습니다. { DB 초대장 ({}), INPUT 초대장 ({}) }",inviteLog.get().toString(), invited.toString());
             throw new YOPLEServiceException(ApiStatusCode.INVITE_NOT_VALID);
         }
 
@@ -700,20 +722,28 @@ public class UserServiceImpl implements UserService {
 
 
         fcmService.deleteFcmToken(userInfoDto.getSuid());
+        logger.debug("회원 탈퇴 : FCM 토큰 삭제");
         jwtRepo.deleteByUserSuid(userInfoDto.getSuid());
+        logger.debug("회원 탈퇴 : JWT 토큰 삭제");
 
         List<ReviewEntity> reviews = reviewRepo.findAllByUserEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build());
+        logger.debug("회원 탈퇴 : 삭제 대상 리뷰 ({}개)",reviews.stream().count());
         reviews.forEach(review -> {
             reviewWorldMappingRepository.deleteAllByReviewEntity(review);
+            logger.debug("회원 탈퇴 : 삭제된 리뷰 id ({})",review.getReviewId());
         });
 
         reviewRepo.deleteAllByUserEntity(UserEntity.builder().suid(userInfoDto.getSuid()).build());
+        logger.debug("회원 탈퇴 : 사용자 리뷰 매핑 삭제");
 
         worldUserMappingRepo.deleteByUserSuid(userInfoDto.getSuid());
+        logger.debug("회원 탈퇴 : 사용자 월드 매핑 삭제");
 
         userTOSRepo.deleteBySuid(userInfoDto.getSuid());
+        logger.debug("회원 탈퇴 : TOS 정보 삭제");
 
         userInfoRepo.deleteBySuid(userInfoDto.getSuid());
+        logger.debug("회원 탈퇴 : 사용자 정보 삭제");
     }
 
     /**

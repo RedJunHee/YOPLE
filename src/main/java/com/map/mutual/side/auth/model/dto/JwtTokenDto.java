@@ -20,4 +20,11 @@ public class JwtTokenDto {
     private String accessToken;
     private String refreshToken;
 
+    @Override
+    public String toString() {
+        return "JwtTokenDto{" +
+                "accessToken='" + accessToken + '\'' +
+                ", refreshToken='" + refreshToken + '\'' +
+                '}';
+    }
 }

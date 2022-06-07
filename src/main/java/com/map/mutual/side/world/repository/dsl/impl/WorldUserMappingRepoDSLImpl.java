@@ -233,6 +233,7 @@ public class WorldUserMappingRepoDSLImpl implements WorldUserMappingRepoDSL {
 
         //월드코드를 가진 사용자의 월드 ID가 없는경우.
         if(worldId == null){
+            logger.error("월드에 입장하기 : 월드 초대코드({})를 가진 사용자가 없음.",worldinvitationCode);
             throw new YOPLEServiceException(ApiStatusCode.WORLD_USER_CDOE_VALID_FAILED);
         }
 

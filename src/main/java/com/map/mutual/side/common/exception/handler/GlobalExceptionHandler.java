@@ -77,7 +77,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // 사용자 정의 예외
     @ExceptionHandler({YOPLEServiceException.class})
     public ResponseEntity<ResponseJsonObject> handleYOPLEServiceException(YOPLEServiceException ex) {
-        logger.debug("YOPLEServiceExceptionHandler : {}" , ex.getMessage());
+        logger.debug("YOPLEServiceExceptionHandler : {}" , ex.getResponseJsonObject().getMeta().toString());
         // HttpStatus 200 정상적인 응답이지만 서비스 응답코드는 ex.getResponseJsonObject에 담김.
         return new ResponseEntity<>(ex.getResponseJsonObject(), HttpStatus.OK);
     }

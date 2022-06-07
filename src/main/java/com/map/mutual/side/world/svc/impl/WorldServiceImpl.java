@@ -223,7 +223,7 @@ public class WorldServiceImpl implements WorldService {
                 YOPLEServiceException e = new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
 
                 e.getResponseJsonObject().getMeta().setMsg("입장 권한 체크하려는 월드가 존재하지 않습니다.");
-                logger.error("월드 입장 권한 체크 ERROR : 입장 권한 체크하려는 월드가 존재하지 않습니다. - " + e.getResponseJsonObject().getMeta().getErrorMsg());
+                logger.error("월드 입장 권한 체크 ERROR : 입장 권한 체크하려는 월드가 존재하지 않습니다. - " + e.getResponseJsonObject().getMeta().toString());
                 throw e;
 
             }

@@ -83,7 +83,6 @@ public class AuthController {
 
             // 2. SMS 인증 번호 생성
             String smsAuthNum = YOPLEUtils.getSMSAuth();
-
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);
 

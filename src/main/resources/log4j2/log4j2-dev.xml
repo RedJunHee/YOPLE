@@ -4,8 +4,8 @@
 <Configuration status="info" monitorIntervalp="600">
     <!--공통 속성 설정 -->
     <Properties>
-        <Property name="consoleLayout">[YOPLE LOG] - [%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%F(%M) - %L Line] - %m%n</Property>
-        <Property name="fileLayout">[%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%F(%M) - %L Line] - %m%n</Property>
+        <Property name="consoleLayout">[%X{logId}] - [%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%F(%M) - %L Line] - %m%n</Property>
+        <Property name="fileLayout">[%X{logId}] - [%d{yyyy-MM-dd HH:mm:ss}] [%-5p]  [%F(%M) - %L Line] - %m%n</Property>
     </Properties>
 
     <!-- Log Appender 설정 -->
@@ -22,7 +22,7 @@
                      filePattern="/var/log/yople/logs/error/error.%d{yyyy-MM-dd}.log">
             <PatternLayout pattern="${fileLayout}" />
             <!--LevelRangeFilter필터를 사용할때에 단일 level의 필터만 허용한다. -->
-            <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <LevelRangeFilter maxLevel="ERROR" minLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" />   <!--1일 단위로 롤링 정책 설정.-->
             </Policies>
@@ -39,8 +39,7 @@
                      fileName="/var/log/yople/logs/api/api.log"
                      filePattern="/var/log/yople/logs/api/api.%d{yyyy-MM-dd}_%i.log">
             <PatternLayout pattern="${fileLayout}" />
-            <!--LevelRangeFilter필터를 사용할때에 단일 level의 필터만 허용한다. -->
-            <LevelRangeFilter minLevel="DEBUG" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <LevelRangeFilter maxLevel="DEBUG" minLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="10KB" />       <!-- 10KB 단위로 파일 인덱스 롤링 -->
                 <TimeBasedTriggeringPolicy interval="1" />      <!-- 1일 단위로 롤링 -->
@@ -74,6 +73,8 @@
             <AppenderRef ref="file_error"/>
         </logger>
 
-        <Root level="info"></Root>
+        <Root level="info">
+            <AppenderRef ref="console" />
+        </Root>
     </Loggers>
 </Configuration>

@@ -35,7 +35,6 @@ public class Log4j2MDCFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        logger.debug("a");
         ThreadContext.put("logId", UUID.randomUUID().toString());
         filterChain.doFilter(servletRequest,servletResponse);
     }

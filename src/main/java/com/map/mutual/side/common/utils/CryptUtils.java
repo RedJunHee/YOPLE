@@ -77,7 +77,7 @@ public class CryptUtils {
             byte[] encrypted = cipher.doFinal(text.getBytes("UTF-8"));
             String result = Base64.getEncoder().encodeToString(encrypted);
 
-            logger.debug("AES Encode  { {} => {} }",text, result);
+            //logger.debug("AES Encode  { {} => {} }",text, result);
 
             return result;
         }catch(Exception e){
@@ -103,7 +103,7 @@ public class CryptUtils {
 
             String result = new String(decrypted, "UTF-8");
 
-            logger.debug("AES Decode  { {} => {} }",cipherText, result);
+            //logger.debug("AES Decode  { {} => {} }",cipherText, result);
 
             return result;
         }catch(Exception e) {

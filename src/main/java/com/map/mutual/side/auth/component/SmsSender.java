@@ -117,29 +117,33 @@ public class SmsSender {
                     .processTime(executeTimer)
                     .build();
             logRepository.save(apiLog);
+            logger.error("SMS 전송 Error - {}에 전송을 실패 : {}", sendPhoneNum, e.getMessage());
         }
+
+        stopWatch.stop();
+        executeTimer = stopWatch.getTotalTimeMillis();
+        ApiLog apiLog;
         if (resultCode == 202) {
-            stopWatch.stop();
-            executeTimer = stopWatch.getTotalTimeMillis();
-            ApiLog apiLog = ApiLog.builder()
+            apiLog = ApiLog.builder()
                     .suid("")
                     .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                    .apiDesc("[SEND]Success to "+sendPhoneNum)
+                    .apiDesc("[SEND]Success to " + sendPhoneNum)
                     .apiStatus('Y')
-                    .processTime((float) (executeTimer*0.001))
+                    .processTime((float) (executeTimer * 0.001))
                     .build();
             logRepository.save(apiLog);
+            logger.debug("SMS 전송 Success - {}에 전송 성공", sendPhoneNum);
+
         } else {
-            stopWatch.stop();
-            executeTimer = stopWatch.getTotalTimeMillis();
-            ApiLog apiLog = ApiLog.builder()
+            apiLog = ApiLog.builder()
                     .suid("")
                     .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
-                    .apiDesc("[SEND]Fail to "+sendPhoneNum+" [ResultCode] : "+resultCode)
+                    .apiDesc("[SEND]Fail to " + sendPhoneNum + " [ResultCode] : " + resultCode)
                     .apiStatus('N')
                     .processTime(executeTimer)
                     .build();
             logRepository.save(apiLog);
+            logger.error("SMS 전송 Error - {}에 전송을 실패. ResultCode : {}", sendPhoneNum, resultCode);
         }
     }
     /**
@@ -154,6 +158,8 @@ public class SmsSender {
     @Async(value = "YOPLE-Executor")
     public void inviteSendMessage(String sendPhoneNum, String userPhone, String worldUserCode) throws IOException {
         int resultCode = 0;
+        long executeTimer;
+        StopWatch stopWatch = new StopWatch();
 
         String sensApiUrl = SENS_REQUEST_URL + SENS_SVC_ID + SENS_REQUEST_TYPE;
         String timeStamp = Long.toString(System.currentTimeMillis());
@@ -186,6 +192,7 @@ public class SmsSender {
         StringEntity stringEntity = new StringEntity(jsonStr, "UTF-8");
 
         try{
+            stopWatch.start();
             HttpClient httpClient = HttpSensClient.getHttpClientInsecure();
             HttpPost httpPost = new HttpPost(apiUrl);
             httpPost.setHeader("Accept", "application/json");
@@ -202,9 +209,44 @@ public class SmsSender {
             resultCode = httpResponse.getStatusLine().getStatusCode();
 
         } catch (Exception e) {
-            logger.error("Error : {}", e.getMessage());
+            stopWatch.stop();
+            executeTimer = stopWatch.getTotalTimeMillis();
+            ApiLog apiLog = ApiLog.builder()
+                    .suid("")
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[SEND]Fail to "+sendPhoneNum+" [REASON]"+e.getMessage())
+                    .apiStatus('N')
+                    .processTime(executeTimer)
+                    .build();
+            logRepository.save(apiLog);
+            logger.error("SMS 전송 Error - {}에 전송을 실패 : {}", sendPhoneNum, e.getMessage());
         }
-        logger.info(resultCode);
+
+        stopWatch.stop();
+        executeTimer = stopWatch.getTotalTimeMillis();
+        ApiLog apiLog;
+        if (resultCode == 202) {
+            apiLog = ApiLog.builder()
+                    .suid("")
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[SEND]Success to " + sendPhoneNum)
+                    .apiStatus('Y')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+            logger.debug("SMS 전송 Success - {}에 전송 성공", sendPhoneNum);
+
+        } else {
+            apiLog = ApiLog.builder()
+                    .suid("")
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[SEND]Fail to " + sendPhoneNum + " [ResultCode] : " + resultCode)
+                    .apiStatus('N')
+                    .processTime(executeTimer)
+                    .build();
+            logRepository.save(apiLog);
+            logger.error("SMS 전송 Error - {}에 전송을 실패. ResultCode : {}", sendPhoneNum, resultCode);
+        }
     }
 
     private String makeSignature(String timestamp, String sensApiUrl) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {

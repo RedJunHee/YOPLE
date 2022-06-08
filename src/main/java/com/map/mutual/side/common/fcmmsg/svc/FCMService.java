@@ -248,7 +248,7 @@ public class FCMService {
                         .processTime((float) (executeTimer * 0.001))
                         .build();
                 logRepository.save(apiLog);
-                throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
+                throw new YOPLETransactionException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
 
         Notification notification = Notification.builder()
@@ -275,7 +275,17 @@ public class FCMService {
                     .build();
             logRepository.save(apiLog);
         } catch (FirebaseMessagingException e) {
-            throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
+            stopWatch.stop();
+            executeTimer = stopWatch.getTotalTimeMillis();
+            ApiLog apiLog = ApiLog.builder()
+                    .suid(userSuid)
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Fail to Send Token : " + targetFcmToken)
+                    .apiStatus('N')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+            throw new YOPLETransactionException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
     }
 

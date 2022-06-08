@@ -89,7 +89,7 @@ public class AuthController {
 
             // 2. 핸드폰 번호 인증 요청
             logger.debug(String.format("SMS 인증번호 요청하기 : SMS 문자 Call start"));
-            smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+            //smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
             logger.debug(String.format("SMS 인증번호 요청하기 : SMS 문자 Call end"));
 
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);

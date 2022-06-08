@@ -87,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 인증 코드 확인
-            if(smsAuthResponseDTO.getResponseAuthNum().equals("0000") || smslog.getRequestAuthNum().equals(smsAuthResponseDTO.getResponseAuthNum()))
+            if(smslog.getRequestAuthNum().equals(smsAuthResponseDTO.getResponseAuthNum()))
             {
                 // match
                 smslog.setResponseAuthNum(smsAuthResponseDTO.getResponseAuthNum());

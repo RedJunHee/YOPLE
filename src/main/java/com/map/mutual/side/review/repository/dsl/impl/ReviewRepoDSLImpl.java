@@ -21,6 +21,7 @@ import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
  * -----------------------------------------------------------
  * 2022/04/12        kimjaejung       최초 생성
  */
+@Slf4j
 @Repository
 public class ReviewRepoDSLImpl implements ReviewRepoDSL {
     private final JPAQueryFactory jpaQueryFactory;
@@ -59,6 +61,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
 
         Optional<WorldUserMappingEntity> entity = worldUserMappingRepo.findByWorldIdAndUserSuid(worldId, userInfoDto.getSuid());
         if (!entity.isPresent()) {
+            log.debug("Review 조회 - 해당유저({})는 월드({})에 대한 권한이 없음.", userInfoDto.getSuid(), worldId);
             throw new YOPLEServiceException(ApiStatusCode.FORBIDDEN);
         }
 
@@ -103,6 +106,7 @@ public class ReviewRepoDSLImpl implements ReviewRepoDSL {
                 .fetchOne();
 
         if (result == null) {
+            log.debug("Review 조회 - 해당 리뷰({})는 차단한 유저의 리뷰임.", reviewId);
             throw new YOPLEServiceException(ApiStatusCode.THIS_REVIEW_IS_BLOCK_USERS_REVIEW);
         }
 

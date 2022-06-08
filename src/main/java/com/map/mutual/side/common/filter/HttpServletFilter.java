@@ -6,7 +6,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.nio.charset.StandardCharsets;
  * History     : [2022-06-02] - 김재중 - Class 명 HttpServeletFilter 변경
  *                            - Request, Response 분리 / XSS 처리
  */
-@WebFilter(urlPatterns = "/*")
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class HttpServletFilter implements Filter {

@@ -208,7 +208,7 @@ public class FCMService {
     }
 
     @Async(value = "YOPLE-Executor")
-    public void sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException, YOPLEServiceException {
+    public void sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws YOPLEServiceException {
         StopWatch stopWatch = new StopWatch();
         long executeTimer;
 

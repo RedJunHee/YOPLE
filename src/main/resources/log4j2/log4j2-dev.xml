@@ -41,7 +41,7 @@
             <PatternLayout pattern="${fileLayout}" />
             <LevelRangeFilter maxLevel="DEBUG" minLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
-                <SizeBasedTriggeringPolicy size="100KB" />       <!-- 100KB 단위로 파일 인덱스 롤링 -->
+                <SizeBasedTriggeringPolicy size="100MB" />       <!-- 100KB 단위로 파일 인덱스 롤링 -->
                 <TimeBasedTriggeringPolicy interval="1" />      <!-- 1일 단위로 롤링 -->
             </Policies>
             <DefaultRolloverstrategy>

@@ -34,11 +34,12 @@ public class Log4j2MDCFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         ThreadContext.put("logId", UUID.randomUUID().toString());
         filterChain.doFilter(servletRequest,servletResponse);
+        ThreadContext.clearAll();
     }
 
     @Override
     public void destroy() {
-        ThreadContext.clearAll();
+
     }
 
 }

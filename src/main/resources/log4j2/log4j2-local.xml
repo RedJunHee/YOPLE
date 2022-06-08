@@ -19,8 +19,8 @@
 
         <!-- error 정보 FILE 로그 Appender -->
         <RollingFile name="file_error"
-                     fileName="./logs/error/error.log"
-                     filePattern="./logs/error/error.%d{yyyy-MM-dd}.log">
+                     fileName="./logs/error/error-${hostName}.log"
+                     filePattern="./logs/error/past/error-${hostName}.%d{yyyy-MM-dd}.log">
             <PatternLayout pattern="${fileLayout}" />
             <!--LevelRangeFilter필터를 사용할때에 단일 level의 필터만 허용한다. -->
             <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
@@ -28,7 +28,7 @@
                 <TimeBasedTriggeringPolicy interval="1" />  <!--1일 단위로 롤링 정책 설정.-->
             </Policies>
             <DefaultRolloverstrategy>
-                <Delete basePath="./logs/error" maxDepth="1">
+                <Delete basePath="./logs/error/past" maxDepth="1">
                     <IfLastModified age="7d" />  <!--7일 지난 로그는 삭제.-->
                 </Delete>
             </DefaultRolloverstrategy>
@@ -37,8 +37,8 @@
 
         <!-- info 정보 FILE 로그 Appender -->
         <RollingFile name="file"
-                     fileName="./logs/api/api.log"
-                     filePattern="./logs/api/api.%d{yyyy-MM-dd}_%i.log">
+                     fileName="./logs/api/api-${hostName}}.log"
+                     filePattern="./logs/api/past/api-${hostName}.%d{yyyy-MM-dd}_%i.log">
             <PatternLayout pattern="${fileLayout}" />
             <LevelRangeFilter minLevel="ERROR" maxLevel="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
@@ -46,7 +46,7 @@
                 <TimeBasedTriggeringPolicy interval="1" />      <!-- 1일 단위로 롤링 -->
             </Policies>
             <DefaultRolloverstrategy>
-                <Delete basePath="./logs/api" maxDepth="1">
+                <Delete basePath="./logs/api/past" maxDepth="1">
                     <IfLastModified age="7d" />  <!--7일 지난 로그는 삭제.-->
                 </Delete>
             </DefaultRolloverstrategy>

@@ -1,7 +1,6 @@
 package com.map.mutual.side.common.filter;
 
 import com.map.mutual.side.common.utils.YOPLEUtils;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +19,7 @@ import java.nio.charset.StandardCharsets;
  *                            - Request, Response 분리 / XSS 처리
  */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(value = 101)
 public class HttpServletFilter implements Filter {
 
 

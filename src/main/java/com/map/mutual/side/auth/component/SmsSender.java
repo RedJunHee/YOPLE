@@ -22,6 +22,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
@@ -38,22 +39,40 @@ import java.util.Collections;
 @Component
 public class SmsSender {
     private final Logger logger = LogManager.getLogger(SmsSender.class);
-    private final String SENS_HOST_URL = "https://sens.apigw.ntruss.com";
-    private final String SENS_REQUEST_URL = "/sms/v2/services/";
-    private final String SENS_REQUEST_TYPE = "/messages";
-    private final String SENS_SVC_ID = "ncp:sms:kr:279058593171:sms-service";
+    private final String SENS_HOST_URL;
+    private final String SENS_REQUEST_URL ;
+    private final String SENS_REQUEST_TYPE ;
+    private final String SENS_SVC_ID ;
+    private final String SENS_MESSAGE_TYPE_SMS;
+    private final String SENS_MESSAGE_CONTENTTPYE_COMM ;
+    private final String SENS_MESSAGE_COUNTRYCODE_DEFAULT ;
+    private final String SENS_ACCESSKEY ;
+    private final String SENS_SECRETKEY ;
 
-
-    private final String SENS_MESSAGE_TYPE_SMS = "SMS";
-    private final String SENS_MESSAGE_CONTENTTPYE_COMM = "COMM";
-    private final String SENS_MESSAGE_COUNTRYCODE_DEFAULT = "82";
-
-
-    private final String SENS_ACCESSKEY = "kNKPMYVwhTp3uIYbek9i";
-    private final String SENS_SECRETKEY = "XouxuOyjVhekRsLBqCEuocX9ghAugujpI4gvUlXD";
+    private LogRepository logRepository;
 
     @Autowired
-    private LogRepository logRepository;
+    public SmsSender(@Value("${yople.sens.host}") String SENS_HOST_URL
+            ,@Value("${yople.sens.url}") String SENS_REQUEST_URL
+            ,@Value("${yople.sens.type}") String SENS_REQUEST_TYPE
+            ,@Value("${yople.sens.svc_id}") String SENS_SVC_ID
+            ,@Value("${yople.sens.message.type}") String SENS_MESSAGE_TYPE_SMS
+            ,@Value("${yople.sens.message.content_type}") String SENS_MESSAGE_CONTENTTPYE_COMM
+            ,@Value("${yople.sens.message.country_code}") String SENS_MESSAGE_COUNTRYCODE_DEFAULT
+            ,@Value("${yople.sens.accessKey}") String SENS_ACCESSKEY
+            ,@Value("${yople.sens.secretKey}") String SENS_SECRETKEY
+            , LogRepository logRepository) {
+        this.SENS_HOST_URL = SENS_HOST_URL;
+        this.SENS_REQUEST_URL = SENS_REQUEST_URL;
+        this.SENS_REQUEST_TYPE = SENS_REQUEST_TYPE;
+        this.SENS_SVC_ID = SENS_SVC_ID;
+        this.SENS_MESSAGE_TYPE_SMS = SENS_MESSAGE_TYPE_SMS;
+        this.SENS_MESSAGE_CONTENTTPYE_COMM = SENS_MESSAGE_CONTENTTPYE_COMM;
+        this.SENS_MESSAGE_COUNTRYCODE_DEFAULT = SENS_MESSAGE_COUNTRYCODE_DEFAULT;
+        this.SENS_ACCESSKEY = SENS_ACCESSKEY;
+        this.SENS_SECRETKEY = SENS_SECRETKEY;
+        this.logRepository = logRepository;
+    }
 
     public void sendAuthMessage(String sendPhoneNum, String smsAuthNum) throws IOException {
         int resultCode = 0;
@@ -63,7 +82,7 @@ public class SmsSender {
 
         String sensApiUrl = SENS_REQUEST_URL + SENS_SVC_ID + SENS_REQUEST_TYPE;
         String timeStamp = Long.toString(System.currentTimeMillis());
-        String apiUrl = SENS_HOST_URL + sensApiUrl;
+        String apiUrl = SENS_HOST_URL + SENS_REQUEST_URL + SENS_SVC_ID + SENS_REQUEST_TYPE;
 
         SmsDto smsDto  = SmsDto.builder()
                 .type(SENS_MESSAGE_TYPE_SMS)

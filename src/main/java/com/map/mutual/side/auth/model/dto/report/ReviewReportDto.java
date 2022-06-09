@@ -20,4 +20,12 @@ public class ReviewReportDto {
     private String reportTitle;
     private String reportDesc;
 
+    @Override
+    public String toString() {
+        return "ReviewReportDto{" +
+                "reviewId=" + reviewId +
+                ", reportTitle='" + reportTitle + '\'' +
+                ", reportDesc='" + reportDesc + '\'' +
+                '}';
+    }
 }

@@ -2,6 +2,7 @@ package com.map.mutual.side.review.repository.dsl;
 
 import com.map.mutual.side.auth.model.dto.notification.EmojiNotiDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -12,4 +13,5 @@ import java.util.List;
  */
 public interface EmojiStatusRepoDSL {
     List<EmojiNotiDto> findEmojiNotis(String suid);
+    boolean existsNewNoti (String suid, LocalDateTime searchLocalDateTime);
 }

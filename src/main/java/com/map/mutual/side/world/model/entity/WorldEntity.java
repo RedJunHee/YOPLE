@@ -7,6 +7,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
 /**
@@ -39,10 +40,12 @@ public class WorldEntity extends TimeEntity implements Persistable<Long> {
 
     //월드 명
     @Column(name = "NAME", nullable = false, columnDefinition = "VARCHAR(50)")
+    @Size(min = 1 , max = 25)
     private String worldName;
 
     //월드 내용
     @Column(name = "DESCRIPTION", nullable = false, columnDefinition = "VARCHAR(160)")
+    @Size(min = 1 , max = 80)
     private String worldDesc;
 
     public void updateWorldName(String worldName) {
@@ -61,5 +64,15 @@ public class WorldEntity extends TimeEntity implements Persistable<Long> {
     @Override
     public boolean isNew() {
         return getCreateTime() == null;
+    }
+
+    @Override
+    public String toString() {
+        return "WorldEntity{" +
+                "worldId=" + worldId +
+                ", worldOwner='" + worldOwner + '\'' +
+                ", worldName='" + worldName + '\'' +
+                ", worldDesc='" + worldDesc + '\'' +
+                '}';
     }
 }

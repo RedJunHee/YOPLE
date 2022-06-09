@@ -3,11 +3,14 @@ package com.map.mutual.side.common.aop;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.map.mutual.side.auth.model.dto.UserInfoDto;
-import com.map.mutual.side.common.entity.ApiLog;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
+import com.map.mutual.side.common.entity.ApiLog;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import com.map.mutual.side.common.svc.LogService;
+import com.map.mutual.side.common.utils.YOPLEUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -38,6 +41,7 @@ import java.util.stream.Collectors;
 @Aspect
 @Component
 public class RequestAroundLogAop {
+    private final static Logger logger = LogManager.getLogger(RequestAroundLogAop.class);
     private final ObjectMapper om ;
     private final LogService logService;
 
@@ -49,11 +53,12 @@ public class RequestAroundLogAop {
 
     //  execution(* com.map.mutual.side.*.controller 하위 패키지 내에
     //   *Controller 클래스의 모든 메서드 Around => Pointcut 설정
-    @Around(value = "execution(* com.map.mutual.side.*.controller..*Controller.*(..))")
+    @Around(value = "execution(* com.map.mutual.side.*.controller..*Controller.*(..)) || execution(* com.map.mutual.side.common.fcmmsg.controller..*Controller.*(..)) " )
     public Object ApiLog(ProceedingJoinPoint joinPoint) throws Throwable { // 파라미터 : 프록시 대상 객체의 메서드를 호출할 때 사용
 
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String  inputParam = getWrapperParamJson(request.getParameterMap());
+        String inputParam = getWrapperParamJson(request.getParameterMap());
+        inputParam = YOPLEUtils.ClearXSS(inputParam);
         String  outputMessage = "" ;
         char apiStatus = 'Y';
         String methodName = "";
@@ -65,6 +70,7 @@ public class RequestAroundLogAop {
         StringBuilder apiResultDescription = new StringBuilder();
         // joinPoint 리턴 객체 담을 변수
         Object retValue = null;
+
         StopWatch stopWatch = new StopWatch();
 
         try {
@@ -77,6 +83,8 @@ public class RequestAroundLogAop {
             }
 
             methodName  = joinPoint.getSignature().getName();   // 메소드 이름 => Api명
+
+            logger.info(String.format(" %-35s API Call Start - { suid : %s }",request.getRequestURI(), suid ));
 
             // 서비스 처리 시간 기록 시작
             stopWatch.start();
@@ -132,6 +140,8 @@ public class RequestAroundLogAop {
         finally {
             // 서비스 처리 시간 기록 종료
             stopWatch.stop();
+
+            logger.info(String.format(" %-35s API Call End - { suid : %s}",request.getRequestURI(), suid ));
 
             //api 처리 정보 => INPUT + OUTPUT   ** Exception이 떨어졌을때 Exception정보도 담는지 확인 필요 함.
             apiResultDescription.append("\n[INPUT]").append(System.lineSeparator())

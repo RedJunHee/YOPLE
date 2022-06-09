@@ -9,4 +9,5 @@ public interface UserInfoRepo extends JpaRepository<UserEntity, String> {
     UserEntity findOneByPhone(String phone);
     UserEntity findByUserId(String userid);
     UserEntity findBySuid(String suid);
+    void deleteBySuid(String suid);
 }

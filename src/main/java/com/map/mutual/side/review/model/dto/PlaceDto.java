@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * fileName       : PlaceDto
@@ -56,5 +57,6 @@ public class PlaceDto {
         private BigDecimal x;
         private BigDecimal y;
         private String profileUrl;
+        private LocalDateTime createDt;
     }
 }

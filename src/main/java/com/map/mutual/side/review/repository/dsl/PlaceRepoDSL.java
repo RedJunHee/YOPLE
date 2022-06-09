@@ -15,5 +15,5 @@ import java.util.List;
  *
  */
 public interface PlaceRepoDSL {
-    List<PlaceDetailDto.PlaceDetailInReview> findPlaceDetails(Long worldId, String placeId);
+    List<PlaceDetailDto.PlaceDetailInReview> findPlaceDetailInReview(Long worldId, String placeId, String suid);
 }

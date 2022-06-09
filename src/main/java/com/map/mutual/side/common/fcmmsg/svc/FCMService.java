@@ -1,31 +1,33 @@
 package com.map.mutual.side.common.fcmmsg.svc;
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.messaging.*;
-import com.map.mutual.side.auth.model.dto.UserInfoDto;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import com.map.mutual.side.auth.model.entity.UserEntity;
 import com.map.mutual.side.auth.repository.UserInfoRepo;
-import com.map.mutual.side.common.dto.ResponseJsonObject;
+import com.map.mutual.side.common.entity.ApiLog;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
+import com.map.mutual.side.common.exception.YOPLETransactionException;
 import com.map.mutual.side.common.fcmmsg.constant.FCMConstant;
 import com.map.mutual.side.common.fcmmsg.model.entity.FcmTopicEntity;
 import com.map.mutual.side.common.fcmmsg.repository.FcmTopicRepository;
+import com.map.mutual.side.common.repository.LogRepository;
 import com.map.mutual.side.common.utils.CryptUtils;
 import com.map.mutual.side.world.model.entity.WorldUserMappingEntity;
 import com.map.mutual.side.world.repository.WorldRepo;
 import com.map.mutual.side.world.repository.WorldUserMappingRepo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * fileName       : FCMService
@@ -48,49 +50,103 @@ public class FCMService {
 
     @Autowired
     private WorldRepo worldRepo;
+    @Autowired
+    private LogRepository logRepository;
 
-    public ResponseEntity<ResponseJsonObject> generateToken(String token) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
-        UserEntity userEntity;
-        try {
-            userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-        }
+    @Async
+    public void generateToken(String suid, String token) throws YOPLEServiceException, ExecutionException, InterruptedException {
+        long executeTimer;
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        CompletableFuture<Boolean> registry = new CompletableFuture<>();
+
+        UserEntity userEntity = userInfoRepo.findBySuid(suid);
+
         if (userEntity.getFcmToken() == null) {
             userEntity.setFcmToken(token);
             userInfoRepo.save(userEntity);
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+            registry.complete(true);
         } else if (userEntity.getFcmToken().equals(token)) {
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+            return;
         } else if (userEntity.getFcmToken().equals(FCMConstant.EXPIRED)) {
-            registryFcmToken(userEntity, token);
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+            registry =  CompletableFuture.supplyAsync(() -> {
+                boolean result;
+                try {
+                    result =  registryFcmToken(userEntity, token);
+                } catch (YOPLEServiceException e) {
+                    return false;
+                }
+                return result;
+            });
+
         } else if (!userEntity.getFcmToken().equals(token)) {
             List<FcmTopicEntity> fcmTopicEntity = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
             fcmTopicRepository.deleteAll(fcmTopicEntity);
-            registryFcmToken(userEntity, token);
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-        } else
-            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.SYSTEM_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+             registry = CompletableFuture.supplyAsync(() -> {
+                boolean result;
+                try {
+                    result =  registryFcmToken(userEntity, token);
+                } catch (YOPLEServiceException e) {
+                    return false;
+                }
+                return result;
+            });
+        } else {
+            stopWatch.stop();
+            executeTimer = stopWatch.getTotalTimeMillis();
+            ApiLog apiLog = ApiLog.builder()
+                    .suid(suid)
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Fail To Generate FCM Token : " + suid)
+                    .apiStatus('N')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+            throw new YOPLEServiceException(ApiStatusCode.GENERATE_FAILED_TO_TOKEN);
+        }
+        stopWatch.stop();
+        executeTimer = stopWatch.getTotalTimeMillis();
+        if(registry.get()) {
+            ApiLog apiLog = ApiLog.builder()
+                    .suid(suid)
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Success To Generate FCM Token : " + suid)
+                    .apiStatus('Y')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+        } else {
+            ApiLog apiLog = ApiLog.builder()
+                    .suid(suid)
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Fail To Generate FCM Token : " + suid)
+                    .apiStatus('N')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+            throw new YOPLEServiceException(ApiStatusCode.GENERATE_FAILED_TO_TOKEN);
+        }
     }
 
-    private void registryFcmToken(UserEntity userEntity, String token) {
+    private boolean registryFcmToken(UserEntity userEntity, String token) throws YOPLEServiceException {
         List<FcmTopicEntity> fcmTopicEntities = new ArrayList<>();
         try {
 
             userEntity.setFcmToken(token);
             userInfoRepo.save(userEntity);
 
-            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(CryptUtils.AES_Decode(userEntity.getSuid()));
+            List<WorldUserMappingEntity> worldUserMappingEntities = worldUserMappingRepo.findByUserSuid(userEntity.getSuid());
             if (!worldUserMappingEntities.isEmpty()) {
                 worldUserMappingEntities.forEach(data -> {
                     try {
-                        TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
-                        log.info(response);
+                        FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), String.valueOf(data.getWorldId()));
                     } catch (FirebaseMessagingException e) {
-                        throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);
+                        try {
+                            throw new YOPLEServiceException(ApiStatusCode.REGISTRY_FCM_TOPIC_FAIL);
+                        } catch (YOPLEServiceException ex) {
+                            log.error(ex.getMessage());
+                        }
                     }
                     FcmTopicEntity fcmTopicEntity = FcmTopicEntity.builder().fcmToken(token).worldId(data.getWorldId()).build();
                     fcmTopicEntities.add(fcmTopicEntity);
@@ -100,70 +156,100 @@ public class FCMService {
         } catch (Exception e) {
             throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
         }
+        return true;
     }
 
-    public void deleteFcmToken(UserInfoDto userInfoDto) {
+    @Async(value = "YOPLE-Executor")
+    public void deleteFcmToken(String userSuid) throws YOPLEServiceException {
+        long executeTimer;
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
         List<FcmTopicEntity> fcmTopicEntities;
 
-        try {
-            UserEntity userEntity = userInfoRepo.findBySuid(userInfoDto.getSuid());
+        UserEntity userEntity = userInfoRepo.findBySuid(userSuid);
 
-            if (userEntity.getFcmToken() != null) {
-                userEntity.setFcmToken(FCMConstant.EXPIRED);
-                fcmTopicEntities = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
+        if (userEntity.getFcmToken() != null) {
+            userEntity.setFcmToken(FCMConstant.EXPIRED);
+            fcmTopicEntities = fcmTopicRepository.findAllByFcmToken(userEntity.getFcmToken());
 
-                fcmTopicEntities.forEach(data -> {
-                    try {
-                        FirebaseMessaging.getInstance().unsubscribeFromTopic(Collections.singletonList(data.getFcmToken()), String.valueOf(data.getWorldId()));
-                    } catch (FirebaseMessagingException e) {
-                        throw new YOPLEServiceException(ApiStatusCode.UNSUBSCRIPTION_FCM_TOPIC_FAIL);
-                    }
-                });
-                fcmTopicRepository.deleteAll(fcmTopicEntities);
-                userInfoRepo.save(userEntity);
-            }
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            fcmTopicRepository.deleteAll(fcmTopicEntities);
+            userInfoRepo.save(userEntity);
+
+            fcmTopicEntities.forEach(data -> {
+                try {
+                    FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).unsubscribeFromTopic(Collections.singletonList(data.getFcmToken()), String.valueOf(data.getWorldId()));
+                } catch (FirebaseMessagingException e) {
+                    stopWatch.stop();
+                    ApiLog apiLog = ApiLog.builder()
+                            .suid(userSuid)
+                            .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                            .apiDesc("[FCM]Fail To Delete Fcm Token : " + userSuid)
+                            .apiStatus('N')
+                            .processTime((float) (stopWatch.getTotalTimeMillis() * 0.001))
+                            .build();
+                    logRepository.save(apiLog);
+                    throw new YOPLETransactionException(ApiStatusCode.FAIL_DELETE_FCM_TOKEN);
+                }
+            });
+
+            stopWatch.stop();
+            executeTimer = stopWatch.getTotalTimeMillis();
+            ApiLog apiLog = ApiLog.builder()
+                    .suid(userSuid)
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Success To Delete Fcm Token : " + userSuid)
+                    .apiStatus('Y')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+
         }
     }
 
     @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws InterruptedException {
-        String body;
+    public void sendNotificationToken(String targetFcmToken, FCMConstant.MSGType msgType, String userSuid, Long worldId, Long reviewId) throws YOPLEServiceException {
+        StopWatch stopWatch = new StopWatch();
+        long executeTimer;
+
+        String body = "";
         Map<String, String> msgData = new HashMap<>();
-        try {
-            switch (msgType) {
-                case A:
-                    String aUserId = userInfoRepo.findBySuid(userSuid).getUserId();
-                    String aWorldName = worldRepo.findByWorldId(worldId).getWorldName();
-                    body = aUserId
-                            + "님이 "
-                            + aWorldName
-                            + "에 회원님을 초대하였습니다.";
-                    msgData.put("worldId", String.valueOf(worldId));
-                    msgData.put("userSuid", CryptUtils.AES_Encode(userSuid));
-                    break;
-                case C:
-                    String cUserId = userInfoRepo.findBySuid(userSuid).getUserId();
-                    String cWorldName = worldRepo.findByWorldId(worldId).getWorldName();
-                    body = cWorldName
-                            + "에서"
-                            + cUserId
-                            + " 님이 내 리뷰에 반응을 남겼습니다.";
-                    msgData.put("worldId", String.valueOf(worldId));
-                    msgData.put("userSuid", CryptUtils.AES_Encode(userSuid));
-                    msgData.put("reviewId", String.valueOf(reviewId));
-
-
-                    break;
-                default:
-                    log.error("[FCM]잘못된 알림 타입 입니다.");
-                    return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
-            }
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+        stopWatch.start();
+        switch (msgType) {
+            case A:
+                String aUserId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String aWorldName = worldRepo.findByWorldId(worldId).getWorldName();
+                body = aUserId
+                        + "님이 "
+                        + aWorldName
+                        + "에 회원님을 초대하였습니다.";
+                msgData.put("worldId", String.valueOf(worldId));
+                msgData.put("userSuid", CryptUtils.AES_Encode(userSuid));
+                break;
+            case C:
+                String cUserId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String cWorldName = worldRepo.findByWorldId(worldId).getWorldName();
+                body = cWorldName
+                        + "에서"
+                        + cUserId
+                        + " 님이 내 리뷰에 반응을 남겼습니다.";
+                msgData.put("worldId", String.valueOf(worldId));
+                msgData.put("userSuid", CryptUtils.AES_Encode(userSuid));
+                msgData.put("reviewId", String.valueOf(reviewId));
+                break;
+            default:
+                stopWatch.stop();
+                executeTimer = stopWatch.getTotalTimeMillis();
+                ApiLog apiLog = ApiLog.builder()
+                        .suid(userSuid)
+                        .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                        .apiDesc("[FCM]Fail to Send Token : " + targetFcmToken)
+                        .apiStatus('N')
+                        .processTime((float) (executeTimer * 0.001))
+                        .build();
+                logRepository.save(apiLog);
+                throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
-
 
         Notification notification = Notification.builder()
                 .setTitle(FCMConstant.YOPLE)
@@ -171,32 +257,40 @@ public class FCMService {
                 .build();
 
         Message message = Message.builder()
-                    .setToken(targetFcmToken)
-                    .setNotification(notification)
-                    .putAllData(msgData)
-                    .build();
+                .setToken(targetFcmToken)
+                .setNotification(notification)
+                .putAllData(msgData)
+                .build();
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
+
+            stopWatch.stop();
+            executeTimer = stopWatch.getTotalTimeMillis();
+            ApiLog apiLog = ApiLog.builder()
+                    .suid(userSuid)
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Success to Send Token : " + targetFcmToken)
+                    .apiStatus('Y')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
         } catch (FirebaseMessagingException e) {
-            return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+            throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
-        return CompletableFuture.completedFuture(FCMConstant.ResultType.SUCCESS);
     }
 
-    @Async(value = "YOPLE-Executor")
-    public CompletableFuture<FCMConstant.ResultType> sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) {
+    public Boolean sendNotificationTopic(FCMConstant.MSGType msgType, Long worldId, String userSuid) throws YOPLEServiceException {
+        StopWatch stopWatch = new StopWatch();
+        long executeTimer;
+
         String body;
-        String decodedSuid;
-        try {
-            decodedSuid = CryptUtils.AES_Decode(userSuid);
-        } catch (Exception e) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-        }
         Map<String, String> msgData = new HashMap<>();
+
+        stopWatch.start();
         switch (msgType) {
             case B:
-                String userId = userInfoRepo.findBySuid(decodedSuid).getUserId();
-                String worldName  = worldRepo.findByWorldId(worldId).getWorldName();
+                String userId = userInfoRepo.findBySuid(userSuid).getUserId();
+                String worldName = worldRepo.findByWorldId(worldId).getWorldName();
                 body = worldName
                         + "에 "
                         + userId
@@ -205,8 +299,17 @@ public class FCMService {
                 msgData.put("userSuid", userSuid);
                 break;
             default:
-                log.error("[FCM]잘못된 알림 타입 입니다.");
-                return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+                stopWatch.stop();
+                executeTimer = stopWatch.getTotalTimeMillis();
+                ApiLog apiLog = ApiLog.builder()
+                        .suid("")
+                        .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                        .apiDesc("[FCM]Fail to Send Topic : " + worldId)
+                        .apiStatus('N')
+                        .processTime((float) (executeTimer * 0.001))
+                        .build();
+                logRepository.save(apiLog);
+                throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED);
         }
 
         Notification notification = Notification.builder()
@@ -215,18 +318,29 @@ public class FCMService {
                 .build();
 
         Message message = Message.builder()
-                    .setTopic(String.valueOf(worldId))
-                    .setNotification(notification)
-                    .putAllData(msgData)
-                    .build();
+                .setTopic(String.valueOf(worldId))
+                .setNotification(notification)
+                .putAllData(msgData)
+                .build();
 
         try {
             FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).send(message);
 
+            stopWatch.stop();
+            executeTimer = stopWatch.getTotalTimeMillis();
+            ApiLog apiLog = ApiLog.builder()
+                    .suid("")
+                    .apiName(Thread.currentThread().getStackTrace()[1].getMethodName())
+                    .apiDesc("[FCM]Success to Send Topic : " + worldId)
+                    .apiStatus('Y')
+                    .processTime((float) (executeTimer * 0.001))
+                    .build();
+            logRepository.save(apiLog);
+
         } catch (FirebaseMessagingException e) {
-            return CompletableFuture.completedFuture(FCMConstant.ResultType.FAIL);
+            throw new YOPLEServiceException(ApiStatusCode.SEND_TO_FCM_FAILED, e.getMessage());
         }
-        return CompletableFuture.completedFuture(FCMConstant.ResultType.SUCCESS);
+        return true;
     }
 
 //    private void updateFcmToken(String userSuid, String newToken)  {

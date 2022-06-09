@@ -2,8 +2,11 @@ package com.map.mutual.side.common.fcmmsg.controller;
 
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.messaging.*;
-import com.map.mutual.side.auth.repository.UserInfoRepo;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
+import com.map.mutual.side.auth.model.dto.UserInfoDto;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
@@ -13,13 +16,12 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * fileName       : FCMController
@@ -38,18 +40,40 @@ public class FCMController {
     @Autowired
     private FCMService fcmService;
 
-    @Autowired
-    private UserInfoRepo userInfoRepo;
-
-    @PostMapping("/generateToken")
-    public ResponseEntity<ResponseJsonObject> generateToken(@RequestParam String token) {
-        return fcmService.generateToken(token);
+    @PostMapping("/generate")
+    public ResponseEntity<ResponseJsonObject> generateToken(@RequestBody Map<String, String> token) throws YOPLEServiceException, ExecutionException, InterruptedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserInfoDto userInfoDto = (UserInfoDto) authentication.getPrincipal();
+        String suid = userInfoDto.getSuid();
+        fcmService.generateToken(suid, token.get("token"));
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
+
+
+
+
+
+
+
+
+    // TODO: 2022/05/31 삭제 -- TEST AREA ----
     @PostMapping("/test")
+    public ResponseEntity<ResponseJsonObject> tests(@RequestBody  UserInfoDto info)  {
+        log.info(info.getName());
+        log.info(info.getProfileUrl());
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(info), HttpStatus.OK);
+    }
+    @PostMapping("/testP")
+    public ResponseEntity<ResponseJsonObject> teststs(@RequestParam  String params)  {
+        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
+
+    }
+
+    @PostMapping("/testT")
     public ResponseEntity<ResponseJsonObject> tests(@RequestParam String token,
                                                     @RequestParam String title,
-                                                    @RequestParam String body) {
+                                                    @RequestParam String body) throws YOPLEServiceException {
         try {
             Notification notification = Notification.builder().setTitle(title).setBody(body).build();
 
@@ -67,100 +91,5 @@ public class FCMController {
         return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
-
-    @PostMapping("/sendNotification/topic")
-    public void testTopic(@RequestParam FCMConstant.MSGType msgType,
-                          @RequestParam Long worldId,
-                          @RequestParam String userId) {
-        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationTopic(msgType, worldId, userId);
-        response.thenAccept(d -> {
-            if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
-                log.info(d.getDesc());
-            } else {
-                log.error(d.getDesc());
-            }
-        });
-    }
-
-    @PostMapping("/sendNotification/token")
-    public void testToken(@RequestParam FCMConstant.MSGType msgType,
-                          @RequestParam String userId,
-                          @RequestParam Long worldId) throws InterruptedException {
-        String token = "d-fw6-17tkDokesl9fmT6q:APA91bGQUn4OT1b3reXhqEcdzb4UCRFdUkCadoxdWtsCTz9YOhMdlelQoss_Vnrl1GKEsuMB-AOPm9y_padkMaa8duVvKERddBfn_mDdP29VlV9sWUO27XvUkPX3636m7DBjQi-ynyEV";
-
-        CompletableFuture<FCMConstant.ResultType> response = fcmService.sendNotificationToken(token, msgType, userId, worldId, null);
-        response.thenAccept(d -> {
-            if (d.getType().equals(FCMConstant.ResultType.SUCCESS.getType())) {
-                log.info(d.getDesc());
-            } else {
-                log.error(d.getDesc());
-            }
-        });
-    }
-//
-//
-    @PostMapping("/subscribeTopic")
-    public void testSubscribe(@RequestParam String token,
-                          @RequestParam String topic) throws FirebaseMessagingException {
-        try {
-            TopicManagementResponse response = FirebaseMessaging.getInstance(FirebaseApp.getInstance(FCMConstant.FCM_INSTANCE)).subscribeToTopic(Collections.singletonList(token), topic);
-            if (!response.getErrors().isEmpty()) {
-                throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
-            }
-        } catch (FirebaseMessagingException e) {
-            throw e;
-        }
-    }
-//    @PostMapping("/getTopicList")
-//    public void getTopicList(@RequestParam String token) throws FirebaseMessagingException, IOException {
-//        OkHttpClient client = new OkHttpClient();
-//        Request request = new Request.Builder()
-//                .url("https://iid.googleapis.com/iid/info/"+token+"?details=true")
-//                .get()
-//                .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
-//                .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
-//                .build();
-//        FirebaseMessaging firebaseMessaging;
-//        Response response = client.newCall(request).execute();
-//        log.info(response.body().string());
-//
-//    }
-//    public String getAccessToken() throws IOException {
-//        String firebaseConfigPath = "fcm/fcm-yople-keys.json";
-//        GoogleCredentials googleCredentials = GoogleCredentials
-//                .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
-//                .createScoped(com.sun.tools.javac.util.List.of("https://www.googleapis.com/auth/cloud-platform"));
-//        googleCredentials.refreshIfExpired();
-//
-//        log.info("ACCESS TOKEN : {}", googleCredentials.getAccessToken().getTokenValue());
-//        return googleCredentials.getAccessToken().getTokenValue();
-//    }
-
-
-//====================REST API==================================
-//    @GetMapping("/getToken")
-//    public ResponseEntity<ResponseJsonObject> getToken() {
-//
-//        try {
-//            fcmService.getAccessToken();
-//        } catch (Exception e) {
-//            log.error(e.getMessage());
-//
-//        }
-//
-//        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-//    }
-//    @PostMapping("/sendMsg")
-//    public ResponseEntity<ResponseJsonObject> sendMsg(@RequestParam String token) {
-//
-//        try {
-//            fcmService.sendMessageTo(token,"테스트임니다ㅋㅋ","restAPiTest");
-//        } catch (Exception e) {
-//            log.error(e.getMessage());
-//
-//        }
-//
-//        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
-//    }
 
 }

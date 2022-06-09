@@ -24,7 +24,11 @@ public class EmojiActiveTypeConverter implements AttributeConverter<EmojiType, S
     @Override
     public String convertToDatabaseColumn(EmojiType attribute) {
         if (Objects.isNull(attribute)) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            try {
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            } catch (YOPLEServiceException e) {
+                e.printStackTrace();
+            }
         }
         return attribute.getActiveType();
     }
@@ -32,7 +36,11 @@ public class EmojiActiveTypeConverter implements AttributeConverter<EmojiType, S
     @Override
     public EmojiType convertToEntityAttribute(String dbData) {
         if (StringUtils.isBlank(dbData)) {
-            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            try {
+                throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
+            } catch (YOPLEServiceException e) {
+                e.printStackTrace();
+            }
         }
         return EmojiType.findActiveType(dbData);
     }

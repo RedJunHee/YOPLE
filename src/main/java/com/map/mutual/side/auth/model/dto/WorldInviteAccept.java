@@ -36,4 +36,14 @@ public class WorldInviteAccept {
     public void suidChange(String decodingSuid){
         userSuid = decodingSuid;
     }
+
+    @Override
+    public String toString() {
+        return "WorldInviteAccept{" +
+                "inviteNumber=" + inviteNumber +
+                ", userSuid='" + userSuid + '\'' +
+                ", worldUserCode='" + worldUserCode + '\'' +
+                ", isAccept='" + isAccept + '\'' +
+                '}';
+    }
 }

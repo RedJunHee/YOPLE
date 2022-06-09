@@ -43,4 +43,16 @@ public class UserWorldInvitingLogEntity extends TimeEntity {
     {
         invitingStatus = "N";
     }
+
+    @Override
+    public String toString() {
+        return "UserWorldInvitingLogEntity{" +
+                "seq=" + seq +
+                ", worldId=" + worldId +
+                ", userSuid='" + userSuid + '\'' +
+                ", targetSuid='" + targetSuid + '\'' +
+                ", invitingStatus='" + invitingStatus + '\'' +
+                ", worldUserCode='" + worldUserCode + '\'' +
+                '}';
+    }
 }

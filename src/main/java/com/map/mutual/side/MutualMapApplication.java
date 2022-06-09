@@ -14,6 +14,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 public class MutualMapApplication {
     public static void main(String[] args) {
+
+        // log4j2 ThreadContext Map Child Thread Inheritable Setting
+        System.setProperty("isThreadContextMapInheritable","true");
+
         SpringApplication.run(MutualMapApplication.class, args);
     }
 }

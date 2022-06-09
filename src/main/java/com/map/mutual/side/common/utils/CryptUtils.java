@@ -3,8 +3,8 @@ package com.map.mutual.side.common.utils;
 import com.map.mutual.side.common.dto.ResponseJsonObject;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,12 +15,12 @@ import java.util.Base64;
 
 /**
  * {@Summary en&de-crypt, 암호화 util 클래스 }
- * Author      : 문 윤 지
+ * Author      : 조 준 희
  * History     : [2022-01-14]
  */
 @Component
 public class CryptUtils {
-    private final Logger logger = LoggerFactory.getLogger(CryptUtils.class);
+    private final static Logger logger = LogManager.getLogger(CryptUtils.class);
 
     private static String secretKey ;
     static String IV = ""; // 16bit
@@ -66,7 +66,7 @@ public class CryptUtils {
      * @return 평문을 AES256으로 암호화 후 Base64인코딩한 문자열
      * @throws Exception
      */
-    public static String AES_Encode(String text) {
+    public static String AES_Encode(String text) throws YOPLEServiceException {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
@@ -75,11 +75,13 @@ public class CryptUtils {
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParamSpec);
 
             byte[] encrypted = cipher.doFinal(text.getBytes("UTF-8"));
-            return Base64.getEncoder().encodeToString(encrypted);
+            String result = Base64.getEncoder().encodeToString(encrypted);
+
+            //logger.debug("AES Encode  { {} => {} }",text, result);
+
+            return result;
         }catch(Exception e){
-                YOPLEServiceException exception = new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR);
-                exception.getResponseJsonObject().getMeta().setMsg("암호 변조된 값이 존재합니다. 보안 위험.");
-                throw exception;
+            throw new YOPLEServiceException(ApiStatusCode.SYSTEM_ERROR, "암호 변조된 값이 존재합니다. 보안 위험.");
         }
     }
 
@@ -89,7 +91,7 @@ public class CryptUtils {
      * @return 복호화된 평문을 Base64인코딩한 문자열
      * @throws Exception
      */
-    public static String AES_Decode(String cipherText)  {
+    public static String AES_Decode(String cipherText) throws YOPLEServiceException {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
@@ -98,11 +100,14 @@ public class CryptUtils {
 
             byte[] decodedBytes = Base64.getDecoder().decode(cipherText);
             byte[] decrypted = cipher.doFinal(decodedBytes);
-            return new String(decrypted, "UTF-8");
+
+            String result = new String(decrypted, "UTF-8");
+
+            //logger.debug("AES Decode  { {} => {} }",cipherText, result);
+
+            return result;
         }catch(Exception e) {
-            YOPLEServiceException exception = new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED);
-            exception.getResponseJsonObject().getMeta().setMsg("암호 변조된 값이 존재합니다. 보안 위험.");
-            throw exception;
+            throw new YOPLEServiceException(ApiStatusCode.PARAMETER_CHECK_FAILED, "암호 변조된 값이 존재합니다. 보안 위험.");
         }
     }
 }

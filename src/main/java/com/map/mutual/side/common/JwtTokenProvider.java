@@ -70,7 +70,7 @@ public class JwtTokenProvider {
                     .setExpiration(validity)
                     .compact();
         }catch(Exception e) {
-            logger.debug("JWT Access Token 생성 Exception "+ e.getMessage());
+            logger.error("JWT Access Token 생성 Exception "+ e.toString());
             e.printStackTrace();
             throw e;
         }
@@ -89,8 +89,7 @@ public class JwtTokenProvider {
                     .setExpiration(validity)
                     .compact();
         }catch(Exception e) {
-            logger.debug("JWT Refresh Token 생성 Exception "+ e.getMessage());
-            e.printStackTrace();
+            logger.debug(" JWT Builder Error :  "+ e.getMessage());
             throw e;
         }
         return jwt;
@@ -164,13 +163,13 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            logger.info("잘못된 JWT 서명입니다.");
+            logger.debug("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
-            logger.info("만료된 JWT 토큰입니다.");
+            logger.debug("만료된 JWT 토큰입니다.");
         } catch (UnsupportedJwtException e) {
-            logger.info("지원되지 않는 JWT 토큰입니다.");
+            logger.debug("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
-            logger.info("JWT 토큰이 잘못되었습니다.");
+            logger.debug("JWT 토큰이 잘못되었습니다.");
         }
         return false;
     }

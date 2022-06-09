@@ -3,6 +3,7 @@ package com.map.mutual.side.auth.repository.dsl;
 import com.map.mutual.side.auth.model.dto.notification.InvitedNotiDto;
 import com.map.mutual.side.auth.model.dto.notification.extend.notificationDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -20,4 +21,5 @@ public interface UserWorldInvitingLogRepoDSL {
      * History     : [2022-04-13] - 조 준 희 - Create
      */
     List<InvitedNotiDto> InvitedNotiList(String suid);
+    boolean existsNewNoti(String suid, LocalDateTime searchLocalDateTime);
 }

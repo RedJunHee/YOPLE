@@ -3,13 +3,15 @@ server:
 
 
 
+
 jwt:
   header: Authorization
   #HS512 알고리즘을 사용할 것이기 때문에 512bit, 즉 64byte 이상의 secret key를 사용해야 한다.
-  #echo "Mutual-Maps-AES512-Secret-KeyMutual-Maps-AES512-Secret-KeyMutual-Maps-AES512-Secret-KeyMutual-Maps-AES512-Secret-Key"|base64
-  secret: TXV0dWFsLU1hcHMtQUVTNTEyLVNlY3JldC1LZXlNdXR1YWwtTWFwcy1BRVM1MTItU2VjcmV0LUtleU11dHVhbC1NYXBzLUFFUzUxMi1TZWNyZXQtS2V5TXV0dWFsLU1hcHMtQUVTNTEyLVNlY3JldC1LZXk=
-  access-token-validity-in-seconds: 8640000 # 1 Days
-  refresh-token-validity-in-seconds: 86400000 # 10 Days
+  #echo "YOPLE-AES512-SecretKeyYOPLE-AES512-SecretKeyYOPLE-AES512-SecretKeyYOPLE-AES512-SecretKeyYOPLE-AES512-SecretKey"|base64
+  secret: WU9QTEUtQUVTNTEyLVNlY3JldEtleVlPUExFLUFFUzUxMi1TZWNyZXRLZXlZT1BMRS1BRVM1MTItU2VjcmV0S2V5WU9QTEUtQUVTNTEyLVNlY3JldEtleVlPUExFLUFFUzUxMi1TZWNyZXRLZXk=
+  access-token-validity-in-seconds: 600 # 1 Days
+  refresh-token-validity-in-seconds: 1800 # 10 Days
 
-#"Mutual-Maps-AES512-Secret-Key"를 SHA256암호화 후 앞에서 32Byte
-aes-secret: TXV0dWFsLU1hcHMtQUVTNTEyLVNlY3Jl
+#"YOPLE-AES512-SecretKey"를 SHA256암호화 후 앞에서 32Byte
+aes-secret: 7BC19394C7DF9047349B25886954C9B8
+

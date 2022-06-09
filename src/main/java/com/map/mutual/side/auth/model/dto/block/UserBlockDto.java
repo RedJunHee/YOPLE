@@ -21,4 +21,11 @@ public class UserBlockDto {
     public void suidChange(String decodingSuid){
         blockSuid = decodingSuid;
     }
+
+    @Override
+    public String toString() {
+        return "UserBlockDto{" +
+                "blockSuid='" + blockSuid + '\'' +
+                '}';
+    }
 }

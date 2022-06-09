@@ -13,6 +13,8 @@ import com.map.mutual.side.common.JwtTokenProvider;
 import com.map.mutual.side.common.enumerate.ApiStatusCode;
 import com.map.mutual.side.common.exception.YOPLEServiceException;
 import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,7 +35,7 @@ import java.time.LocalDateTime;
 @Service
 @Log4j2
 public class AuthServiceImpl implements AuthService {
-
+    private final static Logger logger = LogManager.getLogger(AuthServiceImpl.class);
     private SMSLogRepo smsLogRepo;
     private final JwtTokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -61,29 +63,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void smsAuthNumSave(SMSAuthReqeustDto smsAuthReqeustDTO, String smsAuthNum) {
 
-        try {
+        // 2. SMSRequestLog 생성
+        SMSRequestLogEntity smsLog = SMSRequestLogEntity.builder().phone(smsAuthReqeustDTO.getPhone())
+                .requestAuthNum(smsAuthNum)
+                .duid(smsAuthReqeustDTO.getDuid())
+                .build();
 
-            // 2. SMSRequestLog 생성
-            SMSRequestLogEntity smsLog = SMSRequestLogEntity.builder().phone(smsAuthReqeustDTO.getPhone())
-                    .requestAuthNum(smsAuthNum)
-                    .duid(smsAuthReqeustDTO.getDuid())
-                    .build();
-
-            // 3. Log 저장
-            smsLogRepo.save(smsLog);
-
-            log.debug("SMS Auth Number Insert Success !! ");
-        }
-        catch(Exception e)
-        {
-            log.error("SMS Auth Number Insert Failed!! : %s",e.getMessage());
-            throw e;
-        }
-
+        // 3. Log 저장
+        smsLogRepo.save(smsLog);
     }
 
     @Override
-    public void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO) throws YOPLEServiceException{
+    public void smsAuthNumResponse(SMSAuthReqeustDto smsAuthResponseDTO) throws YOPLEServiceException {
 
         try {
             SMSRequestLogEntity smslog = smsLogRepo
@@ -111,7 +102,6 @@ public class AuthServiceImpl implements AuthService {
 
         }catch(YOPLEServiceException e)
         {
-            log.error("smsAuthNumber Response Failed : " + e.getMessage());
             throw e;
         }
 
@@ -126,12 +116,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String JWTAccessRefresh(String refreshToken) throws Exception {
+    public String JWTAccessRefresh(String refreshToken) throws YOPLEServiceException, Exception {
 
-        try {
             //Refresh 벨리데이션 + 유효기간 체크.
-            if (tokenProvider.validateToken(refreshToken) == false)
+            if (tokenProvider.validateToken(refreshToken) == false) {
                 throw new YOPLEServiceException(ApiStatusCode.UNAUTHORIZED);
+            }
 
             // 액세스 토큰 갱신
             String suid = ((UserInfoDto)(tokenProvider.getAccessAuthentication(refreshToken).getPrincipal())).getSuid();
@@ -140,28 +130,30 @@ public class AuthServiceImpl implements AuthService {
             JWTRefreshTokenLogEntity jwtRefreshTokenLogEntity = jwtRepo.findOneByUserSuid(suid);
 
             // DB 저장된 리플레시와 요청으로 받은 리플레시가 다를 경우 Exception
-            if (jwtRefreshTokenLogEntity.getRefreshToken().equals(refreshToken) == false)
+            if (jwtRefreshTokenLogEntity == null || jwtRefreshTokenLogEntity.getRefreshToken().equals(refreshToken) == false) {
+                logger.debug(String.format("Access Token 갱신 : INPUT 리프레시 토큰과 DB 리프레시 토큰이 다름"));
                 throw new YOPLEServiceException(ApiStatusCode.UNAUTHORIZED);
-
-
+            }
 
             UserInfoDto userInfoDto = UserInfoDto.builder().suid(suid).build();
             String accessToken = makeAccessJWT(userInfoDto);
 
             return accessToken;
 
-        }catch(Exception e)
-        {
-            throw e;
-        }
     }
 
     @Override
     public void saveJwtLog(JWTRefreshTokenLogEntity log) throws Exception {
         try {
+
+            if(jwtRepo.findOneByUserSuid(log.getUserSuid()) != null )
+                log.isPersist();
+
             jwtRepo.save(log);
+
         }catch(Exception e)
         {
+            logger.error(String.format("JWT 저장하기 실패."));
             throw e;
         }
     }
@@ -193,13 +185,9 @@ public class AuthServiceImpl implements AuthService {
         String jwt;
         try {
             jwt = tokenProvider.createRefreshTokenFromAuthentication(suid);
-        }catch(AuthenticationException ex)  // 인증 절차 실패시 리턴되는 Exception
-        {
-            //logger.debug("AuthController Auth 체크 실패 "+ ex.getMessage());
-            throw ex;
         }catch(Exception ex)
         {
-            //logger.error("AuthController Exception : " + ex.getMessage());
+            logger.error(" Refresh Token 생성 ERROR : " + ex.getMessage());
             throw ex;
         }   // 체크 필요!
 

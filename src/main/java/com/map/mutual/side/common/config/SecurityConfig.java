@@ -66,6 +66,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // enable h2-console
                 .and()
                 .headers()
+
+
+                .xssProtection()//xss 필터 추가
+                .and()
+                .contentSecurityPolicy("script-src 'self'")
+
+
+                .and()
                 .frameOptions()
                 .sameOrigin()       // 동일 도메인에서는 iframe 접근 가능
 
@@ -103,6 +111,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/user/report/**").authenticated()              // 사용자 신고하기.
                 .antMatchers(HttpMethod.POST,"/user/block/**").authenticated()               // 사용자 차단하기.
                 .antMatchers(HttpMethod.POST,"/user/review/report/**").authenticated()       // 리뷰 신고하기.
+                .antMatchers(HttpMethod.DELETE,"/user/withdrawal").authenticated()            // 유저 탈퇴하기.
+                .antMatchers(HttpMethod.GET,"/user/newNotiCheck/**").authenticated()       // 최신 알림 여부 확인.
 
                 // world
                 .antMatchers(HttpMethod.POST,"/world/world/**").authenticated() // 월드 생성하기.
@@ -127,6 +137,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //AuthenticationFilterChain- UsernamePasswordAuthenticationFilter 전에 실행될 커스텀 필터 등록
                 .addFilterBefore(new AuthorizationCheckFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         //.apply(new JwtSecurityConfig(jwtTokenProvider));
+
+
+//        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL); //SecurityContext 새로운 쓰레드 생성 시 전파 설정
     }
 
     @Bean

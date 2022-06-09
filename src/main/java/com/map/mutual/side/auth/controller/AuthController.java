@@ -80,24 +80,26 @@ public class AuthController {
     public ResponseEntity<ResponseJsonObject> smsAuthenticationRequest( @RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws MethodArgumentNotValidException, NoSuchAlgorithmException, KeyStoreException, IOException, InvalidKeyException, KeyManagementException {
 
         try {
-            // 1. 핸드폰 번호 벨리데이션
-                // 생략...
 
             // 2. SMS 인증 번호 생성
-            String smsAuthNum = YOPLEUtils.getSMSAuth();
+            //String smsAuthNum = YOPLEUtils.getSMSAuth();
+            String smsAuthNum = "0000";
 
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);
 
+
             // 2. 핸드폰 번호 인증 요청
+            logger.debug(String.format("SMS 인증번호 요청하기 : SMS 문자 Call start"));
+            //smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+            logger.debug(String.format("SMS 인증번호 요청하기 : SMS 문자 Call end"));
 
-            smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+            return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
 
-        }
-        catch(Exception e){
+        }catch(Exception e){
+            logger.error("SMS 인증번호 요청하기 ERROR : " + e.getMessage());
             throw e;
         }
-        return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);
     }
 
     /**
@@ -109,17 +111,19 @@ public class AuthController {
     @PostMapping("/sms-authentication-response")
     public ResponseEntity<ResponseJsonObject> smsAuthenticationResponse(@RequestBody @Valid SMSAuthReqeustDto smsAuthReqeustDTO) throws Exception {
         try {
+
             // 응답 확인
             authService.smsAuthNumResponse(smsAuthReqeustDTO);
 
             //
             UserEntity user = authService.findOneByPhone(smsAuthReqeustDTO.getPhone());
 
-            if(user == null)
+            if(user == null){
+                logger.debug("SMS 인증번호 확인 요청하기 : 사용자({})의 사용자 정보를 찾을 수 없음.",smsAuthReqeustDTO.getPhone());
                 throw new YOPLEServiceException(ApiStatusCode.USER_NOT_FOUND);
+            }
 
             UserInfoDto userInfoDto = modelMapper.map(user, UserInfoDto.class);
-
 
             //JWT 발급.
             String accessJwt = authService.makeAccessJWT(userInfoDto);
@@ -131,16 +135,20 @@ public class AuthController {
                     .build();
 
             authService.saveJwtLog(log);
-
             JwtTokenDto jwtToken = JwtTokenDto.builder().accessToken(accessJwt).refreshToken(refreshJwt).build();
+
+
+            logger.debug("SMS 인증번호 확인 요청하기 : 사용자({})의 정보 반환 - 액세스 토큰({}), 리프레시 토큰({})",smsAuthReqeustDTO.getPhone(),accessJwt,refreshJwt );
 
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtToken),HttpStatus.OK);
 
         }catch(YOPLEServiceException yopleServiceException)
         {
+            logger.debug("SMS 인증번호 확인 요청하기 Exception : {}", yopleServiceException.getResponseJsonObject().getMeta().toString());
             throw yopleServiceException;
         }
         catch(Exception e){
+            logger.error("SMS 인증번호 확인 요청하기 ERROR : {}",e.getMessage());
             throw e;
         }
     }
@@ -161,11 +169,12 @@ public class AuthController {
                 refreshToken = refreshToken.substring(7);           // "Bearer"를 제거한 accessToken 반환
             }
             else{
+                logger.debug("Access Token 갱신 : 리프레시 토큰 존재하지 않음. ( refresh token : {})", refreshToken);
                 refreshToken = null;
             }
 
-            jwt = authService.JWTAccessRefresh(refreshToken);
 
+            jwt = authService.JWTAccessRefresh(refreshToken);
             JwtTokenDto jwtToken = JwtTokenDto.builder().accessToken(jwt).build();
 
 
@@ -173,9 +182,11 @@ public class AuthController {
 
         }catch(YOPLEServiceException e)
         {
+            logger.debug("액세스 토큰 갱신하기 ERROR : " + e.getResponseJsonObject().getMeta().toString());
             throw e;
         }catch(Exception e)
         {
+            logger.error("액세스 토큰 갱신하기 ERROR : " + e.getMessage());
             throw e;
         }
     }
@@ -195,21 +206,19 @@ public class AuthController {
 
             String suid = userDetails.getSuid();
 
+
             String refreshToken = authService.makeRefreshJWT(suid);
 
             JWTRefreshTokenLogEntity log = JWTRefreshTokenLogEntity.builder().userSuid(suid).refreshToken(refreshToken).build();
-
             authService.saveJwtLog(log);
 
             JwtTokenDto jwtToken = JwtTokenDto.builder().refreshToken(refreshToken).build();
 
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK).setData(jwtToken),HttpStatus.OK );
 
-        }catch(YOPLEServiceException e)
-        {
-            throw e;
         }catch(Exception e)
         {
+            logger.error("리프레시 토큰 갱신하기 ERROR : " + e.getMessage());
             throw e;
         }
     }

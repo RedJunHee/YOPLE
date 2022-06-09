@@ -8,6 +8,7 @@ import com.map.mutual.side.auth.model.entity.QUserWorldInvitingLogEntity;
 import com.map.mutual.side.auth.repository.dsl.UserWorldInvitingLogRepoDSL;
 import com.map.mutual.side.world.model.entity.QWorldEntity;
 import com.map.mutual.side.world.model.entity.QWorldUserMappingEntity;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,6 +31,31 @@ public class UserWorldInvitingLogRepoDSLImpl implements UserWorldInvitingLogRepo
     }
 
 
+    /**
+     * Description : 월드 초대 알림 최신건 있는지 여부.
+     * Name        : existsNewNoti
+     * Author      : 조 준 희
+     * History     : [2022/05/30] - 조 준 희 - Create
+     */
+    @Override
+    public boolean existsNewNoti(String suid, LocalDateTime searchLocalDateTime) {
+        QUserWorldInvitingLogEntity log = new QUserWorldInvitingLogEntity("log");
+
+        boolean existsYN = false;
+
+        // 존재 한다면 True 존재하지 않다면 False
+        existsYN = jpaQueryFactory.select (log.userSuid)
+                        .from(log)
+                        .where(log.userSuid.eq(suid)
+                               .and(log.createTime.after(searchLocalDateTime))
+                                .and(log.invitingStatus.eq("-")))
+                        .fetchFirst() != null ;
+
+        return existsYN;
+    }
+
+
+
 
     /**
      * Description : 월드 초대 알림 메시지 조회
@@ -46,18 +72,20 @@ public class UserWorldInvitingLogRepoDSLImpl implements UserWorldInvitingLogRepo
 
         List<InvitedNotiDto> notis = jpaQueryFactory.select( new QInvitedNotiDto(log.createTime,
                         QUserEntity.userEntity.userId,
-                        QUserEntity.userEntity.profileUrl,
+                        QUserEntity.userEntity.name,
+                        QUserEntity.userEntity.profileUrl, // 프로필 사진은 Optional Column
                         QWorldEntity.worldEntity.worldName,
                         log.seq,
                         log.userSuid,
-                        log.worldUserCode
+                        log.worldUserCode,
+                        QWorldEntity.worldEntity.worldId
                         ))
                 .from(log)
-                .leftJoin(QUserEntity.userEntity)
+                .innerJoin(QUserEntity.userEntity)
                 .on(log.userSuid.eq(QUserEntity.userEntity.suid))
-                .leftJoin(QWorldEntity.worldEntity)
+                .innerJoin(QWorldEntity.worldEntity)
                 .on(log.worldId.eq(QWorldEntity.worldEntity.worldId))
-                .where(log.createTime.between(LocalDateTime.now().minusWeeks(7), LocalDateTime.now())
+                .where(log.createTime.between(LocalDateTime.now().minusWeeks(12), LocalDateTime.now())
                         .and(log.targetSuid.eq(suid)).and(log.targetSuid.eq(suid)).and(log.invitingStatus.eq("-")))
                 .orderBy(log.createTime.desc())
                 .fetch();

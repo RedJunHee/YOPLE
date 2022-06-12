@@ -36,11 +36,13 @@ public class PlaceDetailDto {
         private String userId;
         private String[] imageUrls;
         private String profileUrl;
+        private String profilePinUrl;
 
         @QueryProjection
-        public PlaceDetailInReview(Long reviewId, String imageUrls, String profileUrl, LocalDateTime createDt, String userId) {
+        public PlaceDetailInReview(Long reviewId, String imageUrls, String profileUrl, String profilePinUrl, LocalDateTime createDt, String userId) {
             this.reviewId = reviewId;
             this.profileUrl = profileUrl;
+            this.profilePinUrl = profilePinUrl;
             if (imageUrls != null) {
                 this.imageUrls = imageUrls.split(",");
             } else {

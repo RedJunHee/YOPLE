@@ -94,7 +94,7 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
                         .name(data[1].toString())
                         .x((BigDecimal)data[2])
                         .y((BigDecimal)data[3])
-                        .profileUrl(null)
+                        .profilePinUrl(null)
                         .createDt(((Timestamp) data[5]).toLocalDateTime())
                         .build();
 
@@ -104,7 +104,7 @@ public class ReviewWorldMappingRepoDSLImpl implements ReviewWorldMappingRepoDSL 
                         .name(data[1].toString())
                         .x((BigDecimal)data[2])
                         .y((BigDecimal)data[3])
-                        .profileUrl(data[4].toString())
+                        .profilePinUrl(data[4].toString())
                         .createDt(((Timestamp) data[5]).toLocalDateTime())
                         .build();
 

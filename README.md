@@ -8,4 +8,4 @@ MutualMap - 사이드프로젝트
 
 
 # YOPLE 사용 방법
-<img width="80%" src="https://drive.google.com/file/d/1sQ15tWJNftf9jAqP4dor0stXbJdJ8Rls/view?usp=sharing"/>
+<img width="80%" src="https://drive.google.com/file/d/1sQ15tWJNftf9jAqP4dor0stXbJdJ8Rls/view"/>

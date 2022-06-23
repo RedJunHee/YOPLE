@@ -21,6 +21,8 @@ spring:
 # log4j2 xml 설정파일.
 logging:
   config: classpath:log4j2/log4j2-local.xml
+  level:
+    org.springframework.transaction: DEBUG
 
 server:
   port: 3333

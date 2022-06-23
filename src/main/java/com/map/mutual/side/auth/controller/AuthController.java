@@ -48,23 +48,16 @@ import java.security.NoSuchAlgorithmException;
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-
     private AuthService authService;
-    private final JwtTokenProvider tokenProvider;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private CryptUtils cryptUtils;
     private ModelMapper modelMapper;
     private SmsSender smsSender;
 
     @Autowired
     public AuthController(AuthService authService,
-                          JwtTokenProvider tokenProvider,
-                          AuthenticationManagerBuilder authenticationManagerBuilder,
                           CryptUtils cryptUtils, ModelMapper modelMapper,
                           SmsSender smsSender) {
         this.authService = authService;
-        this.tokenProvider = tokenProvider;
-        this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.cryptUtils = cryptUtils;
         this.modelMapper = modelMapper;
         this.smsSender = smsSender;
@@ -88,10 +81,9 @@ public class AuthController {
             // 3. 로그 저장
             authService.smsAuthNumSave(smsAuthReqeustDTO, smsAuthNum);
 
-
             // 2. 핸드폰 번호 인증 요청
             logger.debug(String.format("SMS 인증번호 요청하기 : SMS 문자 Call start"));
-            //smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
+            smsSender.sendAuthMessage(smsAuthReqeustDTO.getPhone(), smsAuthNum);
             logger.debug(String.format("SMS 인증번호 요청하기 : SMS 문자 Call end"));
 
             return new ResponseEntity<>(ResponseJsonObject.withStatusCode(ApiStatusCode.OK), HttpStatus.OK);

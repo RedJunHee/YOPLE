@@ -15,3 +15,18 @@ jwt:
 #"YOPLE-AES512-SecretKey"를 SHA256암호화 후 앞에서 32Byte
 aes-secret: 7BC19394C7DF9047349B25886954C9B8
 
+yople:
+  sens:
+    svc_id: "ncp:sms:kr:279058593171:sms-service"
+    host: "https://sens.apigw.ntruss.com"
+    url: "/sms/v2/services/"
+    type: "/messages"
+    accessKey: "kNKPMYVwhTp3uIYbek9i"
+    secretKey: "XouxuOyjVhekRsLBqCEuocX9ghAugujpI4gvUlXD"
+    message:
+      type: "SMS"
+      content_type: "COMM"
+      country_code: "82"
+
+
+

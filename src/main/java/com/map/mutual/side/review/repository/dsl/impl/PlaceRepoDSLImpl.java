@@ -49,6 +49,7 @@ public class PlaceRepoDSLImpl implements PlaceRepoDSL {
                 qReview.reviewId,
                 qReview.imageUrl,
                 qUser.profileUrl,
+                qUser.profilePinUrl,
                 qReview.createTime,
                 qReview.userEntity.userId
                 ))

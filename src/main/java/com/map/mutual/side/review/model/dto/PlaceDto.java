@@ -56,7 +56,7 @@ public class PlaceDto {
         private String name;
         private BigDecimal x;
         private BigDecimal y;
-        private String profileUrl;
+        private String profilePinUrl;
         private LocalDateTime createDt;
     }
 }
